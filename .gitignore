@@ -1,0 +1,32 @@
+# Design files
+merkle_front.pen
+
+# Build
+build/
+dist/
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node modules (for frontend apps)
+node_modules/
+
+# Ignite CLI
+release/
