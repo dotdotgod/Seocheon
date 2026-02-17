@@ -1,0 +1,13 @@
+syntax = "proto3";
+package seocheon.node.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "seocheon/x/node/types";
+
+// Params defines the parameters for the module.
+message Params {
+  option (amino.name) = "seocheon/x/node/Params";
+  option (gogoproto.equal) = true;
+}

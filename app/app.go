@@ -46,6 +46,7 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
 	"seocheon/docs"
+	nodemodulekeeper "seocheon/x/node/keeper"
 )
 
 const (
@@ -98,7 +99,8 @@ type App struct {
 	TransferKeeper      ibctransferkeeper.Keeper
 
 	// simulation manager
-	sm *module.SimulationManager
+	sm         *module.SimulationManager
+	NodeKeeper nodemodulekeeper.Keeper
 }
 
 func init() {
@@ -178,6 +180,7 @@ func New(
 		&app.ConsensusParamsKeeper,
 		&app.CircuitBreakerKeeper,
 		&app.ParamsKeeper,
+		&app.NodeKeeper,
 	); err != nil {
 		panic(err)
 	}
