@@ -9,6 +9,7 @@ import (
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
+	feegrantkeeper "cosmossdk.io/x/feegrant/keeper"
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -90,6 +91,7 @@ type App struct {
 	AuthzKeeper           authzkeeper.Keeper
 	ConsensusParamsKeeper consensuskeeper.Keeper
 	CircuitBreakerKeeper  circuitkeeper.Keeper
+	FeegrantKeeper        feegrantkeeper.Keeper
 	ParamsKeeper          paramskeeper.Keeper
 
 	// ibc keepers
@@ -179,11 +181,18 @@ func New(
 		&app.AuthzKeeper,
 		&app.ConsensusParamsKeeper,
 		&app.CircuitBreakerKeeper,
+		&app.FeegrantKeeper,
 		&app.ParamsKeeper,
 		&app.NodeKeeper,
 	); err != nil {
 		panic(err)
 	}
+
+	// Wire x/node optional keeper dependencies (not available through depinject).
+	app.NodeKeeper.SetDistributionKeeper(app.DistrKeeper)
+	app.NodeKeeper.SetSlashingKeeper(app.SlashingKeeper)
+	app.NodeKeeper.SetFeegrantKeeper(app.FeegrantKeeper)
+	app.NodeKeeper.SetStakingMsgServer(stakingkeeper.NewMsgServerImpl(app.StakingKeeper))
 
 	// add to default baseapp options
 	// enable optimistic execution

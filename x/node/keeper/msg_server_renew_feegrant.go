@@ -46,17 +46,9 @@ func (k msgServer) RenewFeegrant(ctx context.Context, msg *types.MsgRenewFeegran
 	// TODO: Phase 1 — Check activity history via x/activity module.
 	// Requirement: At least 20 out of the last 30 epochs with activity qualification.
 	// For Phase 0, we skip this check and allow renewal for any eligible node.
-	//
-	// activityQualified := k.activityKeeper.CheckActivityHistory(ctx, nodeID, 30, 20)
-	// if !activityQualified {
-	//     return nil, errorsmod.Wrap(types.ErrInsufficientActivity, "...")
-	// }
 
-	// TODO: Grant new feegrant via feegrantKeeper when wired.
-	// feegrantPoolAddr := k.authKeeper.GetModuleAddress(types.FeegrantPoolName)
-	// agentAddr, _ := sdk.AccAddressFromBech32(node.AgentAddress)
-	// allowance := &feegrant.PeriodicAllowance{...}
-	// k.feegrantKeeper.GrantAllowance(ctx, feegrantPoolAddr, agentAddr, allowance)
+	// Grant new feegrant (overwrites expired grant, best-effort).
+	_ = k.grantAgentFeegrant(ctx, node.AgentAddress)
 
 	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
 		"feegrant_renewed",

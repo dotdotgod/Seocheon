@@ -10,6 +10,7 @@ import (
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"seocheon/x/node/types"
 )
@@ -95,12 +96,31 @@ func (k msgServer) RegisterNode(ctx context.Context, msg *types.MsgRegisterNode)
 	}
 
 	// [5] Create validator via x/staking (self-delegation of 1 usum).
-	// Note: The actual CreateValidator call will be implemented when StakingMsgServer is wired.
-	// For now, we derive the validator address from the operator address.
 	valAddr := sdk.ValAddress(operatorAddr)
 	valAddrStr, err := sdk.Bech32ifyAddressBytes("seocheonvaloper", valAddr)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "failed to create validator address")
+	}
+
+	if k.stakingMsgServer != nil {
+		createValMsg := &stakingtypes.MsgCreateValidator{
+			Description: stakingtypes.Description{
+				Moniker: msg.Description,
+			},
+			Commission: stakingtypes.CommissionRates{
+				Rate:          math.LegacyZeroDec(),
+				MaxRate:       math.LegacyOneDec(),
+				MaxChangeRate: math.LegacyOneDec(),
+			},
+			MinSelfDelegation: math.OneInt(),
+			DelegatorAddress:  msg.Operator,
+			ValidatorAddress:  valAddrStr,
+			Pubkey:            msg.ConsensusPubkey,
+			Value:             oneUsum,
+		}
+		if _, err := k.stakingMsgServer.CreateValidator(ctx, createValMsg); err != nil {
+			return nil, errorsmod.Wrap(err, "failed to create validator")
+		}
 	}
 
 	// [6] Generate deterministic node ID and store node state.
@@ -150,7 +170,12 @@ func (k msgServer) RegisterNode(ctx context.Context, msg *types.MsgRegisterNode)
 		return nil, errorsmod.Wrap(err, "failed to update registration count")
 	}
 
-	// [7] Emit event.
+	// [7] Grant feegrant to agent_address (best-effort).
+	if msg.AgentAddress != "" {
+		_ = k.grantAgentFeegrant(ctx, msg.AgentAddress)
+	}
+
+	// [8] Emit event.
 	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
 		"node_registered",
 		sdk.NewAttribute("node_id", nodeID),

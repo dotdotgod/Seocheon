@@ -4,13 +4,15 @@ import (
 	"context"
 
 	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"seocheon/x/node/types"
 )
 
-// DeactivateNode deactivates a node by setting its status to INACTIVE.
-// In a full implementation, this would also begin unbonding the 1 usum self-delegation.
+// DeactivateNode deactivates a node by setting its status to INACTIVE
+// and begins unbonding the 1 usum self-delegation.
 func (k msgServer) DeactivateNode(ctx context.Context, msg *types.MsgDeactivateNode) (*types.MsgDeactivateNodeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
@@ -39,17 +41,28 @@ func (k msgServer) DeactivateNode(ctx context.Context, msg *types.MsgDeactivateN
 	// Remove any pending agent share changes.
 	_ = k.PendingAgentShareChanges.Remove(ctx, nodeID)
 
-	// Revoke feegrant from agent (if exists).
-	if node.AgentAddress != "" && k.feegrantKeeper != nil {
-		feegrantPoolAddr := k.authKeeper.GetModuleAddress(types.FeegrantPoolName)
-		agentAddr, addrErr := sdk.AccAddressFromBech32(node.AgentAddress)
-		if addrErr == nil {
-			_ = k.feegrantKeeper.RevokeAllowance(ctx, feegrantPoolAddr, agentAddr)
+	// Note: agent feegrant will expire naturally (6 months).
+	// Revocation via feegrant MsgServer will be added in Phase 1.
+
+	// Begin unbonding 1 usum self-delegation via staking MsgServer.
+	if k.stakingMsgServer != nil && node.ValidatorAddress != "" {
+		bondDenom, bondErr := k.stakingKeeper.BondDenom(ctx)
+		if bondErr == nil {
+			undelegateMsg := &stakingtypes.MsgUndelegate{
+				DelegatorAddress: msg.Operator,
+				ValidatorAddress: node.ValidatorAddress,
+				Amount:           sdk.NewCoin(bondDenom, math.NewInt(1)),
+			}
+			if _, undErr := k.stakingMsgServer.Undelegate(ctx, undelegateMsg); undErr != nil {
+				// Best-effort: emit warning but don't block deactivation.
+				sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
+					"undelegate_failed",
+					sdk.NewAttribute("node_id", nodeID),
+					sdk.NewAttribute("error", undErr.Error()),
+				))
+			}
 		}
 	}
-
-	// TODO: Begin unbonding 1 usum self-delegation via stakingMsgServer.Undelegate()
-	// when staking MsgServer wiring is complete.
 
 	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
 		"node_deactivated",

@@ -56,20 +56,13 @@ func (k msgServer) UpdateAgentAddress(ctx context.Context, msg *types.MsgUpdateA
 		}
 	}
 
-	// Remove old agent index and revoke feegrant.
+	// Remove old agent index.
+	// Note: old agent's feegrant will expire naturally (6 months).
+	// Revocation via feegrant MsgServer will be added in Phase 1.
 	oldAgent := node.AgentAddress
 	if oldAgent != "" {
 		if err := k.AgentIndex.Remove(ctx, oldAgent); err != nil {
 			return nil, errorsmod.Wrap(err, "failed to remove old agent index")
-		}
-		// Revoke feegrant from old agent (best-effort: skip if feegrantKeeper not wired).
-		if k.feegrantKeeper != nil {
-			feegrantPoolAddr := k.authKeeper.GetModuleAddress(types.FeegrantPoolName)
-			oldAgentAddr, addrErr := sdk.AccAddressFromBech32(oldAgent)
-			if addrErr == nil {
-				// Ignore revoke error — feegrant may not exist.
-				_ = k.feegrantKeeper.RevokeAllowance(ctx, feegrantPoolAddr, oldAgentAddr)
-			}
 		}
 	}
 
@@ -81,7 +74,7 @@ func (k msgServer) UpdateAgentAddress(ctx context.Context, msg *types.MsgUpdateA
 			return nil, errorsmod.Wrap(err, "failed to set new agent index")
 		}
 		// Grant feegrant to new agent (best-effort).
-		// Full feegrant granting logic will be added when feegrant wiring is complete.
+		_ = k.grantAgentFeegrant(ctx, msg.NewAgentAddress)
 	}
 
 	if err := k.Nodes.Set(ctx, nodeID, node); err != nil {

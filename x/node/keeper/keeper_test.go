@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
+	"cosmossdk.io/x/feegrant"
 	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
 	"github.com/cosmos/cosmos-sdk/runtime"
 	"github.com/cosmos/cosmos-sdk/testutil"
@@ -151,17 +152,66 @@ func (m *mockStakingKeeper) BondDenom(_ context.Context) (string, error) {
 	return m.bondDenom, nil
 }
 
+// mockFeegrantKeeper implements types.FeegrantKeeper.
+type mockFeegrantKeeper struct {
+	grantCalls []feegrantGrantCall
+	grantErr   error
+}
+
+type feegrantGrantCall struct {
+	Granter sdk.AccAddress
+	Grantee sdk.AccAddress
+}
+
+func newMockFeegrantKeeper() *mockFeegrantKeeper {
+	return &mockFeegrantKeeper{}
+}
+
+func (m *mockFeegrantKeeper) GrantAllowance(_ context.Context, granter, grantee sdk.AccAddress, _ feegrant.FeeAllowanceI) error {
+	if m.grantErr != nil {
+		return m.grantErr
+	}
+	m.grantCalls = append(m.grantCalls, feegrantGrantCall{Granter: granter, Grantee: grantee})
+	return nil
+}
+
+// mockStakingMsgServer implements types.StakingMsgServer.
+type mockStakingMsgServer struct {
+	createValidatorErr error
+	undelegateErr      error
+}
+
+func newMockStakingMsgServer() *mockStakingMsgServer {
+	return &mockStakingMsgServer{}
+}
+
+func (m *mockStakingMsgServer) CreateValidator(_ context.Context, _ *stakingtypes.MsgCreateValidator) (*stakingtypes.MsgCreateValidatorResponse, error) {
+	if m.createValidatorErr != nil {
+		return nil, m.createValidatorErr
+	}
+	return &stakingtypes.MsgCreateValidatorResponse{}, nil
+}
+
+func (m *mockStakingMsgServer) Undelegate(_ context.Context, _ *stakingtypes.MsgUndelegate) (*stakingtypes.MsgUndelegateResponse, error) {
+	if m.undelegateErr != nil {
+		return nil, m.undelegateErr
+	}
+	return &stakingtypes.MsgUndelegateResponse{}, nil
+}
+
 // ---------------------------------------------------------------------------
 // Test Fixture
 // ---------------------------------------------------------------------------
 
 type fixture struct {
-	ctx           context.Context
-	keeper        keeper.Keeper
-	addressCodec  address.Codec
-	authKeeper    *mockAuthKeeper
-	bankKeeper    *mockBankKeeper
-	stakingKeeper *mockStakingKeeper
+	ctx              context.Context
+	keeper           keeper.Keeper
+	addressCodec     address.Codec
+	authKeeper       *mockAuthKeeper
+	bankKeeper       *mockBankKeeper
+	stakingKeeper    *mockStakingKeeper
+	feegrantKeeper   *mockFeegrantKeeper
+	stakingMsgServer *mockStakingMsgServer
 }
 
 func initFixture(t *testing.T) *fixture {
@@ -179,6 +229,8 @@ func initFixture(t *testing.T) *fixture {
 	authK := newMockAuthKeeper()
 	bankK := newMockBankKeeper()
 	stakingK := newMockStakingKeeper()
+	feegrantK := newMockFeegrantKeeper()
+	stakingMsgSrv := newMockStakingMsgServer()
 
 	// Set up module account addresses for Registration Pool and Feegrant Pool.
 	regPoolAddr := authtypes.NewModuleAddress(types.RegistrationPoolName)
@@ -199,8 +251,10 @@ func initFixture(t *testing.T) *fixture {
 		stakingK,
 	)
 
-	// Wire auth keeper via setter.
+	// Wire optional keepers via setters.
 	k.SetAuthKeeper(authK)
+	k.SetFeegrantKeeper(feegrantK)
+	k.SetStakingMsgServer(stakingMsgSrv)
 
 	// Initialize default params.
 	if err := k.Params.Set(ctx, types.DefaultParams()); err != nil {
@@ -208,11 +262,13 @@ func initFixture(t *testing.T) *fixture {
 	}
 
 	return &fixture{
-		ctx:           ctx,
-		keeper:        k,
-		addressCodec:  addrCodec,
-		authKeeper:    authK,
-		bankKeeper:    bankK,
-		stakingKeeper: stakingK,
+		ctx:              ctx,
+		keeper:           k,
+		addressCodec:     addrCodec,
+		authKeeper:       authK,
+		bankKeeper:       bankK,
+		stakingKeeper:    stakingK,
+		feegrantKeeper:   feegrantK,
+		stakingMsgServer: stakingMsgSrv,
 	}
 }

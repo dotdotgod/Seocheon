@@ -5,6 +5,7 @@ import (
 
 	"cosmossdk.io/core/address"
 	"cosmossdk.io/math"
+	"cosmossdk.io/x/feegrant"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
@@ -47,15 +48,11 @@ type SlashingKeeper interface {
 }
 
 // FeegrantKeeper defines the expected interface for the Feegrant module.
+// Note: RevokeAllowance is private in SDK feegrant keeper. For Phase 0,
+// old feegrants expire naturally (6 months). Revocation will be added in Phase 1
+// via feegrant MsgServer integration.
 type FeegrantKeeper interface {
-	GrantAllowance(ctx context.Context, granter, grantee sdk.AccAddress, feeAllowance feegrantAllowance) error
-	RevokeAllowance(ctx context.Context, granter, grantee sdk.AccAddress) error
-}
-
-// feegrantAllowance is an interface for feegrant allowances.
-type feegrantAllowance interface {
-	Accept(ctx context.Context, fee sdk.Coins, msgs []sdk.Msg) (bool, error)
-	ValidateBasic() error
+	GrantAllowance(ctx context.Context, granter, grantee sdk.AccAddress, feeAllowance feegrant.FeeAllowanceI) error
 }
 
 // StakingMsgServer defines the interface for creating validators through x/staking.

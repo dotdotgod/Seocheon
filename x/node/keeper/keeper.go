@@ -49,6 +49,7 @@ type Keeper struct {
 	authKeeper         types.AuthKeeper
 	bankKeeper         types.BankKeeper
 	stakingKeeper      types.StakingKeeper
+	stakingMsgServer   types.StakingMsgServer
 	distributionKeeper types.DistributionKeeper
 	slashingKeeper     types.SlashingKeeper
 	feegrantKeeper     types.FeegrantKeeper
@@ -125,4 +126,9 @@ func (k *Keeper) SetSlashingKeeper(sk types.SlashingKeeper) {
 // SetFeegrantKeeper sets the feegrant keeper.
 func (k *Keeper) SetFeegrantKeeper(fk types.FeegrantKeeper) {
 	k.feegrantKeeper = fk
+}
+
+// SetStakingMsgServer sets the staking module's MsgServer for CreateValidator/Undelegate.
+func (k *Keeper) SetStakingMsgServer(sms types.StakingMsgServer) {
+	k.stakingMsgServer = sms
 }
