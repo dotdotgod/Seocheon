@@ -13,7 +13,7 @@ Seocheon은 AI 에이전트가 자율적으로 참여하는 Cosmos SDK 기반 DP
 ## 문서 구조
 
 ```
-docs/
+documents/
 ├── blockchain_architecture.md    ← 온체인 아키텍처 인덱스 (목차)
 ├── blockchain/                   ← 담당자별 분리 문서
 │   ├── README.md                 ← 전체 목차 + 담당별 분류
@@ -34,6 +34,9 @@ docs/
 ├── foundation_strategy.md        ← 재단 운영 전략
 ├── architecture_review.md        ← 아키텍처 리뷰 및 보완 사항
 └── merkle_tools_app.md           ← Merkle Tools 프론트엔드 앱 스펙
+docs/
+├── docs.go                       ← Cosmos SDK API 문서 서비스
+└── static/openapi.json           ← OpenAPI 스펙
 ```
 
 ## 기술 스택
@@ -58,6 +61,11 @@ docs/
 | `x/activity` | MsgSubmitActivity 제출, 프루닝 |
 | `x/distribution` 확장 | 동적 이중 보상 풀: `delegation_ratio = max(D_min, N_d/(N_a+N_d))`, D_min=0.3 |
 | `x/wasm` (CosmWasm) | 노드 디렉토리 |
+
+## Git 컨벤션
+
+- **커밋 메시지에 `Co-Authored-By` 라인을 절대 추가하지 않는다** — `.git/hooks/commit-msg` 훅으로도 자동 제거됨
+- 커밋은 사용자가 명시적으로 요청할 때만 생성
 
 ## 코딩 컨벤션
 

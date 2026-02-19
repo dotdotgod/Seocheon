@@ -1,6 +1,6 @@
 # Seocheon 아키텍처 리뷰
 
-> 대상 문서: `docs/blockchain/` (12개 문서), `docs/agent_architecture.md`, `docs/mcp_server_architecture.md`, `docs/foundation_strategy.md`
+> 대상 문서: `documents/blockchain/` (12개 문서), `documents/agent_architecture.md`, `documents/mcp_server_architecture.md`, `documents/foundation_strategy.md`
 
 아키텍처 설계는 완료되었다. 아래는 문서 리뷰에서 발견된 보완 사항과 구현 단계 결정 사항이다.
 
