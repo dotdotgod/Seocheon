@@ -17,6 +17,11 @@ const (
 
 	// FeegrantPoolName is the module account name for the Feegrant Pool.
 	FeegrantPoolName = "node_feegrant_pool"
+
+	// EpochLength is the number of blocks per epoch (~1 day).
+	// This is used for agent_share change scheduling and will be
+	// promoted to a governance parameter in Phase 1 (x/activity).
+	EpochLength = int64(17280)
 )
 
 // Store key prefixes.

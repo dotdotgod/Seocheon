@@ -57,12 +57,20 @@ type mockBankKeeper struct {
 	sendErr  error                // configurable error for testing
 	// Track SendCoinsFromModuleToAccount calls for verification.
 	sentFromModule []sentFromModuleRecord
+	// Track SendCoins calls for verification (used by WithdrawNodeCommission).
+	sentCoinsRecords []sentCoinsRecord
 }
 
 type sentFromModuleRecord struct {
 	SenderModule string
 	Recipient    sdk.AccAddress
 	Amount       sdk.Coins
+}
+
+type sentCoinsRecord struct {
+	From   sdk.AccAddress
+	To     sdk.AccAddress
+	Amount sdk.Coins
 }
 
 func newMockBankKeeper() *mockBankKeeper {
@@ -75,8 +83,16 @@ func (m *mockBankKeeper) SpendableCoins(_ context.Context, addr sdk.AccAddress) 
 	return m.balances[addr.String()]
 }
 
-func (m *mockBankKeeper) SendCoins(_ context.Context, _, _ sdk.AccAddress, _ sdk.Coins) error {
-	return m.sendErr
+func (m *mockBankKeeper) SendCoins(_ context.Context, from, to sdk.AccAddress, amt sdk.Coins) error {
+	if m.sendErr != nil {
+		return m.sendErr
+	}
+	m.sentCoinsRecords = append(m.sentCoinsRecords, sentCoinsRecord{
+		From:   from,
+		To:     to,
+		Amount: amt,
+	})
+	return nil
 }
 
 func (m *mockBankKeeper) SendCoinsFromModuleToAccount(_ context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error {

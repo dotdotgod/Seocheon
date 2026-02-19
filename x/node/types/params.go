@@ -39,6 +39,12 @@ func DefaultParams() Params {
 	return NewParams()
 }
 
+// DefaultAgentShareForTest returns a valid agent_share value for testing (35).
+// Used to test agent_share changes that are within the default max change rate.
+func DefaultAgentShareForTest() math.LegacyDec {
+	return math.LegacyNewDec(35)
+}
+
 // Validate validates the set of params.
 func (p Params) Validate() error {
 	if p.MaxRegistrationsPerBlock == 0 {

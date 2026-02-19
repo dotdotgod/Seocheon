@@ -3,7 +3,16 @@ package types
 import (
 	"fmt"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
+// Default pool balances.
+// Registration Pool: 1,000 SCN = 1,000,000,000,000 usum (10^12)
+// Feegrant Pool: 10,000 SCN = 10,000,000,000,000 usum (10^13)
+var (
+	DefaultRegistrationPoolBalance = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(1_000_000_000_000)))
+	DefaultFeegrantPoolBalance     = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(10_000_000_000_000)))
 )
 
 // DefaultGenesis returns the default genesis state.
@@ -11,8 +20,8 @@ func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		Params:                  DefaultParams(),
 		Nodes:                   []Node{},
-		RegistrationPoolBalance: sdk.NewCoins(),
-		FeegrantPoolBalance:     sdk.NewCoins(),
+		RegistrationPoolBalance: DefaultRegistrationPoolBalance,
+		FeegrantPoolBalance:     DefaultFeegrantPoolBalance,
 	}
 }
 

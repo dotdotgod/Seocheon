@@ -137,7 +137,7 @@ func (am AppModule) BeginBlock(_ context.Context) error {
 }
 
 // EndBlock contains the logic that is automatically triggered at the end of each block.
-// The end block implementation is optional.
-func (am AppModule) EndBlock(_ context.Context) error {
-	return nil
+// Applies pending agent_share changes at epoch boundaries.
+func (am AppModule) EndBlock(ctx context.Context) error {
+	return am.keeper.EndBlocker(ctx)
 }
