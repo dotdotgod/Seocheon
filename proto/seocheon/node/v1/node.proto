@@ -1,0 +1,74 @@
+syntax = "proto3";
+package seocheon.node.v1;
+
+import "amino/amino.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "seocheon/x/node/types";
+
+// NodeStatus defines the possible statuses of a node.
+enum NodeStatus {
+  // NODE_STATUS_UNSPECIFIED is the default status.
+  NODE_STATUS_UNSPECIFIED = 0;
+  // NODE_STATUS_REGISTERED means the node is registered but not in the Active Validator Set.
+  NODE_STATUS_REGISTERED = 1;
+  // NODE_STATUS_ACTIVE means the node is in the Active Validator Set.
+  NODE_STATUS_ACTIVE = 2;
+  // NODE_STATUS_INACTIVE means the operator requested deactivation.
+  NODE_STATUS_INACTIVE = 3;
+  // NODE_STATUS_JAILED means the node violated consensus rules.
+  NODE_STATUS_JAILED = 4;
+}
+
+// Node defines a registered node in the Seocheon network.
+message Node {
+  option (gogoproto.equal) = true;
+
+  // id is the deterministic node identifier (derived from operator address).
+  string id = 1;
+  // operator is the operator wallet address (human-owned).
+  string operator = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // agent_address is the AI agent wallet address.
+  string agent_address = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // agent_share is the percentage of commission allocated to the agent (0-100).
+  string agent_share = 4 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  // max_agent_share_change_rate is the max agent_share change per epoch.
+  string max_agent_share_change_rate = 5 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  // description of the node.
+  string description = 6;
+  // website of the node operator.
+  string website = 7;
+  // tags are node classification tags (max 10, each max 32 chars).
+  repeated string tags = 8;
+  // validator_address is the corresponding validator address.
+  string validator_address = 9 [(cosmos_proto.scalar) = "cosmos.ValidatorAddressString"];
+  // status is the current node lifecycle status.
+  NodeStatus status = 10;
+  // registered_at is the block height at which the node was registered.
+  int64 registered_at = 11;
+}
+
+// PendingAgentShareChange tracks a pending agent_share change request.
+message PendingAgentShareChange {
+  option (gogoproto.equal) = true;
+
+  // node_id is the node whose agent_share is changing.
+  string node_id = 1;
+  // new_agent_share is the target agent_share value.
+  string new_agent_share = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  // apply_at_block is the block height at which the change takes effect.
+  int64 apply_at_block = 3;
+}

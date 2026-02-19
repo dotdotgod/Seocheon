@@ -6,11 +6,8 @@ package types
 import (
 	context "context"
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
-	_ "github.com/cosmos/cosmos-sdk/types/query"
+	_ "github.com/cosmos/cosmos-proto"
+	query "github.com/cosmos/cosmos-sdk/types/query"
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
@@ -19,6 +16,9 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -32,7 +32,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// QueryParamsRequest is request type for the Query/Params RPC method.
+// QueryParamsRequest is the request type for the Query/Params RPC method.
 type QueryParamsRequest struct {
 }
 
@@ -69,9 +69,8 @@ func (m *QueryParamsRequest) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_QueryParamsRequest proto.InternalMessageInfo
 
-// QueryParamsResponse is response type for the Query/Params RPC method.
+// QueryParamsResponse is the response type for the Query/Params RPC method.
 type QueryParamsResponse struct {
-	// params holds all the parameters of this module.
 	Params Params `protobuf:"bytes,1,opt,name=params,proto3" json:"params"`
 }
 
@@ -115,34 +114,546 @@ func (m *QueryParamsResponse) GetParams() Params {
 	return Params{}
 }
 
+// QueryNodeRequest is the request type for the Query/Node RPC method.
+type QueryNodeRequest struct {
+	NodeId string `protobuf:"bytes,1,opt,name=node_id,json=nodeId,proto3" json:"node_id,omitempty"`
+}
+
+func (m *QueryNodeRequest) Reset()         { *m = QueryNodeRequest{} }
+func (m *QueryNodeRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryNodeRequest) ProtoMessage()    {}
+func (*QueryNodeRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_43ea5c962c517f4f, []int{2}
+}
+func (m *QueryNodeRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryNodeRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryNodeRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryNodeRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryNodeRequest.Merge(m, src)
+}
+func (m *QueryNodeRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryNodeRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryNodeRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryNodeRequest proto.InternalMessageInfo
+
+func (m *QueryNodeRequest) GetNodeId() string {
+	if m != nil {
+		return m.NodeId
+	}
+	return ""
+}
+
+// QueryNodeResponse is the response type for the Query/Node RPC method.
+type QueryNodeResponse struct {
+	Node Node `protobuf:"bytes,1,opt,name=node,proto3" json:"node"`
+}
+
+func (m *QueryNodeResponse) Reset()         { *m = QueryNodeResponse{} }
+func (m *QueryNodeResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryNodeResponse) ProtoMessage()    {}
+func (*QueryNodeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_43ea5c962c517f4f, []int{3}
+}
+func (m *QueryNodeResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryNodeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryNodeResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryNodeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryNodeResponse.Merge(m, src)
+}
+func (m *QueryNodeResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryNodeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryNodeResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryNodeResponse proto.InternalMessageInfo
+
+func (m *QueryNodeResponse) GetNode() Node {
+	if m != nil {
+		return m.Node
+	}
+	return Node{}
+}
+
+// QueryNodeByOperatorRequest is the request type for the Query/NodeByOperator RPC method.
+type QueryNodeByOperatorRequest struct {
+	Operator string `protobuf:"bytes,1,opt,name=operator,proto3" json:"operator,omitempty"`
+}
+
+func (m *QueryNodeByOperatorRequest) Reset()         { *m = QueryNodeByOperatorRequest{} }
+func (m *QueryNodeByOperatorRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryNodeByOperatorRequest) ProtoMessage()    {}
+func (*QueryNodeByOperatorRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_43ea5c962c517f4f, []int{4}
+}
+func (m *QueryNodeByOperatorRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryNodeByOperatorRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryNodeByOperatorRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryNodeByOperatorRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryNodeByOperatorRequest.Merge(m, src)
+}
+func (m *QueryNodeByOperatorRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryNodeByOperatorRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryNodeByOperatorRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryNodeByOperatorRequest proto.InternalMessageInfo
+
+func (m *QueryNodeByOperatorRequest) GetOperator() string {
+	if m != nil {
+		return m.Operator
+	}
+	return ""
+}
+
+// QueryNodeByOperatorResponse is the response type for the Query/NodeByOperator RPC method.
+type QueryNodeByOperatorResponse struct {
+	Node Node `protobuf:"bytes,1,opt,name=node,proto3" json:"node"`
+}
+
+func (m *QueryNodeByOperatorResponse) Reset()         { *m = QueryNodeByOperatorResponse{} }
+func (m *QueryNodeByOperatorResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryNodeByOperatorResponse) ProtoMessage()    {}
+func (*QueryNodeByOperatorResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_43ea5c962c517f4f, []int{5}
+}
+func (m *QueryNodeByOperatorResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryNodeByOperatorResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryNodeByOperatorResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryNodeByOperatorResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryNodeByOperatorResponse.Merge(m, src)
+}
+func (m *QueryNodeByOperatorResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryNodeByOperatorResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryNodeByOperatorResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryNodeByOperatorResponse proto.InternalMessageInfo
+
+func (m *QueryNodeByOperatorResponse) GetNode() Node {
+	if m != nil {
+		return m.Node
+	}
+	return Node{}
+}
+
+// QueryNodeByAgentAddressRequest is the request type for the Query/NodeByAgentAddress RPC method.
+type QueryNodeByAgentAddressRequest struct {
+	AgentAddress string `protobuf:"bytes,1,opt,name=agent_address,json=agentAddress,proto3" json:"agent_address,omitempty"`
+}
+
+func (m *QueryNodeByAgentAddressRequest) Reset()         { *m = QueryNodeByAgentAddressRequest{} }
+func (m *QueryNodeByAgentAddressRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryNodeByAgentAddressRequest) ProtoMessage()    {}
+func (*QueryNodeByAgentAddressRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_43ea5c962c517f4f, []int{6}
+}
+func (m *QueryNodeByAgentAddressRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryNodeByAgentAddressRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryNodeByAgentAddressRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryNodeByAgentAddressRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryNodeByAgentAddressRequest.Merge(m, src)
+}
+func (m *QueryNodeByAgentAddressRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryNodeByAgentAddressRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryNodeByAgentAddressRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryNodeByAgentAddressRequest proto.InternalMessageInfo
+
+func (m *QueryNodeByAgentAddressRequest) GetAgentAddress() string {
+	if m != nil {
+		return m.AgentAddress
+	}
+	return ""
+}
+
+// QueryNodeByAgentAddressResponse is the response type for the Query/NodeByAgentAddress RPC method.
+type QueryNodeByAgentAddressResponse struct {
+	Node Node `protobuf:"bytes,1,opt,name=node,proto3" json:"node"`
+}
+
+func (m *QueryNodeByAgentAddressResponse) Reset()         { *m = QueryNodeByAgentAddressResponse{} }
+func (m *QueryNodeByAgentAddressResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryNodeByAgentAddressResponse) ProtoMessage()    {}
+func (*QueryNodeByAgentAddressResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_43ea5c962c517f4f, []int{7}
+}
+func (m *QueryNodeByAgentAddressResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryNodeByAgentAddressResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryNodeByAgentAddressResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryNodeByAgentAddressResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryNodeByAgentAddressResponse.Merge(m, src)
+}
+func (m *QueryNodeByAgentAddressResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryNodeByAgentAddressResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryNodeByAgentAddressResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryNodeByAgentAddressResponse proto.InternalMessageInfo
+
+func (m *QueryNodeByAgentAddressResponse) GetNode() Node {
+	if m != nil {
+		return m.Node
+	}
+	return Node{}
+}
+
+// QueryNodesByTagRequest is the request type for the Query/NodesByTag RPC method.
+type QueryNodesByTagRequest struct {
+	Tag        string             `protobuf:"bytes,1,opt,name=tag,proto3" json:"tag,omitempty"`
+	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryNodesByTagRequest) Reset()         { *m = QueryNodesByTagRequest{} }
+func (m *QueryNodesByTagRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryNodesByTagRequest) ProtoMessage()    {}
+func (*QueryNodesByTagRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_43ea5c962c517f4f, []int{8}
+}
+func (m *QueryNodesByTagRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryNodesByTagRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryNodesByTagRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryNodesByTagRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryNodesByTagRequest.Merge(m, src)
+}
+func (m *QueryNodesByTagRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryNodesByTagRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryNodesByTagRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryNodesByTagRequest proto.InternalMessageInfo
+
+func (m *QueryNodesByTagRequest) GetTag() string {
+	if m != nil {
+		return m.Tag
+	}
+	return ""
+}
+
+func (m *QueryNodesByTagRequest) GetPagination() *query.PageRequest {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QueryNodesByTagResponse is the response type for the Query/NodesByTag RPC method.
+type QueryNodesByTagResponse struct {
+	Nodes      []Node              `protobuf:"bytes,1,rep,name=nodes,proto3" json:"nodes"`
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryNodesByTagResponse) Reset()         { *m = QueryNodesByTagResponse{} }
+func (m *QueryNodesByTagResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryNodesByTagResponse) ProtoMessage()    {}
+func (*QueryNodesByTagResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_43ea5c962c517f4f, []int{9}
+}
+func (m *QueryNodesByTagResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryNodesByTagResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryNodesByTagResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryNodesByTagResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryNodesByTagResponse.Merge(m, src)
+}
+func (m *QueryNodesByTagResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryNodesByTagResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryNodesByTagResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryNodesByTagResponse proto.InternalMessageInfo
+
+func (m *QueryNodesByTagResponse) GetNodes() []Node {
+	if m != nil {
+		return m.Nodes
+	}
+	return nil
+}
+
+func (m *QueryNodesByTagResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QueryAllNodesRequest is the request type for the Query/AllNodes RPC method.
+type QueryAllNodesRequest struct {
+	Pagination *query.PageRequest `protobuf:"bytes,1,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryAllNodesRequest) Reset()         { *m = QueryAllNodesRequest{} }
+func (m *QueryAllNodesRequest) String() string { return proto.CompactTextString(m) }
+func (*QueryAllNodesRequest) ProtoMessage()    {}
+func (*QueryAllNodesRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_43ea5c962c517f4f, []int{10}
+}
+func (m *QueryAllNodesRequest) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryAllNodesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryAllNodesRequest.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryAllNodesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAllNodesRequest.Merge(m, src)
+}
+func (m *QueryAllNodesRequest) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryAllNodesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAllNodesRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryAllNodesRequest proto.InternalMessageInfo
+
+func (m *QueryAllNodesRequest) GetPagination() *query.PageRequest {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
+// QueryAllNodesResponse is the response type for the Query/AllNodes RPC method.
+type QueryAllNodesResponse struct {
+	Nodes      []Node              `protobuf:"bytes,1,rep,name=nodes,proto3" json:"nodes"`
+	Pagination *query.PageResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+}
+
+func (m *QueryAllNodesResponse) Reset()         { *m = QueryAllNodesResponse{} }
+func (m *QueryAllNodesResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryAllNodesResponse) ProtoMessage()    {}
+func (*QueryAllNodesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_43ea5c962c517f4f, []int{11}
+}
+func (m *QueryAllNodesResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *QueryAllNodesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_QueryAllNodesResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *QueryAllNodesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryAllNodesResponse.Merge(m, src)
+}
+func (m *QueryAllNodesResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *QueryAllNodesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryAllNodesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_QueryAllNodesResponse proto.InternalMessageInfo
+
+func (m *QueryAllNodesResponse) GetNodes() []Node {
+	if m != nil {
+		return m.Nodes
+	}
+	return nil
+}
+
+func (m *QueryAllNodesResponse) GetPagination() *query.PageResponse {
+	if m != nil {
+		return m.Pagination
+	}
+	return nil
+}
+
 func init() {
 	proto.RegisterType((*QueryParamsRequest)(nil), "seocheon.node.v1.QueryParamsRequest")
 	proto.RegisterType((*QueryParamsResponse)(nil), "seocheon.node.v1.QueryParamsResponse")
+	proto.RegisterType((*QueryNodeRequest)(nil), "seocheon.node.v1.QueryNodeRequest")
+	proto.RegisterType((*QueryNodeResponse)(nil), "seocheon.node.v1.QueryNodeResponse")
+	proto.RegisterType((*QueryNodeByOperatorRequest)(nil), "seocheon.node.v1.QueryNodeByOperatorRequest")
+	proto.RegisterType((*QueryNodeByOperatorResponse)(nil), "seocheon.node.v1.QueryNodeByOperatorResponse")
+	proto.RegisterType((*QueryNodeByAgentAddressRequest)(nil), "seocheon.node.v1.QueryNodeByAgentAddressRequest")
+	proto.RegisterType((*QueryNodeByAgentAddressResponse)(nil), "seocheon.node.v1.QueryNodeByAgentAddressResponse")
+	proto.RegisterType((*QueryNodesByTagRequest)(nil), "seocheon.node.v1.QueryNodesByTagRequest")
+	proto.RegisterType((*QueryNodesByTagResponse)(nil), "seocheon.node.v1.QueryNodesByTagResponse")
+	proto.RegisterType((*QueryAllNodesRequest)(nil), "seocheon.node.v1.QueryAllNodesRequest")
+	proto.RegisterType((*QueryAllNodesResponse)(nil), "seocheon.node.v1.QueryAllNodesResponse")
 }
 
 func init() { proto.RegisterFile("seocheon/node/v1/query.proto", fileDescriptor_43ea5c962c517f4f) }
 
 var fileDescriptor_43ea5c962c517f4f = []byte{
-	// 303 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x50, 0x4d, 0x4a, 0x03, 0x31,
-	0x14, 0x9e, 0x08, 0x16, 0x8c, 0x1b, 0x8d, 0x15, 0xca, 0x50, 0x63, 0x29, 0x0a, 0xd2, 0xc5, 0x3c,
-	0xa6, 0x2e, 0xdd, 0xf5, 0x04, 0xda, 0xa5, 0xbb, 0xb4, 0x86, 0x71, 0xc0, 0xe6, 0xa5, 0x4d, 0x3a,
-	0xda, 0x9d, 0x78, 0x02, 0xc1, 0x4b, 0xb8, 0xf4, 0x18, 0x5d, 0x16, 0xdc, 0xb8, 0x12, 0x99, 0x11,
-	0xbc, 0x86, 0x4c, 0x32, 0x0a, 0x3a, 0x88, 0x9b, 0xf0, 0xf8, 0xfe, 0xf2, 0xbd, 0x47, 0xdb, 0x46,
-	0xe2, 0xf8, 0x52, 0xa2, 0x02, 0x85, 0x17, 0x12, 0xb2, 0x18, 0xa6, 0x73, 0x39, 0x5b, 0x44, 0x7a,
-	0x86, 0x16, 0xd9, 0xd6, 0x17, 0x1b, 0x95, 0x6c, 0x94, 0xc5, 0xe1, 0xb6, 0x98, 0xa4, 0x0a, 0xc1,
-	0xbd, 0x5e, 0x14, 0x36, 0x13, 0x4c, 0xd0, 0x8d, 0x50, 0x4e, 0x15, 0xda, 0x4e, 0x10, 0x93, 0x2b,
-	0x09, 0x42, 0xa7, 0x20, 0x94, 0x42, 0x2b, 0x6c, 0x8a, 0xca, 0x54, 0x6c, 0x6f, 0x8c, 0x66, 0x82,
-	0x06, 0x46, 0xc2, 0x48, 0xff, 0x23, 0x64, 0xf1, 0x48, 0x5a, 0x11, 0x83, 0x16, 0x49, 0xaa, 0x9c,
-	0xb8, 0xd2, 0xee, 0xd5, 0x2a, 0x6a, 0x31, 0x13, 0x93, 0x2a, 0xaa, 0xdb, 0xa4, 0xec, 0xac, 0x0c,
-	0x38, 0x75, 0xe0, 0x50, 0x4e, 0xe7, 0xd2, 0xd8, 0xee, 0x90, 0xee, 0xfc, 0x40, 0x8d, 0x46, 0x65,
-	0x24, 0x3b, 0xa1, 0x0d, 0x6f, 0x6e, 0x91, 0x0e, 0x39, 0xda, 0xec, 0xb7, 0xa2, 0xdf, 0x1b, 0x46,
-	0xde, 0x31, 0xd8, 0x58, 0xbe, 0xee, 0x07, 0x8f, 0x1f, 0x4f, 0x3d, 0x32, 0xac, 0x2c, 0xfd, 0x5b,
-	0x42, 0xd7, 0x5d, 0x28, 0xbb, 0xa6, 0x0d, 0x2f, 0x63, 0x07, 0xf5, 0x80, 0x7a, 0x9b, 0xf0, 0xf0,
-	0x1f, 0x95, 0x6f, 0xd7, 0xed, 0xdc, 0x3d, 0xbf, 0x3f, 0xac, 0x85, 0xac, 0x05, 0x7f, 0xac, 0x3c,
-	0x80, 0x65, 0xce, 0xc9, 0x2a, 0xe7, 0xe4, 0x2d, 0xe7, 0xe4, 0xbe, 0xe0, 0xc1, 0xaa, 0xe0, 0xc1,
-	0x4b, 0xc1, 0x83, 0xf3, 0xdd, 0x6f, 0xcb, 0x8d, 0x37, 0xd9, 0x85, 0x96, 0x66, 0xd4, 0x70, 0x47,
-	0x3a, 0xfe, 0x0c, 0x00, 0x00, 0xff, 0xff, 0x19, 0x63, 0x46, 0x18, 0xe8, 0x01, 0x00, 0x00,
+	// 749 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xcc, 0x95, 0xcd, 0x4e, 0x13, 0x5d,
+	0x18, 0xc7, 0x3b, 0x7c, 0xf4, 0x85, 0xe7, 0x7d, 0x5f, 0x03, 0xc7, 0x02, 0x65, 0xc0, 0x01, 0x07,
+	0xe4, 0x4b, 0x98, 0xd3, 0x56, 0x63, 0x4c, 0x8c, 0x0b, 0x9a, 0xa8, 0x71, 0x23, 0x38, 0xb8, 0x72,
+	0x61, 0x73, 0x4a, 0x4f, 0xc6, 0x26, 0x30, 0x67, 0x98, 0x19, 0xd0, 0x5a, 0xbb, 0xf1, 0x06, 0x34,
+	0xd1, 0x78, 0x07, 0x26, 0x2e, 0x4d, 0xf4, 0x22, 0x58, 0x12, 0xdd, 0xb8, 0x32, 0x06, 0x4c, 0x4c,
+	0xbc, 0x0a, 0x73, 0x3e, 0xa6, 0xb4, 0x4c, 0x3f, 0x90, 0x95, 0x1b, 0x32, 0x73, 0xce, 0xff, 0x79,
+	0xfe, 0xbf, 0x73, 0x86, 0xe7, 0x5f, 0x98, 0x0c, 0x28, 0xdb, 0x7c, 0x4c, 0x99, 0x8b, 0x5d, 0x56,
+	0xa2, 0x78, 0x2f, 0x8b, 0x77, 0x76, 0xa9, 0x5f, 0xb1, 0x3c, 0x9f, 0x85, 0x0c, 0x0d, 0x45, 0xbb,
+	0x16, 0xdf, 0xb5, 0xf6, 0xb2, 0xfa, 0x30, 0xd9, 0x2e, 0xbb, 0x0c, 0x8b, 0xbf, 0x52, 0xa4, 0x2f,
+	0x6d, 0xb2, 0x60, 0x9b, 0x05, 0xb8, 0x48, 0x02, 0x2a, 0xab, 0xf1, 0x5e, 0xb6, 0x48, 0x43, 0x92,
+	0xc5, 0x1e, 0x71, 0xca, 0x2e, 0x09, 0xcb, 0xcc, 0x55, 0xda, 0x71, 0xa9, 0x2d, 0x88, 0x37, 0x2c,
+	0x5f, 0xd4, 0x56, 0xca, 0x61, 0x0e, 0x93, 0xeb, 0xfc, 0x49, 0xad, 0x4e, 0x3a, 0x8c, 0x39, 0x5b,
+	0x14, 0x13, 0xaf, 0x8c, 0x89, 0xeb, 0xb2, 0x50, 0x74, 0x8b, 0x6a, 0x26, 0x62, 0xf4, 0x82, 0x53,
+	0x6e, 0x5e, 0x88, 0x6d, 0x7a, 0xc4, 0x27, 0xdb, 0xaa, 0xd6, 0x4c, 0x01, 0xba, 0xcf, 0x61, 0xd7,
+	0xc5, 0xa2, 0x4d, 0x77, 0x76, 0x69, 0x10, 0x9a, 0x36, 0x9c, 0x6f, 0x5a, 0x0d, 0x3c, 0xe6, 0x06,
+	0x14, 0xdd, 0x80, 0xa4, 0x2c, 0x4e, 0x6b, 0xd3, 0xda, 0xc2, 0xbf, 0xb9, 0xb4, 0x75, 0xf2, 0x66,
+	0x2c, 0x59, 0x91, 0x1f, 0xdc, 0xff, 0x36, 0x95, 0x78, 0xff, 0xf3, 0xc3, 0x92, 0x66, 0xab, 0x12,
+	0xf3, 0x32, 0x0c, 0x89, 0x9e, 0xf7, 0x58, 0x89, 0x2a, 0x1f, 0x34, 0x06, 0xff, 0xf0, 0xc2, 0x42,
+	0xb9, 0x24, 0x3a, 0x0e, 0xda, 0x49, 0xfe, 0x7a, 0xb7, 0x64, 0xde, 0x82, 0xe1, 0x06, 0xb1, 0xb2,
+	0xcf, 0x40, 0x1f, 0xdf, 0x56, 0xe6, 0xa3, 0x71, 0x73, 0xae, 0xce, 0xf7, 0x71, 0x6b, 0x5b, 0x28,
+	0x4d, 0x1b, 0xf4, 0x7a, 0x9b, 0x7c, 0x65, 0xcd, 0xa3, 0x3e, 0x09, 0x99, 0x1f, 0xb9, 0x5f, 0x85,
+	0x01, 0xa6, 0x96, 0xa4, 0x7d, 0x3e, 0xfd, 0xf9, 0xd3, 0x4a, 0x4a, 0x7d, 0x8f, 0xd5, 0x52, 0xc9,
+	0xa7, 0x41, 0xb0, 0x11, 0xfa, 0x65, 0xd7, 0xb1, 0xeb, 0x4a, 0x73, 0x0d, 0x26, 0x5a, 0xf6, 0x3c,
+	0x33, 0x64, 0x01, 0x8c, 0x86, 0x86, 0xab, 0x0e, 0x75, 0x43, 0xe5, 0x1d, 0x81, 0xde, 0x84, 0xff,
+	0x09, 0x5f, 0x2e, 0x10, 0xb9, 0xde, 0x95, 0xf6, 0x3f, 0xd2, 0xd0, 0xc5, 0xdc, 0x80, 0xa9, 0xb6,
+	0x06, 0x67, 0xa6, 0xf6, 0x61, 0xb4, 0xde, 0x34, 0xc8, 0x57, 0x1e, 0x10, 0x27, 0xa2, 0x1d, 0x82,
+	0xde, 0x90, 0x38, 0xea, 0x83, 0xf2, 0x47, 0x74, 0x1b, 0xe0, 0x78, 0x06, 0xd2, 0x3d, 0xc2, 0x63,
+	0xce, 0x52, 0xe4, 0x7c, 0x60, 0x2c, 0x39, 0x6e, 0x6a, 0x60, 0xac, 0x75, 0xe2, 0x44, 0xff, 0x22,
+	0x76, 0x43, 0xa5, 0xf9, 0x56, 0x83, 0xb1, 0x98, 0xa9, 0x3a, 0x41, 0x0e, 0xfa, 0x39, 0x17, 0xbf,
+	0x9b, 0xde, 0xae, 0x47, 0x90, 0x52, 0x74, 0xa7, 0x05, 0xd7, 0x7c, 0x57, 0x2e, 0x69, 0xd8, 0x04,
+	0xf6, 0x08, 0x52, 0x82, 0x6b, 0x75, 0x6b, 0x4b, 0xa0, 0x45, 0x57, 0xd1, 0x7c, 0x70, 0xed, 0xcc,
+	0x07, 0x7f, 0xa3, 0xc1, 0xc8, 0x09, 0x83, 0xbf, 0xe0, 0xd8, 0xb9, 0x5f, 0x49, 0xe8, 0x17, 0x58,
+	0xe8, 0x09, 0x24, 0xe5, 0xe4, 0xa3, 0xd9, 0x38, 0x41, 0x3c, 0x60, 0xf4, 0x4b, 0x5d, 0x54, 0xd2,
+	0xcc, 0x9c, 0x7e, 0xf1, 0xe5, 0xc7, 0xeb, 0x1e, 0x1d, 0xa5, 0x71, 0x9b, 0x14, 0x43, 0xcf, 0xa0,
+	0x8f, 0x1f, 0x10, 0x99, 0x6d, 0x1a, 0x36, 0xa4, 0x8d, 0x3e, 0xd3, 0x51, 0xa3, 0x2c, 0x17, 0x85,
+	0xe5, 0x0c, 0xba, 0x88, 0x5b, 0xa6, 0x6a, 0x80, 0xab, 0x2a, 0xb1, 0x6a, 0xe8, 0x9d, 0x06, 0xe7,
+	0x9a, 0x53, 0x00, 0x2d, 0x77, 0xb0, 0x88, 0x05, 0x90, 0xbe, 0x72, 0x4a, 0xb5, 0x42, 0xbb, 0x26,
+	0xd0, 0x32, 0xc8, 0x6a, 0x87, 0x56, 0xac, 0xac, 0x44, 0x31, 0x85, 0xab, 0xd1, 0x53, 0x0d, 0x7d,
+	0xd4, 0x00, 0xc5, 0x67, 0x1f, 0x65, 0x3a, 0xba, 0xb7, 0xc8, 0x21, 0x3d, 0xfb, 0x07, 0x15, 0x8a,
+	0xf9, 0xba, 0x60, 0xce, 0xa1, 0x4c, 0x07, 0x66, 0x11, 0x56, 0xb8, 0xda, 0x14, 0x71, 0x35, 0xf4,
+	0x52, 0x03, 0x38, 0x9e, 0x73, 0xb4, 0xd0, 0xc1, 0xbb, 0x29, 0x7f, 0xf4, 0xc5, 0x53, 0x28, 0x15,
+	0xdd, 0xb2, 0xa0, 0x9b, 0x43, 0xb3, 0x1d, 0xe8, 0x42, 0xe2, 0xe0, 0x6a, 0x48, 0x9c, 0x1a, 0x7a,
+	0x0e, 0x03, 0xd1, 0xfc, 0xa1, 0xb9, 0x36, 0x26, 0x27, 0x12, 0x40, 0x9f, 0xef, 0xaa, 0x53, 0x28,
+	0x53, 0x02, 0x65, 0x1c, 0x8d, 0xb5, 0x41, 0xc9, 0xe3, 0xfd, 0x43, 0x43, 0x3b, 0x38, 0x34, 0xb4,
+	0xef, 0x87, 0x86, 0xf6, 0xea, 0xc8, 0x48, 0x1c, 0x1c, 0x19, 0x89, 0xaf, 0x47, 0x46, 0xe2, 0xe1,
+	0x48, 0xbd, 0xe2, 0xa9, 0xac, 0x09, 0x2b, 0x1e, 0x0d, 0x8a, 0x49, 0xf1, 0x0b, 0x7f, 0xe5, 0x77,
+	0x00, 0x00, 0x00, 0xff, 0xff, 0xda, 0x54, 0x89, 0x0b, 0xdd, 0x08, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -157,8 +668,18 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// Parameters queries the parameters of the module.
+	// Params queries the module parameters.
 	Params(ctx context.Context, in *QueryParamsRequest, opts ...grpc.CallOption) (*QueryParamsResponse, error)
+	// Node queries a node by its ID.
+	Node(ctx context.Context, in *QueryNodeRequest, opts ...grpc.CallOption) (*QueryNodeResponse, error)
+	// NodeByOperator queries a node by operator address.
+	NodeByOperator(ctx context.Context, in *QueryNodeByOperatorRequest, opts ...grpc.CallOption) (*QueryNodeByOperatorResponse, error)
+	// NodeByAgentAddress queries a node by agent address.
+	NodeByAgentAddress(ctx context.Context, in *QueryNodeByAgentAddressRequest, opts ...grpc.CallOption) (*QueryNodeByAgentAddressResponse, error)
+	// NodesByTag queries nodes by tag with pagination.
+	NodesByTag(ctx context.Context, in *QueryNodesByTagRequest, opts ...grpc.CallOption) (*QueryNodesByTagResponse, error)
+	// AllNodes queries all nodes with pagination.
+	AllNodes(ctx context.Context, in *QueryAllNodesRequest, opts ...grpc.CallOption) (*QueryAllNodesResponse, error)
 }
 
 type queryClient struct {
@@ -178,10 +699,65 @@ func (c *queryClient) Params(ctx context.Context, in *QueryParamsRequest, opts .
 	return out, nil
 }
 
+func (c *queryClient) Node(ctx context.Context, in *QueryNodeRequest, opts ...grpc.CallOption) (*QueryNodeResponse, error) {
+	out := new(QueryNodeResponse)
+	err := c.cc.Invoke(ctx, "/seocheon.node.v1.Query/Node", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) NodeByOperator(ctx context.Context, in *QueryNodeByOperatorRequest, opts ...grpc.CallOption) (*QueryNodeByOperatorResponse, error) {
+	out := new(QueryNodeByOperatorResponse)
+	err := c.cc.Invoke(ctx, "/seocheon.node.v1.Query/NodeByOperator", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) NodeByAgentAddress(ctx context.Context, in *QueryNodeByAgentAddressRequest, opts ...grpc.CallOption) (*QueryNodeByAgentAddressResponse, error) {
+	out := new(QueryNodeByAgentAddressResponse)
+	err := c.cc.Invoke(ctx, "/seocheon.node.v1.Query/NodeByAgentAddress", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) NodesByTag(ctx context.Context, in *QueryNodesByTagRequest, opts ...grpc.CallOption) (*QueryNodesByTagResponse, error) {
+	out := new(QueryNodesByTagResponse)
+	err := c.cc.Invoke(ctx, "/seocheon.node.v1.Query/NodesByTag", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *queryClient) AllNodes(ctx context.Context, in *QueryAllNodesRequest, opts ...grpc.CallOption) (*QueryAllNodesResponse, error) {
+	out := new(QueryAllNodesResponse)
+	err := c.cc.Invoke(ctx, "/seocheon.node.v1.Query/AllNodes", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// Parameters queries the parameters of the module.
+	// Params queries the module parameters.
 	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
+	// Node queries a node by its ID.
+	Node(context.Context, *QueryNodeRequest) (*QueryNodeResponse, error)
+	// NodeByOperator queries a node by operator address.
+	NodeByOperator(context.Context, *QueryNodeByOperatorRequest) (*QueryNodeByOperatorResponse, error)
+	// NodeByAgentAddress queries a node by agent address.
+	NodeByAgentAddress(context.Context, *QueryNodeByAgentAddressRequest) (*QueryNodeByAgentAddressResponse, error)
+	// NodesByTag queries nodes by tag with pagination.
+	NodesByTag(context.Context, *QueryNodesByTagRequest) (*QueryNodesByTagResponse, error)
+	// AllNodes queries all nodes with pagination.
+	AllNodes(context.Context, *QueryAllNodesRequest) (*QueryAllNodesResponse, error)
 }
 
 // UnimplementedQueryServer can be embedded to have forward compatible implementations.
@@ -190,6 +766,21 @@ type UnimplementedQueryServer struct {
 
 func (*UnimplementedQueryServer) Params(ctx context.Context, req *QueryParamsRequest) (*QueryParamsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Params not implemented")
+}
+func (*UnimplementedQueryServer) Node(ctx context.Context, req *QueryNodeRequest) (*QueryNodeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Node not implemented")
+}
+func (*UnimplementedQueryServer) NodeByOperator(ctx context.Context, req *QueryNodeByOperatorRequest) (*QueryNodeByOperatorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NodeByOperator not implemented")
+}
+func (*UnimplementedQueryServer) NodeByAgentAddress(ctx context.Context, req *QueryNodeByAgentAddressRequest) (*QueryNodeByAgentAddressResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NodeByAgentAddress not implemented")
+}
+func (*UnimplementedQueryServer) NodesByTag(ctx context.Context, req *QueryNodesByTagRequest) (*QueryNodesByTagResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method NodesByTag not implemented")
+}
+func (*UnimplementedQueryServer) AllNodes(ctx context.Context, req *QueryAllNodesRequest) (*QueryAllNodesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AllNodes not implemented")
 }
 
 func RegisterQueryServer(s grpc1.Server, srv QueryServer) {
@@ -214,6 +805,96 @@ func _Query_Params_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Query_Node_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryNodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).Node(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seocheon.node.v1.Query/Node",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).Node(ctx, req.(*QueryNodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_NodeByOperator_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryNodeByOperatorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).NodeByOperator(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seocheon.node.v1.Query/NodeByOperator",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).NodeByOperator(ctx, req.(*QueryNodeByOperatorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_NodeByAgentAddress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryNodeByAgentAddressRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).NodeByAgentAddress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seocheon.node.v1.Query/NodeByAgentAddress",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).NodeByAgentAddress(ctx, req.(*QueryNodeByAgentAddressRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_NodesByTag_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryNodesByTagRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).NodesByTag(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seocheon.node.v1.Query/NodesByTag",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).NodesByTag(ctx, req.(*QueryNodesByTagRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Query_AllNodes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(QueryAllNodesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(QueryServer).AllNodes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/seocheon.node.v1.Query/AllNodes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(QueryServer).AllNodes(ctx, req.(*QueryAllNodesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var Query_serviceDesc = _Query_serviceDesc
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "seocheon.node.v1.Query",
@@ -222,6 +903,26 @@ var _Query_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Params",
 			Handler:    _Query_Params_Handler,
+		},
+		{
+			MethodName: "Node",
+			Handler:    _Query_Node_Handler,
+		},
+		{
+			MethodName: "NodeByOperator",
+			Handler:    _Query_NodeByOperator_Handler,
+		},
+		{
+			MethodName: "NodeByAgentAddress",
+			Handler:    _Query_NodeByAgentAddress_Handler,
+		},
+		{
+			MethodName: "NodesByTag",
+			Handler:    _Query_NodesByTag_Handler,
+		},
+		{
+			MethodName: "AllNodes",
+			Handler:    _Query_AllNodes_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -284,6 +985,370 @@ func (m *QueryParamsResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	return len(dAtA) - i, nil
 }
 
+func (m *QueryNodeRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryNodeRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryNodeRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.NodeId) > 0 {
+		i -= len(m.NodeId)
+		copy(dAtA[i:], m.NodeId)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.NodeId)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryNodeResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryNodeResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryNodeResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Node.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryNodeByOperatorRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryNodeByOperatorRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryNodeByOperatorRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.Operator) > 0 {
+		i -= len(m.Operator)
+		copy(dAtA[i:], m.Operator)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Operator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryNodeByOperatorResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryNodeByOperatorResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryNodeByOperatorResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Node.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryNodeByAgentAddressRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryNodeByAgentAddressRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryNodeByAgentAddressRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if len(m.AgentAddress) > 0 {
+		i -= len(m.AgentAddress)
+		copy(dAtA[i:], m.AgentAddress)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.AgentAddress)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryNodeByAgentAddressResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryNodeByAgentAddressResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryNodeByAgentAddressResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	{
+		size, err := m.Node.MarshalToSizedBuffer(dAtA[:i])
+		if err != nil {
+			return 0, err
+		}
+		i -= size
+		i = encodeVarintQuery(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0xa
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryNodesByTagRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryNodesByTagRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryNodesByTagRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Tag) > 0 {
+		i -= len(m.Tag)
+		copy(dAtA[i:], m.Tag)
+		i = encodeVarintQuery(dAtA, i, uint64(len(m.Tag)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryNodesByTagResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryNodesByTagResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryNodesByTagResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Nodes) > 0 {
+		for iNdEx := len(m.Nodes) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Nodes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryAllNodesRequest) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryAllNodesRequest) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryAllNodesRequest) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *QueryAllNodesResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *QueryAllNodesResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *QueryAllNodesResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		{
+			size, err := m.Pagination.MarshalToSizedBuffer(dAtA[:i])
+			if err != nil {
+				return 0, err
+			}
+			i -= size
+			i = encodeVarintQuery(dAtA, i, uint64(size))
+		}
+		i--
+		dAtA[i] = 0x12
+	}
+	if len(m.Nodes) > 0 {
+		for iNdEx := len(m.Nodes) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.Nodes[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintQuery(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0xa
+		}
+	}
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintQuery(dAtA []byte, offset int, v uint64) int {
 	offset -= sovQuery(v)
 	base := offset
@@ -312,6 +1377,146 @@ func (m *QueryParamsResponse) Size() (n int) {
 	_ = l
 	l = m.Params.Size()
 	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryNodeRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.NodeId)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryNodeResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Node.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryNodeByOperatorRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Operator)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryNodeByOperatorResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Node.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryNodeByAgentAddressRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.AgentAddress)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryNodeByAgentAddressResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = m.Node.Size()
+	n += 1 + l + sovQuery(uint64(l))
+	return n
+}
+
+func (m *QueryNodesByTagRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Tag)
+	if l > 0 {
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryNodesByTagResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Nodes) > 0 {
+		for _, e := range m.Nodes {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryAllNodesRequest) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
+	return n
+}
+
+func (m *QueryAllNodesResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	if len(m.Nodes) > 0 {
+		for _, e := range m.Nodes {
+			l = e.Size()
+			n += 1 + l + sovQuery(uint64(l))
+		}
+	}
+	if m.Pagination != nil {
+		l = m.Pagination.Size()
+		n += 1 + l + sovQuery(uint64(l))
+	}
 	return n
 }
 
@@ -430,6 +1635,945 @@ func (m *QueryParamsResponse) Unmarshal(dAtA []byte) error {
 				return io.ErrUnexpectedEOF
 			}
 			if err := m.Params.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryNodeRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryNodeRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryNodeRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field NodeId", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.NodeId = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryNodeResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryNodeResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryNodeResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Node", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Node.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryNodeByOperatorRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryNodeByOperatorRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryNodeByOperatorRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Operator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Operator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryNodeByOperatorResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryNodeByOperatorResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryNodeByOperatorResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Node", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Node.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryNodeByAgentAddressRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryNodeByAgentAddressRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryNodeByAgentAddressRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AgentAddress", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AgentAddress = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryNodeByAgentAddressResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryNodeByAgentAddressResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryNodeByAgentAddressResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Node", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.Node.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryNodesByTagRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryNodesByTagRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryNodesByTagRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Tag", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Tag = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageRequest{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryNodesByTagResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryNodesByTagResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryNodesByTagResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Nodes", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Nodes = append(m.Nodes, Node{})
+			if err := m.Nodes[len(m.Nodes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryAllNodesRequest) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryAllNodesRequest: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryAllNodesRequest: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageRequest{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		default:
+			iNdEx = preIndex
+			skippy, err := skipQuery(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *QueryAllNodesResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowQuery
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: QueryAllNodesResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: QueryAllNodesResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Nodes", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Nodes = append(m.Nodes, Node{})
+			if err := m.Nodes[len(m.Nodes)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 2:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Pagination", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowQuery
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthQuery
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthQuery
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if m.Pagination == nil {
+				m.Pagination = &query.PageResponse{}
+			}
+			if err := m.Pagination.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
 				return err
 			}
 			iNdEx = postIndex

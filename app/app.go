@@ -218,6 +218,13 @@ func New(
 		return app.App.InitChainer(ctx, req)
 	})
 
+	// Set custom ante handler with Seocheon-specific decorators.
+	anteHandler, err := newAnteHandler(app)
+	if err != nil {
+		panic(err)
+	}
+	app.SetAnteHandler(anteHandler)
+
 	if err := app.Load(loadLatest); err != nil {
 		panic(err)
 	}

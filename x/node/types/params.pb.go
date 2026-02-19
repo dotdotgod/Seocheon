@@ -4,14 +4,14 @@
 package types
 
 import (
+	cosmossdk_io_math "cosmossdk.io/math"
 	fmt "fmt"
-	io "io"
-	math "math"
-	math_bits "math/bits"
-
 	_ "github.com/cosmos/cosmos-sdk/types/tx/amino"
 	_ "github.com/cosmos/gogoproto/gogoproto"
 	proto "github.com/cosmos/gogoproto/proto"
+	io "io"
+	math "math"
+	math_bits "math/bits"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -25,8 +25,22 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// Params defines the parameters for the module.
+// Params defines the parameters for the x/node module.
 type Params struct {
+	// max_registrations_per_block is the maximum number of node registrations per block.
+	MaxRegistrationsPerBlock uint64 `protobuf:"varint,1,opt,name=max_registrations_per_block,json=maxRegistrationsPerBlock,proto3" json:"max_registrations_per_block,omitempty"`
+	// registration_cooldown_blocks is the cooldown period (in blocks) before same operator can re-register.
+	RegistrationCooldownBlocks uint64 `protobuf:"varint,2,opt,name=registration_cooldown_blocks,json=registrationCooldownBlocks,proto3" json:"registration_cooldown_blocks,omitempty"`
+	// registration_deposit is the optional deposit required for registration (in usum). Initially 0.
+	RegistrationDeposit cosmossdk_io_math.Int `protobuf:"bytes,3,opt,name=registration_deposit,json=registrationDeposit,proto3,customtype=cosmossdk.io/math.Int" json:"registration_deposit"`
+	// agent_allowed_msg_types is the whitelist of message types that agent_address can execute.
+	AgentAllowedMsgTypes []string `protobuf:"bytes,4,rep,name=agent_allowed_msg_types,json=agentAllowedMsgTypes,proto3" json:"agent_allowed_msg_types,omitempty"`
+	// agent_address_change_cooldown is the cooldown period (in blocks) between agent address changes.
+	AgentAddressChangeCooldown uint64 `protobuf:"varint,5,opt,name=agent_address_change_cooldown,json=agentAddressChangeCooldown,proto3" json:"agent_address_change_cooldown,omitempty"`
+	// max_tags is the maximum number of tags per node.
+	MaxTags uint32 `protobuf:"varint,6,opt,name=max_tags,json=maxTags,proto3" json:"max_tags,omitempty"`
+	// max_tag_length is the maximum character length of each tag.
+	MaxTagLength uint32 `protobuf:"varint,7,opt,name=max_tag_length,json=maxTagLength,proto3" json:"max_tag_length,omitempty"`
 }
 
 func (m *Params) Reset()         { *m = Params{} }
@@ -62,6 +76,48 @@ func (m *Params) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Params proto.InternalMessageInfo
 
+func (m *Params) GetMaxRegistrationsPerBlock() uint64 {
+	if m != nil {
+		return m.MaxRegistrationsPerBlock
+	}
+	return 0
+}
+
+func (m *Params) GetRegistrationCooldownBlocks() uint64 {
+	if m != nil {
+		return m.RegistrationCooldownBlocks
+	}
+	return 0
+}
+
+func (m *Params) GetAgentAllowedMsgTypes() []string {
+	if m != nil {
+		return m.AgentAllowedMsgTypes
+	}
+	return nil
+}
+
+func (m *Params) GetAgentAddressChangeCooldown() uint64 {
+	if m != nil {
+		return m.AgentAddressChangeCooldown
+	}
+	return 0
+}
+
+func (m *Params) GetMaxTags() uint32 {
+	if m != nil {
+		return m.MaxTags
+	}
+	return 0
+}
+
+func (m *Params) GetMaxTagLength() uint32 {
+	if m != nil {
+		return m.MaxTagLength
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*Params)(nil), "seocheon.node.v1.Params")
 }
@@ -69,17 +125,33 @@ func init() {
 func init() { proto.RegisterFile("seocheon/node/v1/params.proto", fileDescriptor_866ab82813f4e28b) }
 
 var fileDescriptor_866ab82813f4e28b = []byte{
-	// 156 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x2d, 0x4e, 0xcd, 0x4f,
-	0xce, 0x48, 0xcd, 0xcf, 0xd3, 0xcf, 0xcb, 0x4f, 0x49, 0xd5, 0x2f, 0x33, 0xd4, 0x2f, 0x48, 0x2c,
-	0x4a, 0xcc, 0x2d, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x12, 0x80, 0x49, 0xeb, 0x81, 0xa4,
-	0xf5, 0xca, 0x0c, 0xa5, 0x04, 0x13, 0x73, 0x33, 0xf3, 0xf2, 0xf5, 0xc1, 0x24, 0x44, 0x91, 0x94,
-	0x48, 0x7a, 0x7e, 0x7a, 0x3e, 0x98, 0xa9, 0x0f, 0x62, 0x41, 0x44, 0x95, 0x34, 0xb9, 0xd8, 0x02,
-	0xc0, 0x46, 0x59, 0xc9, 0xbf, 0x58, 0x20, 0xcf, 0xd8, 0xf5, 0x7c, 0x83, 0x96, 0x18, 0xdc, 0xb2,
-	0x0a, 0x88, 0x75, 0x10, 0x05, 0x4e, 0xfa, 0x27, 0x1e, 0xc9, 0x31, 0x5e, 0x78, 0x24, 0xc7, 0xf8,
-	0xe0, 0x91, 0x1c, 0xe3, 0x84, 0xc7, 0x72, 0x0c, 0x17, 0x1e, 0xcb, 0x31, 0xdc, 0x78, 0x2c, 0xc7,
-	0x10, 0x25, 0x8a, 0xae, 0xa3, 0xa4, 0xb2, 0x20, 0xb5, 0x38, 0x89, 0x0d, 0x6c, 0x85, 0x31, 0x20,
-	0x00, 0x00, 0xff, 0xff, 0x1d, 0x2b, 0x94, 0x69, 0xbe, 0x00, 0x00, 0x00,
+	// 412 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x5c, 0x91, 0xc1, 0x6a, 0x13, 0x41,
+	0x18, 0xc7, 0x33, 0xa6, 0xa6, 0x76, 0x50, 0xd1, 0x31, 0xd5, 0x31, 0x9a, 0x4d, 0x10, 0x0f, 0xc1,
+	0xc3, 0x2e, 0x45, 0xbc, 0x08, 0x82, 0x4d, 0xbd, 0x08, 0x0a, 0x61, 0xe9, 0xc9, 0xcb, 0x30, 0xdd,
+	0x1d, 0x26, 0x4b, 0x77, 0xe6, 0x5b, 0xf6, 0x1b, 0xda, 0xf5, 0x15, 0x3c, 0xf9, 0x08, 0x3e, 0x82,
+	0x37, 0x5f, 0xa1, 0xc7, 0x1e, 0xc5, 0x43, 0x91, 0xe4, 0xa0, 0x8f, 0x21, 0x3b, 0x93, 0x96, 0xb5,
+	0x97, 0x65, 0xf8, 0xfe, 0xbf, 0xdf, 0x07, 0xdf, 0xfe, 0xe9, 0x18, 0x15, 0x64, 0x4b, 0x05, 0x36,
+	0xb1, 0x90, 0xab, 0xe4, 0x64, 0x2f, 0xa9, 0x64, 0x2d, 0x0d, 0xc6, 0x55, 0x0d, 0x0e, 0xd8, 0xbd,
+	0xcb, 0x38, 0x6e, 0xe3, 0xf8, 0x64, 0x6f, 0x74, 0x5f, 0x9a, 0xc2, 0x42, 0xe2, 0xbf, 0x01, 0x1a,
+	0x0d, 0x35, 0x68, 0xf0, 0xcf, 0xa4, 0x7d, 0x85, 0xe9, 0xb3, 0x1f, 0x7d, 0x3a, 0x58, 0xf8, 0x5d,
+	0xec, 0x0d, 0x7d, 0x62, 0x64, 0x23, 0x6a, 0xa5, 0x0b, 0x74, 0xb5, 0x74, 0x05, 0x58, 0x14, 0x95,
+	0xaa, 0xc5, 0x51, 0x09, 0xd9, 0x31, 0x27, 0x53, 0x32, 0xdb, 0x4a, 0xb9, 0x91, 0x4d, 0xda, 0x25,
+	0x16, 0xaa, 0x9e, 0xb7, 0x39, 0x7b, 0x4b, 0x9f, 0x76, 0x55, 0x91, 0x01, 0x94, 0x39, 0x9c, 0xda,
+	0xa0, 0x23, 0xbf, 0xe1, 0xfd, 0x51, 0x97, 0x39, 0xd8, 0x20, 0x7e, 0x01, 0xb2, 0x05, 0x1d, 0xfe,
+	0xb7, 0x21, 0x57, 0x15, 0x60, 0xe1, 0x78, 0x7f, 0x4a, 0x66, 0x3b, 0xf3, 0xf1, 0xd9, 0xc5, 0xa4,
+	0xf7, 0xeb, 0x62, 0xb2, 0x9b, 0x01, 0x1a, 0x40, 0xcc, 0x8f, 0xe3, 0x02, 0x12, 0x23, 0xdd, 0x32,
+	0x7e, 0x6f, 0x5d, 0xfa, 0xa0, 0xab, 0xbe, 0x0b, 0x26, 0x7b, 0x45, 0x1f, 0x49, 0xad, 0xac, 0x13,
+	0xb2, 0x2c, 0xe1, 0x54, 0xe5, 0xc2, 0xa0, 0x16, 0xee, 0x73, 0xa5, 0x90, 0x6f, 0x4d, 0xfb, 0xb3,
+	0x9d, 0x74, 0xe8, 0xe3, 0xfd, 0x90, 0x7e, 0x44, 0x7d, 0xd8, 0x66, 0x6c, 0x9f, 0x8e, 0x37, 0x5a,
+	0x9e, 0xd7, 0x0a, 0x51, 0x64, 0x4b, 0x69, 0xb5, 0xba, 0x3a, 0x89, 0xdf, 0x0c, 0xb7, 0x04, 0x39,
+	0x30, 0x07, 0x1e, 0xb9, 0xbc, 0x88, 0x3d, 0xa6, 0xb7, 0xda, 0x9f, 0xe9, 0xa4, 0x46, 0x3e, 0x98,
+	0x92, 0xd9, 0x9d, 0x74, 0xdb, 0xc8, 0xe6, 0x50, 0x6a, 0x64, 0xcf, 0xe9, 0xdd, 0x4d, 0x24, 0x4a,
+	0x65, 0xb5, 0x5b, 0xf2, 0x6d, 0x0f, 0xdc, 0x0e, 0xc0, 0x07, 0x3f, 0x7b, 0x3d, 0xf9, 0xfb, 0x6d,
+	0x42, 0xbe, 0xfc, 0xf9, 0xfe, 0xe2, 0xe1, 0x55, 0xf7, 0x4d, 0x68, 0x3f, 0xd4, 0x35, 0x4f, 0xce,
+	0x56, 0x11, 0x39, 0x5f, 0x45, 0xe4, 0xf7, 0x2a, 0x22, 0x5f, 0xd7, 0x51, 0xef, 0x7c, 0x1d, 0xf5,
+	0x7e, 0xae, 0xa3, 0xde, 0xa7, 0xdd, 0xeb, 0x86, 0xbf, 0xf8, 0x68, 0xe0, 0x1b, 0x7f, 0xf9, 0x2f,
+	0x00, 0x00, 0xff, 0xff, 0xbb, 0x02, 0x8c, 0x11, 0x4d, 0x02, 0x00, 0x00,
 }
 
 func (this *Params) Equal(that interface{}) bool {
@@ -99,6 +171,32 @@ func (this *Params) Equal(that interface{}) bool {
 	if that1 == nil {
 		return this == nil
 	} else if this == nil {
+		return false
+	}
+	if this.MaxRegistrationsPerBlock != that1.MaxRegistrationsPerBlock {
+		return false
+	}
+	if this.RegistrationCooldownBlocks != that1.RegistrationCooldownBlocks {
+		return false
+	}
+	if !this.RegistrationDeposit.Equal(that1.RegistrationDeposit) {
+		return false
+	}
+	if len(this.AgentAllowedMsgTypes) != len(that1.AgentAllowedMsgTypes) {
+		return false
+	}
+	for i := range this.AgentAllowedMsgTypes {
+		if this.AgentAllowedMsgTypes[i] != that1.AgentAllowedMsgTypes[i] {
+			return false
+		}
+	}
+	if this.AgentAddressChangeCooldown != that1.AgentAddressChangeCooldown {
+		return false
+	}
+	if this.MaxTags != that1.MaxTags {
+		return false
+	}
+	if this.MaxTagLength != that1.MaxTagLength {
 		return false
 	}
 	return true
@@ -123,6 +221,50 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.MaxTagLength != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.MaxTagLength))
+		i--
+		dAtA[i] = 0x38
+	}
+	if m.MaxTags != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.MaxTags))
+		i--
+		dAtA[i] = 0x30
+	}
+	if m.AgentAddressChangeCooldown != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.AgentAddressChangeCooldown))
+		i--
+		dAtA[i] = 0x28
+	}
+	if len(m.AgentAllowedMsgTypes) > 0 {
+		for iNdEx := len(m.AgentAllowedMsgTypes) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.AgentAllowedMsgTypes[iNdEx])
+			copy(dAtA[i:], m.AgentAllowedMsgTypes[iNdEx])
+			i = encodeVarintParams(dAtA, i, uint64(len(m.AgentAllowedMsgTypes[iNdEx])))
+			i--
+			dAtA[i] = 0x22
+		}
+	}
+	{
+		size := m.RegistrationDeposit.Size()
+		i -= size
+		if _, err := m.RegistrationDeposit.MarshalTo(dAtA[i:]); err != nil {
+			return 0, err
+		}
+		i = encodeVarintParams(dAtA, i, uint64(size))
+	}
+	i--
+	dAtA[i] = 0x1a
+	if m.RegistrationCooldownBlocks != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.RegistrationCooldownBlocks))
+		i--
+		dAtA[i] = 0x10
+	}
+	if m.MaxRegistrationsPerBlock != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.MaxRegistrationsPerBlock))
+		i--
+		dAtA[i] = 0x8
+	}
 	return len(dAtA) - i, nil
 }
 
@@ -143,6 +285,29 @@ func (m *Params) Size() (n int) {
 	}
 	var l int
 	_ = l
+	if m.MaxRegistrationsPerBlock != 0 {
+		n += 1 + sovParams(uint64(m.MaxRegistrationsPerBlock))
+	}
+	if m.RegistrationCooldownBlocks != 0 {
+		n += 1 + sovParams(uint64(m.RegistrationCooldownBlocks))
+	}
+	l = m.RegistrationDeposit.Size()
+	n += 1 + l + sovParams(uint64(l))
+	if len(m.AgentAllowedMsgTypes) > 0 {
+		for _, s := range m.AgentAllowedMsgTypes {
+			l = len(s)
+			n += 1 + l + sovParams(uint64(l))
+		}
+	}
+	if m.AgentAddressChangeCooldown != 0 {
+		n += 1 + sovParams(uint64(m.AgentAddressChangeCooldown))
+	}
+	if m.MaxTags != 0 {
+		n += 1 + sovParams(uint64(m.MaxTags))
+	}
+	if m.MaxTagLength != 0 {
+		n += 1 + sovParams(uint64(m.MaxTagLength))
+	}
 	return n
 }
 
@@ -181,6 +346,167 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 			return fmt.Errorf("proto: Params: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
+		case 1:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxRegistrationsPerBlock", wireType)
+			}
+			m.MaxRegistrationsPerBlock = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MaxRegistrationsPerBlock |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RegistrationCooldownBlocks", wireType)
+			}
+			m.RegistrationCooldownBlocks = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.RegistrationCooldownBlocks |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field RegistrationDeposit", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			if err := m.RegistrationDeposit.Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AgentAllowedMsgTypes", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AgentAllowedMsgTypes = append(m.AgentAllowedMsgTypes, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
+		case 5:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AgentAddressChangeCooldown", wireType)
+			}
+			m.AgentAddressChangeCooldown = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.AgentAddressChangeCooldown |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxTags", wireType)
+			}
+			m.MaxTags = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MaxTags |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxTagLength", wireType)
+			}
+			m.MaxTagLength = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MaxTagLength |= uint32(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipParams(dAtA[iNdEx:])

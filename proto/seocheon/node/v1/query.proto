@@ -3,28 +3,107 @@ package seocheon.node.v1;
 
 import "amino/amino.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
+import "seocheon/node/v1/node.proto";
 import "seocheon/node/v1/params.proto";
 
 option go_package = "seocheon/x/node/types";
 
-// Query defines the gRPC querier service.
+// Query defines the gRPC querier service for the x/node module.
 service Query {
-  // Parameters queries the parameters of the module.
+  // Params queries the module parameters.
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/seocheon/node/v1/params";
   }
+
+  // Node queries a node by its ID.
+  rpc Node(QueryNodeRequest) returns (QueryNodeResponse) {
+    option (google.api.http).get = "/seocheon/node/v1/nodes/{node_id}";
+  }
+
+  // NodeByOperator queries a node by operator address.
+  rpc NodeByOperator(QueryNodeByOperatorRequest) returns (QueryNodeByOperatorResponse) {
+    option (google.api.http).get = "/seocheon/node/v1/nodes/by-operator/{operator}";
+  }
+
+  // NodeByAgentAddress queries a node by agent address.
+  rpc NodeByAgentAddress(QueryNodeByAgentAddressRequest) returns (QueryNodeByAgentAddressResponse) {
+    option (google.api.http).get = "/seocheon/node/v1/nodes/by-agent/{agent_address}";
+  }
+
+  // NodesByTag queries nodes by tag with pagination.
+  rpc NodesByTag(QueryNodesByTagRequest) returns (QueryNodesByTagResponse) {
+    option (google.api.http).get = "/seocheon/node/v1/nodes/by-tag/{tag}";
+  }
+
+  // AllNodes queries all nodes with pagination.
+  rpc AllNodes(QueryAllNodesRequest) returns (QueryAllNodesResponse) {
+    option (google.api.http).get = "/seocheon/node/v1/nodes";
+  }
 }
 
-// QueryParamsRequest is request type for the Query/Params RPC method.
+// QueryParamsRequest is the request type for the Query/Params RPC method.
 message QueryParamsRequest {}
 
-// QueryParamsResponse is response type for the Query/Params RPC method.
+// QueryParamsResponse is the response type for the Query/Params RPC method.
 message QueryParamsResponse {
-  // params holds all the parameters of this module.
   Params params = 1 [
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+}
+
+// QueryNodeRequest is the request type for the Query/Node RPC method.
+message QueryNodeRequest {
+  string node_id = 1;
+}
+
+// QueryNodeResponse is the response type for the Query/Node RPC method.
+message QueryNodeResponse {
+  Node node = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryNodeByOperatorRequest is the request type for the Query/NodeByOperator RPC method.
+message QueryNodeByOperatorRequest {
+  string operator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// QueryNodeByOperatorResponse is the response type for the Query/NodeByOperator RPC method.
+message QueryNodeByOperatorResponse {
+  Node node = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryNodeByAgentAddressRequest is the request type for the Query/NodeByAgentAddress RPC method.
+message QueryNodeByAgentAddressRequest {
+  string agent_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// QueryNodeByAgentAddressResponse is the response type for the Query/NodeByAgentAddress RPC method.
+message QueryNodeByAgentAddressResponse {
+  Node node = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryNodesByTagRequest is the request type for the Query/NodesByTag RPC method.
+message QueryNodesByTagRequest {
+  string tag = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// QueryNodesByTagResponse is the response type for the Query/NodesByTag RPC method.
+message QueryNodesByTagResponse {
+  repeated Node nodes = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryAllNodesRequest is the request type for the Query/AllNodes RPC method.
+message QueryAllNodesRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryAllNodesResponse is the response type for the Query/AllNodes RPC method.
+message QueryAllNodesResponse {
+  repeated Node nodes = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

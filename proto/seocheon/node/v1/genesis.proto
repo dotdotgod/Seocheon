@@ -2,15 +2,34 @@ syntax = "proto3";
 package seocheon.node.v1;
 
 import "amino/amino.proto";
+import "cosmos/base/v1beta1/coin.proto";
 import "gogoproto/gogo.proto";
+import "seocheon/node/v1/node.proto";
 import "seocheon/node/v1/params.proto";
 
 option go_package = "seocheon/x/node/types";
 
-// GenesisState defines the node module's genesis state.
+// GenesisState defines the x/node module's genesis state.
 message GenesisState {
   // params defines all the parameters of the module.
   Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  // nodes is the list of registered nodes at genesis.
+  repeated Node nodes = 2 [(gogoproto.nullable) = false];
+
+  // registration_pool_balance is the initial balance for the Registration Pool.
+  repeated cosmos.base.v1beta1.Coin registration_pool_balance = 3 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  // feegrant_pool_balance is the initial balance for the Feegrant Pool.
+  repeated cosmos.base.v1beta1.Coin feegrant_pool_balance = 4 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];

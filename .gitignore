@@ -1,5 +1,5 @@
 # Design files
-merkle_front.pen
+*.pen
 
 # Build
 build/
@@ -13,6 +13,23 @@ dist/
 *.dylib
 *.test
 *.out
+vendor/
+coverage.out
+coverage.html
+
+# Chain data (local testnet)
+.seocheon/
+data/
+testnode/
+mytestnet/
+gentxs/
+
+# Secrets & environment
+.env
+.env.*
+*.key
+*.pem
+credentials.json
 
 # IDE
 .idea/

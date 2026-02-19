@@ -5,17 +5,38 @@ import "amino/amino.proto";
 import "cosmos/msg/v1/msg.proto";
 import "cosmos_proto/cosmos.proto";
 import "gogoproto/gogo.proto";
+import "google/protobuf/any.proto";
 import "seocheon/node/v1/params.proto";
 
 option go_package = "seocheon/x/node/types";
 
-// Msg defines the Msg service.
+// Msg defines the x/node Msg service.
 service Msg {
   option (cosmos.msg.v1.service) = true;
 
-  // UpdateParams defines a (governance) operation for updating the module
-  // parameters. The authority defaults to the x/gov module account.
+  // UpdateParams defines a governance operation for updating the module parameters.
   rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
+  // RegisterNode registers a new node with an associated validator.
+  rpc RegisterNode(MsgRegisterNode) returns (MsgRegisterNodeResponse);
+
+  // UpdateNode updates node metadata (description, website, tags).
+  rpc UpdateNode(MsgUpdateNode) returns (MsgUpdateNodeResponse);
+
+  // UpdateNodeAgentShare requests a change to the node's agent_share.
+  rpc UpdateNodeAgentShare(MsgUpdateNodeAgentShare) returns (MsgUpdateNodeAgentShareResponse);
+
+  // UpdateAgentAddress changes the node's agent wallet address.
+  rpc UpdateAgentAddress(MsgUpdateAgentAddress) returns (MsgUpdateAgentAddressResponse);
+
+  // DeactivateNode deactivates a node and begins unbonding.
+  rpc DeactivateNode(MsgDeactivateNode) returns (MsgDeactivateNodeResponse);
+
+  // WithdrawNodeCommission withdraws validator commission and splits by agent_share.
+  rpc WithdrawNodeCommission(MsgWithdrawNodeCommission) returns (MsgWithdrawNodeCommissionResponse);
+
+  // RenewFeegrant renews an expired feegrant for an active node.
+  rpc RenewFeegrant(MsgRenewFeegrant) returns (MsgRenewFeegrantResponse);
 }
 
 // MsgUpdateParams is the Msg/UpdateParams request type.
@@ -23,18 +44,163 @@ message MsgUpdateParams {
   option (cosmos.msg.v1.signer) = "authority";
   option (amino.name) = "seocheon/x/node/MsgUpdateParams";
 
-  // authority is the address that controls the module (defaults to x/gov unless overwritten).
+  // authority is the address that controls the module (defaults to x/gov).
   string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
-  // params defines the module parameters to update.
-  //
-  // NOTE: All parameters must be supplied.
+  // params defines the module parameters to update. All parameters must be supplied.
   Params params = 2 [
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
 }
 
-// MsgUpdateParamsResponse defines the response structure for executing a
-// MsgUpdateParams message.
+// MsgUpdateParamsResponse defines the response for MsgUpdateParams.
 message MsgUpdateParamsResponse {}
+
+// MsgRegisterNode registers a new node and internally creates a validator.
+message MsgRegisterNode {
+  option (cosmos.msg.v1.signer) = "operator";
+  option (amino.name) = "seocheon/x/node/MsgRegisterNode";
+
+  // operator is the node operator wallet address (TX signer).
+  string operator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // agent_address is the AI agent wallet address.
+  string agent_address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // agent_share is the commission percentage allocated to the agent (Dec, 0-100).
+  string agent_share = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  // max_agent_share_change_rate is the max agent_share change per epoch.
+  string max_agent_share_change_rate = 4 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  // description of the node.
+  string description = 5;
+  // website of the node operator.
+  string website = 6;
+  // tags for node classification (max 10, each max 32 chars).
+  repeated string tags = 7;
+  // consensus_pubkey is the CometBFT consensus public key (ed25519).
+  google.protobuf.Any consensus_pubkey = 8 [(cosmos_proto.accepts_interface) = "cosmos.crypto.PubKey"];
+  // commission_rate is the initial validator commission rate.
+  string commission_rate = 9 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  // commission_max_rate is the maximum validator commission rate.
+  string commission_max_rate = 10 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  // commission_max_change_rate is the maximum daily commission change rate.
+  string commission_max_change_rate = 11 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgRegisterNodeResponse is the response for MsgRegisterNode.
+message MsgRegisterNodeResponse {
+  // node_id is the registered node identifier.
+  string node_id = 1;
+  // validator_address is the created validator address.
+  string validator_address = 2;
+}
+
+// MsgUpdateNode updates node metadata.
+message MsgUpdateNode {
+  option (cosmos.msg.v1.signer) = "operator";
+  option (amino.name) = "seocheon/x/node/MsgUpdateNode";
+
+  // operator is the TX signer (must be the node operator).
+  string operator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // description is the updated node description.
+  string description = 2;
+  // website is the updated website URL.
+  string website = 3;
+  // tags are the updated node tags.
+  repeated string tags = 4;
+}
+
+// MsgUpdateNodeResponse is the response for MsgUpdateNode.
+message MsgUpdateNodeResponse {}
+
+// MsgUpdateNodeAgentShare requests an agent_share change with rate limiting.
+message MsgUpdateNodeAgentShare {
+  option (cosmos.msg.v1.signer) = "operator";
+  option (amino.name) = "seocheon/x/node/MsgUpdateNodeAgentShare";
+
+  // operator is the TX signer (must be the node operator).
+  string operator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // new_agent_share is the desired new agent_share value.
+  string new_agent_share = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// MsgUpdateNodeAgentShareResponse is the response for MsgUpdateNodeAgentShare.
+message MsgUpdateNodeAgentShareResponse {}
+
+// MsgUpdateAgentAddress changes the node's agent wallet address.
+message MsgUpdateAgentAddress {
+  option (cosmos.msg.v1.signer) = "operator";
+  option (amino.name) = "seocheon/x/node/MsgUpdateAgentAddress";
+
+  // operator is the TX signer (must be the node operator).
+  string operator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // new_agent_address is the new agent address (empty string = deactivate agent).
+  string new_agent_address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// MsgUpdateAgentAddressResponse is the response for MsgUpdateAgentAddress.
+message MsgUpdateAgentAddressResponse {}
+
+// MsgDeactivateNode deactivates a node and starts unbonding.
+message MsgDeactivateNode {
+  option (cosmos.msg.v1.signer) = "operator";
+  option (amino.name) = "seocheon/x/node/MsgDeactivateNode";
+
+  // operator is the TX signer (must be the node operator).
+  string operator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// MsgDeactivateNodeResponse is the response for MsgDeactivateNode.
+message MsgDeactivateNodeResponse {}
+
+// MsgWithdrawNodeCommission withdraws commission and splits by agent_share.
+message MsgWithdrawNodeCommission {
+  option (cosmos.msg.v1.signer) = "operator";
+  option (amino.name) = "seocheon/x/node/MsgWithdrawNodeCommission";
+
+  // operator is the TX signer (must be the node operator).
+  string operator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// MsgWithdrawNodeCommissionResponse is the response for MsgWithdrawNodeCommission.
+message MsgWithdrawNodeCommissionResponse {
+  // operator_amount is the commission amount sent to the operator.
+  string operator_amount = 1;
+  // agent_amount is the commission amount sent to the agent.
+  string agent_amount = 2;
+}
+
+// MsgRenewFeegrant renews an expired feegrant for an eligible node.
+message MsgRenewFeegrant {
+  option (cosmos.msg.v1.signer) = "operator";
+  option (amino.name) = "seocheon/x/node/MsgRenewFeegrant";
+
+  // operator is the TX signer (must be the node operator).
+  string operator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// MsgRenewFeegrantResponse is the response for MsgRenewFeegrant.
+message MsgRenewFeegrantResponse {}

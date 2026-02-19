@@ -9,6 +9,13 @@ import (
 func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 	registrar.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgUpdateParams{},
+		&MsgRegisterNode{},
+		&MsgUpdateNode{},
+		&MsgUpdateNodeAgentShare{},
+		&MsgUpdateAgentAddress{},
+		&MsgDeactivateNode{},
+		&MsgWithdrawNodeCommission{},
+		&MsgRenewFeegrant{},
 	)
 	msgservice.RegisterMsgServiceDesc(registrar, &_Msg_serviceDesc)
 }

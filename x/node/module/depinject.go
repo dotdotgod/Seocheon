@@ -59,6 +59,10 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		in.BankKeeper,
 		in.StakingKeeper,
 	)
+
+	// Set additional keeper dependencies.
+	k.SetAuthKeeper(in.AuthKeeper)
+
 	m := NewAppModule(in.Cdc, k, in.AuthKeeper, in.BankKeeper)
 
 	return ModuleOutputs{NodeKeeper: k, Module: m}
