@@ -99,10 +99,10 @@ func (k msgServer) WithdrawNodeCommission(ctx context.Context, msg *types.MsgWit
 	}
 
 	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
-		"node_commission_withdrawn",
-		sdk.NewAttribute("node_id", nodeID),
-		sdk.NewAttribute("operator_amount", operatorCoins.String()),
-		sdk.NewAttribute("agent_amount", agentCoins.String()),
+		types.EventTypeCommissionWithdrawn,
+		sdk.NewAttribute(types.AttributeKeyNodeID, nodeID),
+		sdk.NewAttribute(types.AttributeKeyOperatorAmount, operatorCoins.String()),
+		sdk.NewAttribute(types.AttributeKeyAgentAmount, agentCoins.String()),
 	))
 
 	return &types.MsgWithdrawNodeCommissionResponse{

@@ -63,9 +63,9 @@ func (k Keeper) applyPendingAgentShareChanges(ctx context.Context, blockHeight i
 		}
 
 		sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
-			"agent_share_changed",
-			sdk.NewAttribute("node_id", nodeID),
-			sdk.NewAttribute("new_agent_share", pending.NewAgentShare.String()),
+			types.EventTypeAgentShareChanged,
+			sdk.NewAttribute(types.AttributeKeyNodeID, nodeID),
+			sdk.NewAttribute(types.AttributeKeyNewAgentShare, pending.NewAgentShare.String()),
 		))
 
 		toRemove = append(toRemove, nodeID)

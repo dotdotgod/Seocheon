@@ -73,9 +73,9 @@ func (k msgServer) UpdateNode(ctx context.Context, msg *types.MsgUpdateNode) (*t
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
-		"node_updated",
-		sdk.NewAttribute("node_id", nodeID),
-		sdk.NewAttribute("operator", msg.Operator),
+		types.EventTypeNodeUpdated,
+		sdk.NewAttribute(types.AttributeKeyNodeID, nodeID),
+		sdk.NewAttribute(types.AttributeKeyOperator, msg.Operator),
 	))
 
 	return &types.MsgUpdateNodeResponse{}, nil

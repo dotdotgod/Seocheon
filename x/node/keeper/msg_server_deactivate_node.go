@@ -56,18 +56,18 @@ func (k msgServer) DeactivateNode(ctx context.Context, msg *types.MsgDeactivateN
 			if _, undErr := k.stakingMsgServer.Undelegate(ctx, undelegateMsg); undErr != nil {
 				// Best-effort: emit warning but don't block deactivation.
 				sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
-					"undelegate_failed",
-					sdk.NewAttribute("node_id", nodeID),
-					sdk.NewAttribute("error", undErr.Error()),
+					types.EventTypeUndelegateFailed,
+					sdk.NewAttribute(types.AttributeKeyNodeID, nodeID),
+					sdk.NewAttribute(types.AttributeKeyError, undErr.Error()),
 				))
 			}
 		}
 	}
 
 	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
-		"node_deactivated",
-		sdk.NewAttribute("node_id", nodeID),
-		sdk.NewAttribute("operator", msg.Operator),
+		types.EventTypeNodeDeactivated,
+		sdk.NewAttribute(types.AttributeKeyNodeID, nodeID),
+		sdk.NewAttribute(types.AttributeKeyOperator, msg.Operator),
 	))
 
 	return &types.MsgDeactivateNodeResponse{}, nil

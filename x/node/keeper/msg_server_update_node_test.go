@@ -80,6 +80,11 @@ func TestUpdateNode_Success(t *testing.T) {
 	has, err = f.keeper.TagIndex.Has(ctx, collections.Join("defi", nodeID))
 	require.NoError(t, err)
 	require.True(t, has)
+
+	// Event should be emitted.
+	evt := requireEvent(t, ctx, types.EventTypeNodeUpdated)
+	require.Equal(t, nodeID, eventAttribute(evt, types.AttributeKeyNodeID))
+	require.Equal(t, operator, eventAttribute(evt, types.AttributeKeyOperator))
 }
 
 func TestUpdateNode_NotFound(t *testing.T) {

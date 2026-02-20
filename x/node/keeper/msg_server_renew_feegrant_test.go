@@ -24,6 +24,11 @@ func TestRenewFeegrant_Success(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.NotNil(t, resp)
+
+	// Event should be emitted.
+	evt := requireEvent(t, ctx, types.EventTypeFeegrantRenewed)
+	require.NotEmpty(t, eventAttribute(evt, types.AttributeKeyNodeID))
+	require.Equal(t, agent, eventAttribute(evt, types.AttributeKeyAgentAddress))
 }
 
 func TestRenewFeegrant_NotFound(t *testing.T) {

@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"context"
 	"fmt"
 
 	"cosmossdk.io/collections"
@@ -132,3 +133,23 @@ func (k *Keeper) SetFeegrantKeeper(fk types.FeegrantKeeper) {
 func (k *Keeper) SetStakingMsgServer(sms types.StakingMsgServer) {
 	k.stakingMsgServer = sms
 }
+
+// GetNodeIDByAgent returns the node_id for the given agent address.
+// Used by x/activity to resolve agent → node.
+func (k Keeper) GetNodeIDByAgent(ctx context.Context, agentAddr string) (string, error) {
+	nodeID, err := k.AgentIndex.Get(ctx, agentAddr)
+	if err != nil {
+		return "", fmt.Errorf("agent address %s not registered: %w", agentAddr, err)
+	}
+	return nodeID, nil
+}
+
+// GetNodeStatus returns the status for the given node_id.
+func (k Keeper) GetNodeStatus(ctx context.Context, nodeID string) (int32, error) {
+	node, err := k.Nodes.Get(ctx, nodeID)
+	if err != nil {
+		return 0, fmt.Errorf("node %s not found: %w", nodeID, err)
+	}
+	return int32(node.Status), nil
+}
+

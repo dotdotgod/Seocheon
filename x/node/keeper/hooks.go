@@ -55,9 +55,9 @@ func (h Hooks) AfterValidatorBonded(ctx context.Context, consAddr sdk.ConsAddres
 
 		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
-			"node_activated",
-			sdk.NewAttribute("node_id", nodeID),
-			sdk.NewAttribute("validator_address", valAddrStr),
+			types.EventTypeNodeActivated,
+			sdk.NewAttribute(types.AttributeKeyNodeID, nodeID),
+			sdk.NewAttribute(types.AttributeKeyValidatorAddress, valAddrStr),
 		))
 	}
 
@@ -92,9 +92,9 @@ func (h Hooks) AfterValidatorBeginUnbonding(ctx context.Context, consAddr sdk.Co
 
 		sdkCtx := sdk.UnwrapSDKContext(ctx)
 		sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
-			"node_deactivated",
-			sdk.NewAttribute("node_id", nodeID),
-			sdk.NewAttribute("validator_address", valAddrStr),
+			types.EventTypeNodeDeactivated,
+			sdk.NewAttribute(types.AttributeKeyNodeID, nodeID),
+			sdk.NewAttribute(types.AttributeKeyValidatorAddress, valAddrStr),
 		))
 	}
 

@@ -177,12 +177,12 @@ func (k msgServer) RegisterNode(ctx context.Context, msg *types.MsgRegisterNode)
 
 	// [8] Emit event.
 	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
-		"node_registered",
-		sdk.NewAttribute("node_id", nodeID),
-		sdk.NewAttribute("operator", msg.Operator),
-		sdk.NewAttribute("agent_address", msg.AgentAddress),
-		sdk.NewAttribute("validator_address", valAddrStr),
-		sdk.NewAttribute("block_height", fmt.Sprintf("%d", blockHeight)),
+		types.EventTypeNodeRegistered,
+		sdk.NewAttribute(types.AttributeKeyNodeID, nodeID),
+		sdk.NewAttribute(types.AttributeKeyOperator, msg.Operator),
+		sdk.NewAttribute(types.AttributeKeyAgentAddress, msg.AgentAddress),
+		sdk.NewAttribute(types.AttributeKeyValidatorAddress, valAddrStr),
+		sdk.NewAttribute(types.AttributeKeyBlockHeight, fmt.Sprintf("%d", blockHeight)),
 	))
 
 	return &types.MsgRegisterNodeResponse{

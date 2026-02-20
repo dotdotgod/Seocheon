@@ -61,9 +61,9 @@ func (k Keeper) grantAgentFeegrant(ctx context.Context, agentAddr string) error 
 	if err := k.feegrantKeeper.GrantAllowance(ctx, feegrantPoolAddr, agentAccAddr, allowance); err != nil {
 		// Emit warning event but don't fail the operation.
 		sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
-			"feegrant_grant_failed",
-			sdk.NewAttribute("agent_address", agentAddr),
-			sdk.NewAttribute("error", err.Error()),
+			types.EventTypeFeegrantGrantFailed,
+			sdk.NewAttribute(types.AttributeKeyAgentAddress, agentAddr),
+			sdk.NewAttribute(types.AttributeKeyError, err.Error()),
 		))
 		return nil
 	}

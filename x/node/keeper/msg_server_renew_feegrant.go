@@ -51,9 +51,9 @@ func (k msgServer) RenewFeegrant(ctx context.Context, msg *types.MsgRenewFeegran
 	_ = k.grantAgentFeegrant(ctx, node.AgentAddress)
 
 	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
-		"feegrant_renewed",
-		sdk.NewAttribute("node_id", nodeID),
-		sdk.NewAttribute("agent_address", node.AgentAddress),
+		types.EventTypeFeegrantRenewed,
+		sdk.NewAttribute(types.AttributeKeyNodeID, nodeID),
+		sdk.NewAttribute(types.AttributeKeyAgentAddress, node.AgentAddress),
 	))
 
 	return &types.MsgRenewFeegrantResponse{}, nil

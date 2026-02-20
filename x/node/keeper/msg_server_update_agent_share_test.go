@@ -33,6 +33,11 @@ func TestUpdateNodeAgentShare_Success(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, math.LegacyNewDec(35), pending.NewAgentShare)
 	require.Equal(t, types.EpochLength, pending.ApplyAtBlock) // block 0 → next epoch = EpochLength
+
+	// Event should be emitted.
+	evt := requireEvent(t, ctx, types.EventTypeAgentShareScheduled)
+	require.Equal(t, nodeID, eventAttribute(evt, types.AttributeKeyNodeID))
+	require.Equal(t, "35.000000000000000000", eventAttribute(evt, types.AttributeKeyNewAgentShare))
 }
 
 func TestUpdateNodeAgentShare_ExceedsMaxRate(t *testing.T) {

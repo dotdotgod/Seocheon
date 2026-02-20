@@ -87,11 +87,11 @@ func (k msgServer) UpdateAgentAddress(ctx context.Context, msg *types.MsgUpdateA
 	}
 
 	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
-		"agent_address_changed",
-		sdk.NewAttribute("node_id", nodeID),
-		sdk.NewAttribute("old_agent_address", oldAgent),
-		sdk.NewAttribute("new_agent_address", msg.NewAgentAddress),
-		sdk.NewAttribute("block_height", fmt.Sprintf("%d", currentBlock)),
+		types.EventTypeAgentAddressChanged,
+		sdk.NewAttribute(types.AttributeKeyNodeID, nodeID),
+		sdk.NewAttribute(types.AttributeKeyOldAgentAddress, oldAgent),
+		sdk.NewAttribute(types.AttributeKeyNewAgentAddress, msg.NewAgentAddress),
+		sdk.NewAttribute(types.AttributeKeyBlockHeight, fmt.Sprintf("%d", currentBlock)),
 	))
 
 	return &types.MsgUpdateAgentAddressResponse{}, nil

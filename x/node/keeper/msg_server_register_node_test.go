@@ -345,6 +345,63 @@ func TestMsgRegisterNode(t *testing.T) {
 		require.ErrorContains(t, err, "consensus pubkey")
 	})
 
+	t.Run("success: nil stakingMsgServer skips validator creation", func(t *testing.T) {
+		ff := initFixture(t)
+		// Clear staking msg server.
+		ff.keeper.SetStakingMsgServer(nil)
+		msLocal := keeper.NewMsgServerImpl(ff.keeper)
+
+		addr := testAddr("op_no_sms_________")
+		msg := &types.MsgRegisterNode{
+			Operator:                addr.String(),
+			AgentAddress:            testAddr("ag_no_sms_________").String(),
+			AgentShare:              math.LegacyNewDec(10),
+			MaxAgentShareChangeRate: math.LegacyNewDec(2),
+			ConsensusPubkey:         testPubKey(70),
+			CommissionRate:          math.LegacyNewDec(10),
+			CommissionMaxRate:       math.LegacyNewDec(20),
+			CommissionMaxChangeRate: math.LegacyNewDec(1),
+		}
+
+		resp, err := msLocal.RegisterNode(ff.ctx, msg)
+		require.NoError(t, err)
+		require.NotNil(t, resp)
+		require.NotEmpty(t, resp.NodeId)
+
+		// Node should be stored correctly.
+		node, err := ff.keeper.Nodes.Get(ff.ctx, resp.NodeId)
+		require.NoError(t, err)
+		require.Equal(t, types.NodeStatus_NODE_STATUS_REGISTERED, node.Status)
+	})
+
+	t.Run("success: emits node_registered event", func(t *testing.T) {
+		ff := initFixture(t)
+		msLocal := keeper.NewMsgServerImpl(ff.keeper)
+
+		addr := testAddr("op_evt____________")
+		agentAddr := testAddr("ag_evt____________")
+		msg := &types.MsgRegisterNode{
+			Operator:                addr.String(),
+			AgentAddress:            agentAddr.String(),
+			AgentShare:              math.LegacyNewDec(20),
+			MaxAgentShareChangeRate: math.LegacyNewDec(5),
+			Description:             "event test",
+			ConsensusPubkey:         testPubKey(71),
+			CommissionRate:          math.LegacyNewDec(10),
+			CommissionMaxRate:       math.LegacyNewDec(20),
+			CommissionMaxChangeRate: math.LegacyNewDec(1),
+		}
+
+		resp, err := msLocal.RegisterNode(ff.ctx, msg)
+		require.NoError(t, err)
+
+		evt := requireEvent(t, ff.ctx, types.EventTypeNodeRegistered)
+		require.Equal(t, resp.NodeId, eventAttribute(evt, types.AttributeKeyNodeID))
+		require.Equal(t, addr.String(), eventAttribute(evt, types.AttributeKeyOperator))
+		require.Equal(t, agentAddr.String(), eventAttribute(evt, types.AttributeKeyAgentAddress))
+		require.NotEmpty(t, eventAttribute(evt, types.AttributeKeyValidatorAddress))
+	})
+
 	t.Run("success: empty agent_address (no agent)", func(t *testing.T) {
 		ff := initFixture(t)
 		msLocal := keeper.NewMsgServerImpl(ff.keeper)

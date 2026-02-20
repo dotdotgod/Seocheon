@@ -200,6 +200,45 @@ func (m *mockStakingMsgServer) Undelegate(_ context.Context, _ *stakingtypes.Msg
 }
 
 // ---------------------------------------------------------------------------
+// Event Test Helpers
+// ---------------------------------------------------------------------------
+
+// requireEvent checks that at least one event of the given type was emitted
+// and returns the first matching event.
+func requireEvent(t *testing.T, ctx context.Context, eventType string) sdk.Event {
+	t.Helper()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	for _, event := range sdkCtx.EventManager().Events() {
+		if event.Type == eventType {
+			return event
+		}
+	}
+	t.Fatalf("expected event of type %q was not emitted", eventType)
+	return sdk.Event{} // unreachable
+}
+
+// requireNoEvent checks that no event of the given type was emitted.
+func requireNoEvent(t *testing.T, ctx context.Context, eventType string) {
+	t.Helper()
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	for _, event := range sdkCtx.EventManager().Events() {
+		if event.Type == eventType {
+			t.Fatalf("unexpected event of type %q was emitted", eventType)
+		}
+	}
+}
+
+// eventAttribute returns the value of a named attribute from an event.
+func eventAttribute(event sdk.Event, key string) string {
+	for _, attr := range event.Attributes {
+		if attr.Key == key {
+			return attr.Value
+		}
+	}
+	return ""
+}
+
+// ---------------------------------------------------------------------------
 // Test Fixture
 // ---------------------------------------------------------------------------
 

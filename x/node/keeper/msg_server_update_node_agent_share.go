@@ -66,10 +66,10 @@ func (k msgServer) UpdateNodeAgentShare(ctx context.Context, msg *types.MsgUpdat
 	}
 
 	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
-		"agent_share_change_scheduled",
-		sdk.NewAttribute("node_id", nodeID),
-		sdk.NewAttribute("new_agent_share", msg.NewAgentShare.String()),
-		sdk.NewAttribute("apply_at_block", fmt.Sprintf("%d", nextEpochBoundary)),
+		types.EventTypeAgentShareScheduled,
+		sdk.NewAttribute(types.AttributeKeyNodeID, nodeID),
+		sdk.NewAttribute(types.AttributeKeyNewAgentShare, msg.NewAgentShare.String()),
+		sdk.NewAttribute(types.AttributeKeyApplyAtBlock, fmt.Sprintf("%d", nextEpochBoundary)),
 	))
 
 	return &types.MsgUpdateNodeAgentShareResponse{}, nil

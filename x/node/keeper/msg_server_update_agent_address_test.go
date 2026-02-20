@@ -41,6 +41,12 @@ func TestUpdateAgentAddress_Success(t *testing.T) {
 	id, err := f.keeper.AgentIndex.Get(ctx, newAgent)
 	require.NoError(t, err)
 	require.Equal(t, nodeID, id)
+
+	// Event should be emitted.
+	evt := requireEvent(t, ctx, types.EventTypeAgentAddressChanged)
+	require.Equal(t, nodeID, eventAttribute(evt, types.AttributeKeyNodeID))
+	require.Equal(t, oldAgent, eventAttribute(evt, types.AttributeKeyOldAgentAddress))
+	require.Equal(t, newAgent, eventAttribute(evt, types.AttributeKeyNewAgentAddress))
 }
 
 func TestUpdateAgentAddress_Cooldown(t *testing.T) {
@@ -110,6 +116,9 @@ func TestUpdateAgentAddress_Deactivate(t *testing.T) {
 	agent := sdk.AccAddress([]byte("agent_deact_________")).String()
 	nodeID := registerTestNode(t, f, operator, agent)
 
+	// Record feegrant calls before (register grants 1 feegrant).
+	grantsBefore := len(f.feegrantKeeper.grantCalls)
+
 	// Deactivate agent by setting empty address.
 	_, err := msgServer.UpdateAgentAddress(ctx, &types.MsgUpdateAgentAddress{
 		Operator:        operator,
@@ -126,6 +135,14 @@ func TestUpdateAgentAddress_Deactivate(t *testing.T) {
 	has, err := f.keeper.AgentIndex.Has(ctx, agent)
 	require.NoError(t, err)
 	require.False(t, has)
+
+	// No new feegrant should have been granted (empty agent = no feegrant).
+	require.Equal(t, grantsBefore, len(f.feegrantKeeper.grantCalls))
+
+	// Event should show new_agent_address = "".
+	evt := requireEvent(t, ctx, types.EventTypeAgentAddressChanged)
+	require.Equal(t, "", eventAttribute(evt, types.AttributeKeyNewAgentAddress))
+	require.Equal(t, agent, eventAttribute(evt, types.AttributeKeyOldAgentAddress))
 }
 
 func TestUpdateAgentAddress_DuplicateAgent(t *testing.T) {

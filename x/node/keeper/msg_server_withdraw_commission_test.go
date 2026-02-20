@@ -222,6 +222,141 @@ func TestWithdrawNodeCommission_DistributionError(t *testing.T) {
 	require.Contains(t, err.Error(), "distribution module error")
 }
 
+func TestWithdrawNodeCommission_TruncateSmallAmount(t *testing.T) {
+	f, dk := initFixtureWithDistribution(t)
+	ctx := f.ctx
+	msgServer := keeper.NewMsgServerImpl(f.keeper)
+
+	operator := sdk.AccAddress([]byte("op_comm_trunc1______")).String()
+	agent := sdk.AccAddress([]byte("ag_comm_trunc1______")).String()
+
+	// Register with 33% agent share.
+	seed := byte(pubkeySeed.Add(1))
+	resp, err := msgServer.RegisterNode(ctx, &types.MsgRegisterNode{
+		Operator:                operator,
+		AgentAddress:            agent,
+		AgentShare:              math.LegacyNewDec(33),
+		MaxAgentShareChangeRate: math.LegacyNewDec(10),
+		Description:             "truncation test",
+		Tags:                    []string{},
+		ConsensusPubkey:         testPubKey(seed),
+	})
+	require.NoError(t, err)
+
+	node, _ := f.keeper.Nodes.Get(ctx, resp.NodeId)
+	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
+	valAddr := sdk.ValAddress(valAddrBytes)
+
+	// 1 usum at 33% → agent = TruncateInt(0.33) = 0, operator = 1.
+	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(1)))
+
+	withdrawResp, err := msgServer.WithdrawNodeCommission(ctx, &types.MsgWithdrawNodeCommission{
+		Operator: operator,
+	})
+	require.NoError(t, err)
+
+	// 33% of 1 = 0.33, truncated to 0. Agent gets nothing, operator gets 1.
+	require.Equal(t, "1usum", withdrawResp.OperatorAmount)
+	require.Equal(t, "", withdrawResp.AgentAmount)
+
+	// No SendCoins because agent amount is zero.
+	require.Len(t, f.bankKeeper.sentCoinsRecords, 0)
+}
+
+func TestWithdrawNodeCommission_TruncateAt10(t *testing.T) {
+	f, dk := initFixtureWithDistribution(t)
+	ctx := f.ctx
+	msgServer := keeper.NewMsgServerImpl(f.keeper)
+
+	operator := sdk.AccAddress([]byte("op_comm_trunc2______")).String()
+	agent := sdk.AccAddress([]byte("ag_comm_trunc2______")).String()
+
+	seed := byte(pubkeySeed.Add(1))
+	resp, err := msgServer.RegisterNode(ctx, &types.MsgRegisterNode{
+		Operator:                operator,
+		AgentAddress:            agent,
+		AgentShare:              math.LegacyNewDec(33),
+		MaxAgentShareChangeRate: math.LegacyNewDec(10),
+		Description:             "truncation test 10",
+		Tags:                    []string{},
+		ConsensusPubkey:         testPubKey(seed),
+	})
+	require.NoError(t, err)
+
+	node, _ := f.keeper.Nodes.Get(ctx, resp.NodeId)
+	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
+	valAddr := sdk.ValAddress(valAddrBytes)
+
+	// 10 usum at 33% → agent = TruncateInt(3.3) = 3, operator = 7.
+	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(10)))
+
+	withdrawResp, err := msgServer.WithdrawNodeCommission(ctx, &types.MsgWithdrawNodeCommission{
+		Operator: operator,
+	})
+	require.NoError(t, err)
+	require.Equal(t, "3usum", withdrawResp.AgentAmount)
+	require.Equal(t, "7usum", withdrawResp.OperatorAmount)
+}
+
+func TestWithdrawNodeCommission_1PercentShare(t *testing.T) {
+	f, dk := initFixtureWithDistribution(t)
+	ctx := f.ctx
+	msgServer := keeper.NewMsgServerImpl(f.keeper)
+
+	operator := sdk.AccAddress([]byte("op_comm_1pct________")).String()
+	agent := sdk.AccAddress([]byte("ag_comm_1pct________")).String()
+
+	seed := byte(pubkeySeed.Add(1))
+	resp, err := msgServer.RegisterNode(ctx, &types.MsgRegisterNode{
+		Operator:                operator,
+		AgentAddress:            agent,
+		AgentShare:              math.LegacyNewDec(1),
+		MaxAgentShareChangeRate: math.LegacyNewDec(10),
+		Description:             "1% share",
+		Tags:                    []string{},
+		ConsensusPubkey:         testPubKey(seed),
+	})
+	require.NoError(t, err)
+
+	node, _ := f.keeper.Nodes.Get(ctx, resp.NodeId)
+	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
+	valAddr := sdk.ValAddress(valAddrBytes)
+
+	// 100 usum at 1% → agent = 1, operator = 99.
+	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(100)))
+
+	withdrawResp, err := msgServer.WithdrawNodeCommission(ctx, &types.MsgWithdrawNodeCommission{
+		Operator: operator,
+	})
+	require.NoError(t, err)
+	require.Equal(t, "1usum", withdrawResp.AgentAmount)
+	require.Equal(t, "99usum", withdrawResp.OperatorAmount)
+}
+
+func TestWithdrawNodeCommission_EmitsEvent(t *testing.T) {
+	f, dk := initFixtureWithDistribution(t)
+	ctx := f.ctx
+	msgServer := keeper.NewMsgServerImpl(f.keeper)
+
+	operator := sdk.AccAddress([]byte("op_comm_evt_________")).String()
+	agent := sdk.AccAddress([]byte("ag_comm_evt_________")).String()
+	registerTestNode(t, f, operator, agent)
+
+	node, _ := f.keeper.Nodes.Get(ctx, expectedNodeID(operator))
+	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
+	valAddr := sdk.ValAddress(valAddrBytes)
+	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(100)))
+
+	_, err := msgServer.WithdrawNodeCommission(ctx, &types.MsgWithdrawNodeCommission{
+		Operator: operator,
+	})
+	require.NoError(t, err)
+
+	evt := requireEvent(t, ctx, types.EventTypeCommissionWithdrawn)
+	require.NotEmpty(t, eventAttribute(evt, types.AttributeKeyNodeID))
+	require.NotEmpty(t, eventAttribute(evt, types.AttributeKeyOperatorAmount))
+}
+
 func TestWithdrawNodeCommission_NoAgent(t *testing.T) {
 	f, dk := initFixtureWithDistribution(t)
 	ctx := f.ctx
