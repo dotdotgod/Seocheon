@@ -8,7 +8,7 @@ import (
 	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 
 	"seocheon/app"
-	"seocheon/cmd/seocheond/cmd"
+	"seocheon/cmd/seocheon/cmd"
 )
 
 func main() {

@@ -20,7 +20,7 @@ import (
 	"seocheon/app"
 )
 
-// NewRootCmd creates a new root command for seocheond. It is called once in the main function.
+// NewRootCmd creates a new root command for seocheon. It is called once in the main function.
 func NewRootCmd() *cobra.Command {
 	var (
 		autoCliOpts        autocli.AppOptions
@@ -43,7 +43,7 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	rootCmd := &cobra.Command{
-		Use:           app.Name + "d",
+		Use:           app.Name,
 		Short:         "seocheon node",
 		SilenceErrors: true,
 		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {

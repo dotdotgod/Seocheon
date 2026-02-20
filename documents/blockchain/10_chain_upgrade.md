@@ -85,21 +85,21 @@ $DAEMON_HOME/
 └── cosmovisor/
     ├── genesis/
     │   └── bin/
-    │       └── seocheond              ← 최초 바이너리
+    │       └── seocheon              ← 최초 바이너리
     ├── upgrades/
     │   ├── v2.0.0-activity-v2/
     │   │   └── bin/
-    │   │       └── seocheond          ← 업그레이드 바이너리
+    │   │       └── seocheon          ← 업그레이드 바이너리
     │   └── v3.0.0-ibc/
     │       └── bin/
-    │           └── seocheond          ← 다음 업그레이드 바이너리
+    │           └── seocheon          ← 다음 업그레이드 바이너리
     └── current -> genesis/            ← 현재 실행 중인 바이너리 심볼릭 링크
 ```
 
 ```
 cosmovisor 환경 변수:
 
-DAEMON_NAME=seocheond
+DAEMON_NAME=seocheon
 DAEMON_HOME=$HOME/.seocheon
 DAEMON_ALLOW_DOWNLOAD_BINARIES=false    ← 보안: 자동 다운로드 비활성화
 DAEMON_RESTART_AFTER_UPGRADE=true       ← 업그레이드 후 자동 재시작
@@ -115,11 +115,11 @@ UNSAFE_SKIP_BACKUP=false                ← 업그레이드 전 자동 백업
   [1] 업그레이드 바이너리 빌드 또는 다운로드
       $ git checkout v2.0.0-activity-v2
       $ make build
-      $ sha256sum build/seocheond       ← 해시 검증
+      $ sha256sum build/seocheon       ← 해시 검증
 
   [2] cosmovisor 디렉토리에 배치
       $ mkdir -p $DAEMON_HOME/cosmovisor/upgrades/v2.0.0-activity-v2/bin
-      $ cp build/seocheond $DAEMON_HOME/cosmovisor/upgrades/v2.0.0-activity-v2/bin/
+      $ cp build/seocheon $DAEMON_HOME/cosmovisor/upgrades/v2.0.0-activity-v2/bin/
 
   [3] 업그레이드 높이 도달 대기
       → cosmovisor가 자동으로 바이너리 교체 및 재시작
@@ -447,12 +447,12 @@ tests/
 스테이트 익스포트/임포트 테스트 절차:
 
   [1] 메인넷 상태 익스포트
-      $ seocheond export --height <height> > genesis_export.json
+      $ seocheon export --height <height> > genesis_export.json
 
   [2] 익스포트 상태로 테스트 체인 구동
-      $ seocheond init test-upgrade --chain-id seocheon-upgrade-test
+      $ seocheon init test-upgrade --chain-id seocheon-upgrade-test
       $ cp genesis_export.json ~/.seocheon-test/config/genesis.json
-      $ seocheond start --home ~/.seocheon-test
+      $ seocheon start --home ~/.seocheon-test
 
   [3] 업그레이드 시뮬레이션
       ├── 업그레이드 플랜 주입
