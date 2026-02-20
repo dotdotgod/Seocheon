@@ -1,0 +1,31 @@
+syntax = "proto3";
+package seocheon.activity.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "seocheon/x/activity/types";
+
+// Params defines the parameters for the x/activity module.
+message Params {
+  option (amino.name) = "seocheon/x/activity/Params";
+  option (gogoproto.equal) = true;
+
+  // epoch_length is the number of blocks per epoch (~1 day).
+  int64 epoch_length = 1;
+
+  // windows_per_epoch is the number of windows per epoch.
+  int64 windows_per_epoch = 2;
+
+  // min_active_windows is the minimum number of active windows required for epoch eligibility.
+  int64 min_active_windows = 3;
+
+  // self_funded_quota is the maximum activities per epoch for self-funded nodes.
+  uint64 self_funded_quota = 4;
+
+  // feegrant_quota is the maximum activities per epoch for feegrant-funded nodes.
+  uint64 feegrant_quota = 5;
+
+  // activity_pruning_keep_blocks is the number of blocks to keep activity records before pruning.
+  int64 activity_pruning_keep_blocks = 6;
+}

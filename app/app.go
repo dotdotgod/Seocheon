@@ -47,6 +47,7 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
 	"seocheon/docs"
+	activitymodulekeeper "seocheon/x/activity/keeper"
 	nodemodulekeeper "seocheon/x/node/keeper"
 )
 
@@ -101,8 +102,9 @@ type App struct {
 	TransferKeeper      ibctransferkeeper.Keeper
 
 	// simulation manager
-	sm         *module.SimulationManager
-	NodeKeeper nodemodulekeeper.Keeper
+	sm             *module.SimulationManager
+	NodeKeeper     nodemodulekeeper.Keeper
+	ActivityKeeper activitymodulekeeper.Keeper
 }
 
 func init() {
@@ -184,6 +186,7 @@ func New(
 		&app.FeegrantKeeper,
 		&app.ParamsKeeper,
 		&app.NodeKeeper,
+		&app.ActivityKeeper,
 	); err != nil {
 		panic(err)
 	}
@@ -193,6 +196,11 @@ func New(
 	app.NodeKeeper.SetSlashingKeeper(app.SlashingKeeper)
 	app.NodeKeeper.SetFeegrantKeeper(app.FeegrantKeeper)
 	app.NodeKeeper.SetStakingMsgServer(stakingkeeper.NewMsgServerImpl(app.StakingKeeper))
+
+	// Wire x/activity optional keeper dependencies.
+	app.ActivityKeeper.SetNodeKeeper(&app.NodeKeeper)
+	app.ActivityKeeper.SetAuthKeeper(app.AuthKeeper)
+	app.ActivityKeeper.SetFeegrantKeeper(app.FeegrantKeeper)
 
 	// add to default baseapp options
 	// enable optimistic execution

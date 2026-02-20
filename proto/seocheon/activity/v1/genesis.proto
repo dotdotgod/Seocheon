@@ -1,0 +1,21 @@
+syntax = "proto3";
+package seocheon.activity.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "seocheon/activity/v1/activity.proto";
+import "seocheon/activity/v1/params.proto";
+
+option go_package = "seocheon/x/activity/types";
+
+// GenesisState defines the x/activity module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  // activities is the list of activity records at genesis.
+  repeated ActivityRecord activities = 2 [(gogoproto.nullable) = false];
+}

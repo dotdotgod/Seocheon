@@ -1,0 +1,45 @@
+package types
+
+import "cosmossdk.io/collections"
+
+const (
+	// ModuleName defines the module name.
+	ModuleName = "activity"
+
+	// StoreKey defines the primary module store key.
+	StoreKey = ModuleName
+
+	// GovModuleName duplicates the gov module's name to avoid a dependency with x/gov.
+	GovModuleName = "gov"
+)
+
+// Store key prefixes.
+// Note: x/node uses "p_node" + prefixes 1-8. x/activity uses "p_activity" + prefixes 10-17
+// to avoid any collision.
+var (
+	ParamsKey = collections.NewPrefix("p_activity")
+
+	// ActivitiesKey: (node_id, epoch, sequence) -> ActivityRecord
+	ActivitiesKey = collections.NewPrefix(10)
+
+	// HashIndexKey: (node_id, epoch, hash_hex) -> empty (duplicate detection)
+	HashIndexKey = collections.NewPrefix(11)
+
+	// EpochQuotaUsedKey: (node_id, epoch) -> count
+	EpochQuotaUsedKey = collections.NewPrefix(12)
+
+	// WindowActivityKey: (node_id, epoch, window) -> count
+	WindowActivityKey = collections.NewPrefix(13)
+
+	// EpochSummaryKey: (node_id, epoch) -> EpochActivitySummary
+	EpochSummaryKey = collections.NewPrefix(14)
+
+	// BlockActivitiesKey: (block_height, seq) -> node_id (for pruning)
+	BlockActivitiesKey = collections.NewPrefix(15)
+
+	// ActivitySequenceKey: (node_id, epoch) -> next_sequence
+	ActivitySequenceKey = collections.NewPrefix(16)
+
+	// GlobalHashIndexKey: hash_hex -> (node_id, epoch, sequence) for hash-only lookups
+	GlobalHashIndexKey = collections.NewPrefix(17)
+)

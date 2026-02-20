@@ -1,6 +1,8 @@
 package app
 
 import (
+	_ "seocheon/x/activity/module"
+	activitymoduletypes "seocheon/x/activity/types"
 	_ "seocheon/x/node/module"
 	nodemoduletypes "seocheon/x/node/types"
 	"time"
@@ -134,6 +136,7 @@ var (
 						feegrant.ModuleName,
 						group.ModuleName,
 						// chain modules
+						activitymoduletypes.ModuleName,
 						nodemoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/endBlockers
 					},
@@ -171,6 +174,7 @@ var (
 						ibctransfertypes.ModuleName,
 						icatypes.ModuleName,
 						// chain modules
+						activitymoduletypes.ModuleName,
 						nodemoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/initGenesis
 					},
@@ -267,6 +271,10 @@ var (
 			{
 				Name:   epochstypes.ModuleName,
 				Config: appconfig.WrapAny(&epochsmodulev1.Module{}),
+			},
+			{
+				Name:   activitymoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&activitymoduletypes.Module{}),
 			},
 			{
 				Name:   nodemoduletypes.ModuleName,

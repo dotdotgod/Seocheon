@@ -1,0 +1,63 @@
+syntax = "proto3";
+package seocheon.activity.v1;
+
+import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "seocheon/activity/v1/params.proto";
+
+option go_package = "seocheon/x/activity/types";
+
+// Msg defines the x/activity Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  // SubmitActivity submits an activity record to the chain.
+  rpc SubmitActivity(MsgSubmitActivity) returns (MsgSubmitActivityResponse);
+
+  // UpdateParams defines a governance operation for updating the module parameters.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+}
+
+// MsgSubmitActivity submits an activity record.
+message MsgSubmitActivity {
+  option (cosmos.msg.v1.signer) = "submitter";
+  option (amino.name) = "seocheon/x/activity/MsgSubmitActivity";
+
+  // submitter is the agent_address that signs the transaction.
+  string submitter = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // activity_hash is the SHA-256 hash of the activity content (hex-encoded, 64 chars).
+  string activity_hash = 2;
+
+  // content_uri is the URI pointing to the off-chain activity report.
+  string content_uri = 3;
+}
+
+// MsgSubmitActivityResponse is the response for MsgSubmitActivity.
+message MsgSubmitActivityResponse {
+  // epoch is the epoch number of the submitted activity.
+  int64 epoch = 1;
+
+  // sequence is the activity's sequential index within the node's epoch.
+  uint64 sequence = 2;
+}
+
+// MsgUpdateParams is the Msg/UpdateParams request type.
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "seocheon/x/activity/MsgUpdateParams";
+
+  // authority is the address that controls the module (defaults to x/gov).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // params defines the module parameters to update. All parameters must be supplied.
+  Params params = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// MsgUpdateParamsResponse defines the response for MsgUpdateParams.
+message MsgUpdateParamsResponse {}

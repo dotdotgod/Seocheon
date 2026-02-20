@@ -1,0 +1,46 @@
+syntax = "proto3";
+package seocheon.activity.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "seocheon/x/activity/types";
+
+// ActivityRecord represents an on-chain activity submission.
+message ActivityRecord {
+  option (gogoproto.equal) = true;
+
+  // node_id is the submitting node's identifier.
+  string node_id = 1;
+
+  // epoch is the epoch number when this activity was submitted.
+  int64 epoch = 2;
+
+  // sequence is the sequential index within the node's epoch activities.
+  uint64 sequence = 3;
+
+  // submitter is the agent_address that signed the transaction.
+  string submitter = 4;
+
+  // activity_hash is the SHA-256 hash of the activity content (32 bytes, hex-encoded).
+  string activity_hash = 5;
+
+  // content_uri is the URI pointing to the off-chain activity report.
+  string content_uri = 6;
+
+  // block_height is the block at which this activity was submitted.
+  int64 block_height = 7;
+}
+
+// EpochActivitySummary tracks a node's activity summary for a given epoch.
+message EpochActivitySummary {
+  option (gogoproto.equal) = true;
+
+  // total_activities is the total number of activities submitted in the epoch.
+  uint64 total_activities = 1;
+
+  // active_windows is the number of distinct windows with at least one activity.
+  uint64 active_windows = 2;
+
+  // eligible indicates whether the node met the minimum active windows requirement.
+  bool eligible = 3;
+}

@@ -1,0 +1,120 @@
+syntax = "proto3";
+package seocheon.activity.v1;
+
+import "amino/amino.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "seocheon/activity/v1/activity.proto";
+import "seocheon/activity/v1/params.proto";
+
+option go_package = "seocheon/x/activity/types";
+
+// Query defines the gRPC querier service for the x/activity module.
+service Query {
+  // Params queries the module parameters.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/seocheon/activity/v1/params";
+  }
+
+  // Activity queries a single activity by hash.
+  rpc Activity(QueryActivityRequest) returns (QueryActivityResponse) {
+    option (google.api.http).get = "/seocheon/activity/v1/activities/{activity_hash}";
+  }
+
+  // ActivitiesByNode queries activities by node_id with pagination.
+  rpc ActivitiesByNode(QueryActivitiesByNodeRequest) returns (QueryActivitiesByNodeResponse) {
+    option (google.api.http).get = "/seocheon/activity/v1/nodes/{node_id}/activities";
+  }
+
+  // ActivitiesByBlock queries activities submitted at a specific block height.
+  rpc ActivitiesByBlock(QueryActivitiesByBlockRequest) returns (QueryActivitiesByBlockResponse) {
+    option (google.api.http).get = "/seocheon/activity/v1/blocks/{block_height}/activities";
+  }
+
+  // EpochInfo queries current epoch and window information.
+  rpc EpochInfo(QueryEpochInfoRequest) returns (QueryEpochInfoResponse) {
+    option (google.api.http).get = "/seocheon/activity/v1/epoch-info";
+  }
+
+  // NodeEpochActivity queries a node's activity summary for a given epoch.
+  rpc NodeEpochActivity(QueryNodeEpochActivityRequest) returns (QueryNodeEpochActivityResponse) {
+    option (google.api.http).get = "/seocheon/activity/v1/nodes/{node_id}/epochs/{epoch}";
+  }
+}
+
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is the response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// QueryActivityRequest is the request type for the Query/Activity RPC method.
+message QueryActivityRequest {
+  // activity_hash is the hex-encoded SHA-256 hash to look up.
+  string activity_hash = 1;
+}
+
+// QueryActivityResponse is the response type for the Query/Activity RPC method.
+message QueryActivityResponse {
+  ActivityRecord activity = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryActivitiesByNodeRequest is the request type for the Query/ActivitiesByNode RPC method.
+message QueryActivitiesByNodeRequest {
+  string node_id = 1;
+  // Optional epoch filter. If 0, returns all epochs.
+  int64 epoch = 2;
+  cosmos.base.query.v1beta1.PageRequest pagination = 3;
+}
+
+// QueryActivitiesByNodeResponse is the response type for the Query/ActivitiesByNode RPC method.
+message QueryActivitiesByNodeResponse {
+  repeated ActivityRecord activities = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryActivitiesByBlockRequest is the request type for the Query/ActivitiesByBlock RPC method.
+message QueryActivitiesByBlockRequest {
+  int64 block_height = 1;
+}
+
+// QueryActivitiesByBlockResponse is the response type for the Query/ActivitiesByBlock RPC method.
+message QueryActivitiesByBlockResponse {
+  repeated ActivityRecord activities = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryEpochInfoRequest is the request type for the Query/EpochInfo RPC method.
+message QueryEpochInfoRequest {}
+
+// QueryEpochInfoResponse is the response type for the Query/EpochInfo RPC method.
+message QueryEpochInfoResponse {
+  // current_epoch is the current epoch number.
+  int64 current_epoch = 1;
+  // current_window is the current window number within the epoch.
+  int64 current_window = 2;
+  // epoch_start_block is the first block of the current epoch.
+  int64 epoch_start_block = 3;
+  // blocks_until_next_epoch is the remaining blocks until the next epoch boundary.
+  int64 blocks_until_next_epoch = 4;
+}
+
+// QueryNodeEpochActivityRequest is the request type for the Query/NodeEpochActivity RPC method.
+message QueryNodeEpochActivityRequest {
+  string node_id = 1;
+  int64 epoch = 2;
+}
+
+// QueryNodeEpochActivityResponse is the response type for the Query/NodeEpochActivity RPC method.
+message QueryNodeEpochActivityResponse {
+  EpochActivitySummary summary = 1 [(gogoproto.nullable) = false];
+  // quota_used is the number of activities submitted in this epoch.
+  uint64 quota_used = 2;
+  // quota_limit is the maximum allowed activities for this epoch.
+  uint64 quota_limit = 3;
+}
