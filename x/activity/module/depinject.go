@@ -34,7 +34,7 @@ type ModuleInputs struct {
 type ModuleOutputs struct {
 	depinject.Out
 
-	ActivityKeeper keeper.Keeper
+	ActivityKeeper *keeper.Keeper
 	Module         appmodule.AppModule
 }
 
@@ -52,7 +52,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 		authority,
 	)
 
-	m := NewAppModule(in.Cdc, k)
+	m := NewAppModule(in.Cdc, &k)
 
-	return ModuleOutputs{ActivityKeeper: k, Module: m}
+	return ModuleOutputs{ActivityKeeper: &k, Module: m}
 }

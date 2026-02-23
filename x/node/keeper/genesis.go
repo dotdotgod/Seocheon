@@ -40,20 +40,23 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) er
 		}
 	}
 
-	// Fund Registration Pool module account.
+	// Fund Registration Pool module account by minting to node module and sending to pool.
 	if genState.RegistrationPoolBalance.IsAllPositive() {
-		regPoolAddr := k.authKeeper.GetModuleAddress(types.RegistrationPoolName)
-		if regPoolAddr != nil {
-			// The actual funding is handled by x/bank genesis via module account balances.
-			_ = regPoolAddr
+		if err := k.bankKeeper.MintCoins(ctx, types.ModuleName, genState.RegistrationPoolBalance); err != nil {
+			return err
+		}
+		if err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, types.RegistrationPoolName, genState.RegistrationPoolBalance); err != nil {
+			return err
 		}
 	}
 
-	// Fund Feegrant Pool module account.
+	// Fund Feegrant Pool module account by minting to node module and sending to pool.
 	if genState.FeegrantPoolBalance.IsAllPositive() {
-		fgPoolAddr := k.authKeeper.GetModuleAddress(types.FeegrantPoolName)
-		if fgPoolAddr != nil {
-			_ = fgPoolAddr
+		if err := k.bankKeeper.MintCoins(ctx, types.ModuleName, genState.FeegrantPoolBalance); err != nil {
+			return err
+		}
+		if err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, types.FeegrantPoolName, genState.FeegrantPoolBalance); err != nil {
+			return err
 		}
 	}
 

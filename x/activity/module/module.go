@@ -30,12 +30,12 @@ var (
 // AppModule implements the AppModule interface.
 type AppModule struct {
 	cdc    codec.Codec
-	keeper keeper.Keeper
+	keeper *keeper.Keeper
 }
 
 func NewAppModule(
 	cdc codec.Codec,
-	keeper keeper.Keeper,
+	keeper *keeper.Keeper,
 ) AppModule {
 	return AppModule{
 		cdc:    cdc,
@@ -71,13 +71,13 @@ func (AppModule) RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 
 // RegisterInvariants registers module invariants.
 func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
-	keeper.RegisterInvariants(ir, am.keeper)
+	keeper.RegisterInvariants(ir, *am.keeper)
 }
 
 // RegisterServices registers a gRPC query service.
 func (am AppModule) RegisterServices(registrar grpc.ServiceRegistrar) error {
-	types.RegisterMsgServer(registrar, keeper.NewMsgServerImpl(am.keeper))
-	types.RegisterQueryServer(registrar, keeper.NewQueryServerImpl(am.keeper))
+	types.RegisterMsgServer(registrar, keeper.NewMsgServerImpl(*am.keeper))
+	types.RegisterQueryServer(registrar, keeper.NewQueryServerImpl(*am.keeper))
 	return nil
 }
 

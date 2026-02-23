@@ -116,6 +116,10 @@ func (m *mockBankKeeper) SendCoinsFromModuleToModule(_ context.Context, _, _ str
 	return m.sendErr
 }
 
+func (m *mockBankKeeper) MintCoins(_ context.Context, _ string, _ sdk.Coins) error {
+	return nil
+}
+
 func (m *mockBankKeeper) GetBalance(_ context.Context, addr sdk.AccAddress, denom string) sdk.Coin {
 	coins := m.balances[addr.String()]
 	return sdk.Coin{Denom: denom, Amount: coins.AmountOf(denom)}

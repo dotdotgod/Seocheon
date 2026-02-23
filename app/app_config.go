@@ -85,7 +85,10 @@ var (
 		{Account: nft.ModuleName},
 		{Account: ibctransfertypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner}},
 		{Account: icatypes.ModuleName},
-		{Account: nodemoduletypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner, authtypes.Staking}}}
+		{Account: nodemoduletypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner, authtypes.Staking}},
+		{Account: nodemoduletypes.RegistrationPoolName, Permissions: []string{authtypes.Burner, authtypes.Staking}},
+		{Account: nodemoduletypes.FeegrantPoolName},
+	}
 
 	// blocked account addresses
 	blockAccAddrs = []string{

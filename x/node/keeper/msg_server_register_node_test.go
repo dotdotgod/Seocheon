@@ -402,6 +402,34 @@ func TestMsgRegisterNode(t *testing.T) {
 		require.NotEmpty(t, eventAttribute(evt, types.AttributeKeyValidatorAddress))
 	})
 
+	t.Run("success: nil Dec fields default to zero", func(t *testing.T) {
+		// This test covers the panic that occurred on a live chain when
+		// AgentShare and MaxAgentShareChangeRate were not provided in the CLI.
+		// Zero-value LegacyDec has nil *big.Int, causing IsNegative() to panic.
+		// The fix adds IsNil() checks that default nil Decs to LegacyZeroDec().
+		ff := initFixture(t)
+		msLocal := keeper.NewMsgServerImpl(ff.keeper)
+
+		addr := testAddr("op_nil_dec________")
+		msg := &types.MsgRegisterNode{
+			Operator:        addr.String(),
+			ConsensusPubkey: testPubKey(70),
+			Description:     "nil dec test",
+			// AgentShare and MaxAgentShareChangeRate intentionally omitted (nil Dec).
+			// CommissionRate, CommissionMaxRate, CommissionMaxChangeRate also omitted.
+		}
+
+		resp, err := msLocal.RegisterNode(ff.ctx, msg)
+		require.NoError(t, err)
+		require.NotNil(t, resp)
+
+		// Verify that nil Decs were defaulted to zero.
+		node, err := ff.keeper.Nodes.Get(ff.ctx, resp.NodeId)
+		require.NoError(t, err)
+		require.True(t, node.AgentShare.IsZero())
+		require.True(t, node.MaxAgentShareChangeRate.IsZero())
+	})
+
 	t.Run("success: empty agent_address (no agent)", func(t *testing.T) {
 		ff := initFixture(t)
 		msLocal := keeper.NewMsgServerImpl(ff.keeper)

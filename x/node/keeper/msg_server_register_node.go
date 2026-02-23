@@ -25,6 +25,13 @@ func (k msgServer) RegisterNode(ctx context.Context, msg *types.MsgRegisterNode)
 	// [1] Input validation.
 
 	// Validate agent_share range (0 <= x <= 100).
+	// Default to zero if not provided (nil Dec).
+	if msg.AgentShare.IsNil() {
+		msg.AgentShare = math.LegacyZeroDec()
+	}
+	if msg.MaxAgentShareChangeRate.IsNil() {
+		msg.MaxAgentShareChangeRate = math.LegacyZeroDec()
+	}
 	hundred := math.LegacyNewDec(100)
 	if msg.AgentShare.IsNegative() || msg.AgentShare.GT(hundred) {
 		return nil, errorsmod.Wrapf(types.ErrInvalidAgentShare, "agent_share %s out of range [0, 100]", msg.AgentShare)

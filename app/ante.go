@@ -28,7 +28,7 @@ func newAnteHandler(app *App) (sdk.AnteHandler, error) {
 	return chainBeforeHandler(
 		standardHandler,
 		nodeante.NewRegistrationFeeDecorator(),
-		nodeante.NewAgentPermissionDecorator(&app.NodeKeeper),
+		nodeante.NewAgentPermissionDecorator(app.NodeKeeper),
 	), nil
 }
 

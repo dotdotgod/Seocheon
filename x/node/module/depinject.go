@@ -41,7 +41,7 @@ type ModuleInputs struct {
 type ModuleOutputs struct {
 	depinject.Out
 
-	NodeKeeper keeper.Keeper
+	NodeKeeper *keeper.Keeper
 	Module     appmodule.AppModule
 }
 
@@ -63,7 +63,7 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 	// Set additional keeper dependencies.
 	k.SetAuthKeeper(in.AuthKeeper)
 
-	m := NewAppModule(in.Cdc, k, in.AuthKeeper, in.BankKeeper)
+	m := NewAppModule(in.Cdc, &k, in.AuthKeeper, in.BankKeeper)
 
-	return ModuleOutputs{NodeKeeper: k, Module: m}
+	return ModuleOutputs{NodeKeeper: &k, Module: m}
 }

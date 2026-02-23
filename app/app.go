@@ -103,8 +103,8 @@ type App struct {
 
 	// simulation manager
 	sm             *module.SimulationManager
-	NodeKeeper     nodemodulekeeper.Keeper
-	ActivityKeeper activitymodulekeeper.Keeper
+	NodeKeeper     *nodemodulekeeper.Keeper
+	ActivityKeeper *activitymodulekeeper.Keeper
 }
 
 func init() {
@@ -198,7 +198,7 @@ func New(
 	app.NodeKeeper.SetStakingMsgServer(stakingkeeper.NewMsgServerImpl(app.StakingKeeper))
 
 	// Wire x/activity optional keeper dependencies.
-	app.ActivityKeeper.SetNodeKeeper(&app.NodeKeeper)
+	app.ActivityKeeper.SetNodeKeeper(app.NodeKeeper)
 	app.ActivityKeeper.SetAuthKeeper(app.AuthKeeper)
 	app.ActivityKeeper.SetFeegrantKeeper(app.FeegrantKeeper)
 
