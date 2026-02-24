@@ -16,6 +16,10 @@ var (
 		"/cosmwasm.wasm.v1.MsgExecuteContract",
 		"/cosmos.bank.v1beta1.MsgSend",
 	}
+	DefaultAgentFeegrantAllowedMsgTypes = []string{
+		"/seocheon.activity.v1.MsgSubmitActivity",
+		"/cosmwasm.wasm.v1.MsgExecuteContract",
+	}
 	DefaultAgentAddressChangeCooldown = uint64(17280) // 1 epoch
 	DefaultMaxTags                    = uint32(10)
 	DefaultMaxTagLength               = uint32(32)
@@ -24,13 +28,14 @@ var (
 // NewParams creates a new Params instance with the given values.
 func NewParams() Params {
 	return Params{
-		MaxRegistrationsPerBlock:    DefaultMaxRegistrationsPerBlock,
-		RegistrationCooldownBlocks:  DefaultRegistrationCooldownBlocks,
-		RegistrationDeposit:         DefaultRegistrationDeposit,
-		AgentAllowedMsgTypes:        DefaultAgentAllowedMsgTypes,
-		AgentAddressChangeCooldown:  DefaultAgentAddressChangeCooldown,
-		MaxTags:                     DefaultMaxTags,
-		MaxTagLength:                DefaultMaxTagLength,
+		MaxRegistrationsPerBlock:         DefaultMaxRegistrationsPerBlock,
+		RegistrationCooldownBlocks:       DefaultRegistrationCooldownBlocks,
+		RegistrationDeposit:              DefaultRegistrationDeposit,
+		AgentAllowedMsgTypes:             DefaultAgentAllowedMsgTypes,
+		AgentFeegrantAllowedMsgTypes:     DefaultAgentFeegrantAllowedMsgTypes,
+		AgentAddressChangeCooldown:       DefaultAgentAddressChangeCooldown,
+		MaxTags:                          DefaultMaxTags,
+		MaxTagLength:                     DefaultMaxTagLength,
 	}
 }
 

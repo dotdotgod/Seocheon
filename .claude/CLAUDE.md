@@ -42,7 +42,7 @@ docs/
 ## 기술 스택
 
 ### 블록체인
-- **Cosmos SDK v0.50+** / CometBFT
+- **Cosmos SDK v0.53+** / CometBFT
 - **CosmWasm**: 노드 디렉토리
 - **토큰**: KKOT (꽃, 단일 토큰) — base denom: `usum` (숨), milli: `hon` (혼), display: `kkot` (꽃)
 - **합의**: DPoS, Active Validator Set 150~200

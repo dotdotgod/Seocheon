@@ -38,6 +38,20 @@ type Params struct {
 	FeegrantQuota uint64 `protobuf:"varint,5,opt,name=feegrant_quota,json=feegrantQuota,proto3" json:"feegrant_quota,omitempty"`
 	// activity_pruning_keep_blocks is the number of blocks to keep activity records before pruning.
 	ActivityPruningKeepBlocks int64 `protobuf:"varint,6,opt,name=activity_pruning_keep_blocks,json=activityPruningKeepBlocks,proto3" json:"activity_pruning_keep_blocks,omitempty"`
+	// fee_threshold_multiplier is the multiplier for fee activation threshold.
+	FeeThresholdMultiplier uint64 `protobuf:"varint,7,opt,name=fee_threshold_multiplier,json=feeThresholdMultiplier,proto3" json:"fee_threshold_multiplier,omitempty"`
+	// base_activity_fee is the base fee in usum when saturation > 1.0.
+	BaseActivityFee uint64 `protobuf:"varint,8,opt,name=base_activity_fee,json=baseActivityFee,proto3" json:"base_activity_fee,omitempty"`
+	// fee_exponent is the cost curve exponent in basis points (5000 = 0.5).
+	FeeExponent uint64 `protobuf:"varint,9,opt,name=fee_exponent,json=feeExponent,proto3" json:"fee_exponent,omitempty"`
+	// max_activity_fee is the maximum activity fee cap in usum.
+	MaxActivityFee uint64 `protobuf:"varint,10,opt,name=max_activity_fee,json=maxActivityFee,proto3" json:"max_activity_fee,omitempty"`
+	// min_feegrant_quota is the minimum feegrant quota even under saturation.
+	MinFeegrantQuota uint64 `protobuf:"varint,11,opt,name=min_feegrant_quota,json=minFeegrantQuota,proto3" json:"min_feegrant_quota,omitempty"`
+	// quota_reduction_rate is the quota reduction rate in basis points (5000 = 0.5).
+	QuotaReductionRate uint64 `protobuf:"varint,12,opt,name=quota_reduction_rate,json=quotaReductionRate,proto3" json:"quota_reduction_rate,omitempty"`
+	// feegrant_fee_exempt determines whether feegrant nodes are exempt from activity fees.
+	FeegrantFeeExempt bool `protobuf:"varint,13,opt,name=feegrant_fee_exempt,json=feegrantFeeExempt,proto3" json:"feegrant_fee_exempt,omitempty"`
 }
 
 func (m *Params) Reset()         { *m = Params{} }
@@ -115,6 +129,55 @@ func (m *Params) GetActivityPruningKeepBlocks() int64 {
 	return 0
 }
 
+func (m *Params) GetFeeThresholdMultiplier() uint64 {
+	if m != nil {
+		return m.FeeThresholdMultiplier
+	}
+	return 0
+}
+
+func (m *Params) GetBaseActivityFee() uint64 {
+	if m != nil {
+		return m.BaseActivityFee
+	}
+	return 0
+}
+
+func (m *Params) GetFeeExponent() uint64 {
+	if m != nil {
+		return m.FeeExponent
+	}
+	return 0
+}
+
+func (m *Params) GetMaxActivityFee() uint64 {
+	if m != nil {
+		return m.MaxActivityFee
+	}
+	return 0
+}
+
+func (m *Params) GetMinFeegrantQuota() uint64 {
+	if m != nil {
+		return m.MinFeegrantQuota
+	}
+	return 0
+}
+
+func (m *Params) GetQuotaReductionRate() uint64 {
+	if m != nil {
+		return m.QuotaReductionRate
+	}
+	return 0
+}
+
+func (m *Params) GetFeegrantFeeExempt() bool {
+	if m != nil {
+		return m.FeegrantFeeExempt
+	}
+	return false
+}
+
 func init() {
 	proto.RegisterType((*Params)(nil), "seocheon.activity.v1.Params")
 }
@@ -184,6 +247,27 @@ func (this *Params) Equal(that interface{}) bool {
 	if this.ActivityPruningKeepBlocks != that1.ActivityPruningKeepBlocks {
 		return false
 	}
+	if this.FeeThresholdMultiplier != that1.FeeThresholdMultiplier {
+		return false
+	}
+	if this.BaseActivityFee != that1.BaseActivityFee {
+		return false
+	}
+	if this.FeeExponent != that1.FeeExponent {
+		return false
+	}
+	if this.MaxActivityFee != that1.MaxActivityFee {
+		return false
+	}
+	if this.MinFeegrantQuota != that1.MinFeegrantQuota {
+		return false
+	}
+	if this.QuotaReductionRate != that1.QuotaReductionRate {
+		return false
+	}
+	if this.FeegrantFeeExempt != that1.FeegrantFeeExempt {
+		return false
+	}
 	return true
 }
 func (m *Params) Marshal() (dAtA []byte, err error) {
@@ -206,6 +290,46 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.FeegrantFeeExempt {
+		i--
+		if m.FeegrantFeeExempt {
+			dAtA[i] = 1
+		} else {
+			dAtA[i] = 0
+		}
+		i--
+		dAtA[i] = 0x68
+	}
+	if m.QuotaReductionRate != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.QuotaReductionRate))
+		i--
+		dAtA[i] = 0x60
+	}
+	if m.MinFeegrantQuota != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.MinFeegrantQuota))
+		i--
+		dAtA[i] = 0x58
+	}
+	if m.MaxActivityFee != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.MaxActivityFee))
+		i--
+		dAtA[i] = 0x50
+	}
+	if m.FeeExponent != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.FeeExponent))
+		i--
+		dAtA[i] = 0x48
+	}
+	if m.BaseActivityFee != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.BaseActivityFee))
+		i--
+		dAtA[i] = 0x40
+	}
+	if m.FeeThresholdMultiplier != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.FeeThresholdMultiplier))
+		i--
+		dAtA[i] = 0x38
+	}
 	if m.ActivityPruningKeepBlocks != 0 {
 		i = encodeVarintParams(dAtA, i, uint64(m.ActivityPruningKeepBlocks))
 		i--
@@ -273,6 +397,27 @@ func (m *Params) Size() (n int) {
 	}
 	if m.ActivityPruningKeepBlocks != 0 {
 		n += 1 + sovParams(uint64(m.ActivityPruningKeepBlocks))
+	}
+	if m.FeeThresholdMultiplier != 0 {
+		n += 1 + sovParams(uint64(m.FeeThresholdMultiplier))
+	}
+	if m.BaseActivityFee != 0 {
+		n += 1 + sovParams(uint64(m.BaseActivityFee))
+	}
+	if m.FeeExponent != 0 {
+		n += 1 + sovParams(uint64(m.FeeExponent))
+	}
+	if m.MaxActivityFee != 0 {
+		n += 1 + sovParams(uint64(m.MaxActivityFee))
+	}
+	if m.MinFeegrantQuota != 0 {
+		n += 1 + sovParams(uint64(m.MinFeegrantQuota))
+	}
+	if m.QuotaReductionRate != 0 {
+		n += 1 + sovParams(uint64(m.QuotaReductionRate))
+	}
+	if m.FeegrantFeeExempt {
+		n += 2
 	}
 	return n
 }
@@ -426,6 +571,140 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 7:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FeeThresholdMultiplier", wireType)
+			}
+			m.FeeThresholdMultiplier = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.FeeThresholdMultiplier |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 8:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field BaseActivityFee", wireType)
+			}
+			m.BaseActivityFee = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.BaseActivityFee |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 9:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FeeExponent", wireType)
+			}
+			m.FeeExponent = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.FeeExponent |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 10:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MaxActivityFee", wireType)
+			}
+			m.MaxActivityFee = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MaxActivityFee |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 11:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field MinFeegrantQuota", wireType)
+			}
+			m.MinFeegrantQuota = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.MinFeegrantQuota |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 12:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field QuotaReductionRate", wireType)
+			}
+			m.QuotaReductionRate = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.QuotaReductionRate |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 13:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FeegrantFeeExempt", wireType)
+			}
+			var v int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				v |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			m.FeegrantFeeExempt = bool(v != 0)
 		default:
 			iNdEx = preIndex
 			skippy, err := skipParams(dAtA[iNdEx:])

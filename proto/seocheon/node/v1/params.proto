@@ -29,6 +29,10 @@ message Params {
   // agent_address_change_cooldown is the cooldown period (in blocks) between agent address changes.
   uint64 agent_address_change_cooldown = 5;
 
+  // agent_feegrant_allowed_msg_types is the whitelist of message types allowed for feegrant usage.
+  // This is a subset of agent_allowed_msg_types, excluding MsgSend to prevent feegrant fund drain.
+  repeated string agent_feegrant_allowed_msg_types = 8;
+
   // max_tags is the maximum number of tags per node.
   uint32 max_tags = 6;
 

@@ -33,7 +33,7 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 		))
 	}
 
-	// Epoch boundary: emit epoch_completed + pruning.
+	// Epoch boundary: emit epoch_completed + fee state calculation + pruning.
 	if IsEpochBoundary(blockHeight, params) {
 		completedEpoch := GetCurrentEpoch(blockHeight, params)
 
@@ -45,6 +45,17 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 			sdk.NewAttribute(types.AttributeKeyEpoch, fmt.Sprintf("%d", completedEpoch)),
 			sdk.NewAttribute(types.AttributeKeyEligibleCount, fmt.Sprintf("%d", eligibleCount)),
 		))
+
+		// Distribute collected fees from the completed epoch.
+		if err := k.DistributeCollectedFees(ctx, completedEpoch); err != nil {
+			return err
+		}
+
+		// Calculate and cache fee state for the next epoch.
+		nextEpoch := completedEpoch + 1
+		if err := k.CalculateAndCacheEpochFeeState(ctx, nextEpoch); err != nil {
+			return err
+		}
 
 		// Pruning.
 		prunedCount, err := k.pruneOldActivities(ctx, blockHeight, params)

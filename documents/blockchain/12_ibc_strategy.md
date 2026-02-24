@@ -1,7 +1,7 @@
 # IBC 전략
 
 > **담당**: 인프라 / 네트워크 엔지니어
-> **관련 문서**: [개요](01_overview.md) · [토큰 이코노믹스](07_tokenomics.md) · [구현 가이드](09_implementation.md) · [재단 전략](../foundation_strategy.md) · [전체 목차](README.md)
+> **관련 문서**: [개요](01_overview.md) · [Activity Protocol](04_activity_protocol.md) · [디렉토리](06_directory_protocol.md) · [토큰 이코노믹스](07_tokenomics.md) · [구현 가이드](09_implementation.md) · [재단 전략](../foundation_strategy.md) · [전체 목차](README.md)
 
 > **면책 조항**: 이 문서는 프로토콜 메커니즘에 대한 기술 설계 문서이며 투자 권유가 아니다. IBC 연결은 기술적 목표이며, 크로스체인 토큰 이동이 어떠한 형태의 수익도 보장하지 않는다.
 

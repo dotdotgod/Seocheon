@@ -54,6 +54,7 @@ type Keeper struct {
 	distributionKeeper types.DistributionKeeper
 	slashingKeeper     types.SlashingKeeper
 	feegrantKeeper     types.FeegrantKeeper
+	activityKeeper     types.ActivityKeeper
 }
 
 func NewKeeper(
@@ -127,6 +128,11 @@ func (k *Keeper) SetSlashingKeeper(sk types.SlashingKeeper) {
 // SetFeegrantKeeper sets the feegrant keeper.
 func (k *Keeper) SetFeegrantKeeper(fk types.FeegrantKeeper) {
 	k.feegrantKeeper = fk
+}
+
+// SetActivityKeeper sets the activity keeper for feegrant renewal eligibility checks.
+func (k *Keeper) SetActivityKeeper(ak types.ActivityKeeper) {
+	k.activityKeeper = ak
 }
 
 // SetStakingMsgServer sets the staking module's MsgServer for CreateValidator/Undelegate.

@@ -2,7 +2,7 @@
 
 > **담당**: CosmWasm 컨트랙트 개발자 (Rust)
 > **의존**: x/node (Stargate Query), x/wasm (CosmWasm 런타임)
-> **관련 문서**: [노드 모듈](03_node_module.md) · [구현 가이드](09_implementation.md) · [IBC 전략](12_ibc_strategy.md) · [전체 목차](README.md)
+> **관련 문서**: [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [구현 가이드](09_implementation.md) · [IBC 전략](12_ibc_strategy.md) · [전체 목차](README.md)
 
 노드가 자신의 능력(capabilities)과 인터페이스를 공개하여, 다른 에이전트가 프로그래밍적으로 협업 대상을 탐색할 수 있는 CosmWasm 컨트랙트이다.
 

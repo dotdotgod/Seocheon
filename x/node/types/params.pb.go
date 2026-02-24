@@ -37,6 +37,8 @@ type Params struct {
 	AgentAllowedMsgTypes []string `protobuf:"bytes,4,rep,name=agent_allowed_msg_types,json=agentAllowedMsgTypes,proto3" json:"agent_allowed_msg_types,omitempty"`
 	// agent_address_change_cooldown is the cooldown period (in blocks) between agent address changes.
 	AgentAddressChangeCooldown uint64 `protobuf:"varint,5,opt,name=agent_address_change_cooldown,json=agentAddressChangeCooldown,proto3" json:"agent_address_change_cooldown,omitempty"`
+	// agent_feegrant_allowed_msg_types is the whitelist of message types allowed for feegrant usage.
+	AgentFeegrantAllowedMsgTypes []string `protobuf:"bytes,8,rep,name=agent_feegrant_allowed_msg_types,json=agentFeegrantAllowedMsgTypes,proto3" json:"agent_feegrant_allowed_msg_types,omitempty"`
 	// max_tags is the maximum number of tags per node.
 	MaxTags uint32 `protobuf:"varint,6,opt,name=max_tags,json=maxTags,proto3" json:"max_tags,omitempty"`
 	// max_tag_length is the maximum character length of each tag.
@@ -102,6 +104,13 @@ func (m *Params) GetAgentAddressChangeCooldown() uint64 {
 		return m.AgentAddressChangeCooldown
 	}
 	return 0
+}
+
+func (m *Params) GetAgentFeegrantAllowedMsgTypes() []string {
+	if m != nil {
+		return m.AgentFeegrantAllowedMsgTypes
+	}
+	return nil
 }
 
 func (m *Params) GetMaxTags() uint32 {
@@ -193,6 +202,14 @@ func (this *Params) Equal(that interface{}) bool {
 	if this.AgentAddressChangeCooldown != that1.AgentAddressChangeCooldown {
 		return false
 	}
+	if len(this.AgentFeegrantAllowedMsgTypes) != len(that1.AgentFeegrantAllowedMsgTypes) {
+		return false
+	}
+	for i := range this.AgentFeegrantAllowedMsgTypes {
+		if this.AgentFeegrantAllowedMsgTypes[i] != that1.AgentFeegrantAllowedMsgTypes[i] {
+			return false
+		}
+	}
 	if this.MaxTags != that1.MaxTags {
 		return false
 	}
@@ -221,6 +238,15 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if len(m.AgentFeegrantAllowedMsgTypes) > 0 {
+		for iNdEx := len(m.AgentFeegrantAllowedMsgTypes) - 1; iNdEx >= 0; iNdEx-- {
+			i -= len(m.AgentFeegrantAllowedMsgTypes[iNdEx])
+			copy(dAtA[i:], m.AgentFeegrantAllowedMsgTypes[iNdEx])
+			i = encodeVarintParams(dAtA, i, uint64(len(m.AgentFeegrantAllowedMsgTypes[iNdEx])))
+			i--
+			dAtA[i] = 0x42
+		}
+	}
 	if m.MaxTagLength != 0 {
 		i = encodeVarintParams(dAtA, i, uint64(m.MaxTagLength))
 		i--
@@ -307,6 +333,12 @@ func (m *Params) Size() (n int) {
 	}
 	if m.MaxTagLength != 0 {
 		n += 1 + sovParams(uint64(m.MaxTagLength))
+	}
+	if len(m.AgentFeegrantAllowedMsgTypes) > 0 {
+		for _, s := range m.AgentFeegrantAllowedMsgTypes {
+			l = len(s)
+			n += 1 + l + sovParams(uint64(l))
+		}
 	}
 	return n
 }
@@ -507,6 +539,38 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 					break
 				}
 			}
+		case 8:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field AgentFeegrantAllowedMsgTypes", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthParams
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthParams
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.AgentFeegrantAllowedMsgTypes = append(m.AgentFeegrantAllowedMsgTypes, string(dAtA[iNdEx:postIndex]))
+			iNdEx = postIndex
 		default:
 			iNdEx = preIndex
 			skippy, err := skipParams(dAtA[iNdEx:])

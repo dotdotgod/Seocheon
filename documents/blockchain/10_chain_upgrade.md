@@ -1,7 +1,7 @@
 # 체인 업그레이드 전략
 
 > **담당**: 체인 코어 개발자 / DevOps
-> **관련 문서**: [개요](01_overview.md) · [구현 가이드](09_implementation.md) · [재단 전략](../foundation_strategy.md) · [Circuit Breaker](11_circuit_breaker.md) · [전체 목차](README.md)
+> **관련 문서**: [개요](01_overview.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [구현 가이드](09_implementation.md) · [재단 전략](../foundation_strategy.md) · [Circuit Breaker](11_circuit_breaker.md) · [전체 목차](README.md)
 
 ---
 

@@ -1,7 +1,7 @@
 # 인덱서 상세 아키텍처
 
 > **담당**: 인프라 / 백엔드 개발자
-> **관련 문서**: [Activity Protocol](04_activity_protocol.md) · [핵심 개념](02_core_concepts.md) · [구현 가이드](09_implementation.md) · [전체 목차](README.md)
+> **관련 문서**: [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [디렉토리](06_directory_protocol.md) · [구현 가이드](09_implementation.md) · [전체 목차](README.md)
 
 ## 개요
 

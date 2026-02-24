@@ -42,4 +42,13 @@ var (
 
 	// GlobalHashIndexKey: hash_hex -> (node_id, epoch, sequence) for hash-only lookups
 	GlobalHashIndexKey = collections.NewPrefix(17)
+
+	// EpochActivityFeeKey: epoch -> activity_fee in usum (cached per epoch)
+	EpochActivityFeeKey = collections.NewPrefix(18)
+
+	// EpochEffectiveQuotaKey: epoch -> effective feegrant quota (cached per epoch)
+	EpochEffectiveQuotaKey = collections.NewPrefix(19)
+
+	// EpochCollectedFeesKey: epoch -> total collected fees in usum
+	EpochCollectedFeesKey = collections.NewPrefix(20)
 )

@@ -25,12 +25,13 @@ func (k msgServer) RegisterNode(ctx context.Context, msg *types.MsgRegisterNode)
 	// [1] Input validation.
 
 	// Validate agent_share range (0 <= x <= 100).
-	// Default to zero if not provided (nil Dec).
+	// Default agent_share to zero if not provided (nil Dec).
 	if msg.AgentShare.IsNil() {
 		msg.AgentShare = math.LegacyZeroDec()
 	}
+	// Default max_agent_share_change_rate to 5%p/epoch if not provided.
 	if msg.MaxAgentShareChangeRate.IsNil() {
-		msg.MaxAgentShareChangeRate = math.LegacyZeroDec()
+		msg.MaxAgentShareChangeRate = math.LegacyNewDec(5)
 	}
 	hundred := math.LegacyNewDec(100)
 	if msg.AgentShare.IsNegative() || msg.AgentShare.GT(hundred) {
@@ -110,14 +111,27 @@ func (k msgServer) RegisterNode(ctx context.Context, msg *types.MsgRegisterNode)
 	}
 
 	if k.stakingMsgServer != nil {
+		// Use commission rates from the msg. Defaults to 0%/100%/100% if unset.
+		commRate := msg.CommissionRate
+		commMaxRate := msg.CommissionMaxRate
+		commMaxChangeRate := msg.CommissionMaxChangeRate
+		if commRate.IsNil() {
+			commRate = math.LegacyZeroDec()
+		}
+		if commMaxRate.IsNil() {
+			commMaxRate = math.LegacyOneDec()
+		}
+		if commMaxChangeRate.IsNil() {
+			commMaxChangeRate = math.LegacyOneDec()
+		}
 		createValMsg := &stakingtypes.MsgCreateValidator{
 			Description: stakingtypes.Description{
 				Moniker: msg.Description,
 			},
 			Commission: stakingtypes.CommissionRates{
-				Rate:          math.LegacyZeroDec(),
-				MaxRate:       math.LegacyOneDec(),
-				MaxChangeRate: math.LegacyOneDec(),
+				Rate:          commRate,
+				MaxRate:       commMaxRate,
+				MaxChangeRate: commMaxChangeRate,
 			},
 			MinSelfDelegation: math.OneInt(),
 			DelegatorAddress:  msg.Operator,

@@ -423,11 +423,11 @@ func TestMsgRegisterNode(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, resp)
 
-		// Verify that nil Decs were defaulted to zero.
+		// Verify that nil Decs were defaulted correctly.
 		node, err := ff.keeper.Nodes.Get(ff.ctx, resp.NodeId)
 		require.NoError(t, err)
 		require.True(t, node.AgentShare.IsZero())
-		require.True(t, node.MaxAgentShareChangeRate.IsZero())
+		require.True(t, node.MaxAgentShareChangeRate.Equal(math.LegacyNewDec(5)), "max_agent_share_change_rate should default to 5")
 	})
 
 	t.Run("success: empty agent_address (no agent)", func(t *testing.T) {

@@ -28,4 +28,28 @@ message Params {
 
   // activity_pruning_keep_blocks is the number of blocks to keep activity records before pruning.
   int64 activity_pruning_keep_blocks = 6;
+
+  // --- Activity Cost Model parameters ---
+
+  // fee_threshold_multiplier is the multiplier for fee activation threshold.
+  // Fee activates when N_a > N_d * fee_threshold_multiplier.
+  uint64 fee_threshold_multiplier = 7;
+
+  // base_activity_fee is the base fee in usum when saturation > 1.0.
+  uint64 base_activity_fee = 8;
+
+  // fee_exponent is the cost curve exponent in basis points (5000 = 0.5 = sqrt curve).
+  uint64 fee_exponent = 9;
+
+  // max_activity_fee is the maximum activity fee cap in usum.
+  uint64 max_activity_fee = 10;
+
+  // min_feegrant_quota is the minimum feegrant quota even under saturation.
+  uint64 min_feegrant_quota = 11;
+
+  // quota_reduction_rate is the quota reduction rate in basis points (5000 = 0.5).
+  uint64 quota_reduction_rate = 12;
+
+  // feegrant_fee_exempt determines whether feegrant nodes are exempt from activity fees.
+  bool feegrant_fee_exempt = 13;
 }

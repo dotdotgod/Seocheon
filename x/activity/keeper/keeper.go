@@ -47,10 +47,21 @@ type Keeper struct {
 	// GlobalHashIndex for hash-only lookups: hash_hex -> "node_id:epoch:sequence"
 	GlobalHashIndex collections.Map[string, string]
 
+	// EpochActivityFee: epoch -> activity_fee in usum (cached per epoch)
+	EpochActivityFee collections.Map[int64, uint64]
+
+	// EpochEffectiveQuota: epoch -> effective feegrant quota (cached per epoch)
+	EpochEffectiveQuota collections.Map[int64, uint64]
+
+	// EpochCollectedFees: epoch -> total collected fees in usum
+	EpochCollectedFees collections.Map[int64, uint64]
+
 	// Keeper dependencies.
 	nodeKeeper     types.NodeKeeper
 	authKeeper     types.AuthKeeper
 	feegrantKeeper types.FeegrantKeeper
+	stakingKeeper  types.StakingKeeper
+	bankKeeper     types.BankKeeper
 }
 
 func NewKeeper(
@@ -111,6 +122,21 @@ func NewKeeper(
 			collections.StringKey,
 			collections.StringValue,
 		),
+
+		EpochActivityFee: collections.NewMap(sb, types.EpochActivityFeeKey, "epoch_activity_fee",
+			collections.Int64Key,
+			collections.Uint64Value,
+		),
+
+		EpochEffectiveQuota: collections.NewMap(sb, types.EpochEffectiveQuotaKey, "epoch_effective_quota",
+			collections.Int64Key,
+			collections.Uint64Value,
+		),
+
+		EpochCollectedFees: collections.NewMap(sb, types.EpochCollectedFeesKey, "epoch_collected_fees",
+			collections.Int64Key,
+			collections.Uint64Value,
+		),
 	}
 
 	schema, err := sb.Build()
@@ -140,6 +166,16 @@ func (k *Keeper) SetAuthKeeper(ak types.AuthKeeper) {
 // SetFeegrantKeeper sets the feegrant keeper (called during module wiring).
 func (k *Keeper) SetFeegrantKeeper(fk types.FeegrantKeeper) {
 	k.feegrantKeeper = fk
+}
+
+// SetStakingKeeper sets the staking keeper for validator count queries.
+func (k *Keeper) SetStakingKeeper(sk types.StakingKeeper) {
+	k.stakingKeeper = sk
+}
+
+// SetBankKeeper sets the bank keeper for fee collection and distribution.
+func (k *Keeper) SetBankKeeper(bk types.BankKeeper) {
+	k.bankKeeper = bk
 }
 
 // GetEpochLength returns the current epoch_length parameter.

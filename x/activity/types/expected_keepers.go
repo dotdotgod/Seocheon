@@ -5,6 +5,7 @@ import (
 
 	"cosmossdk.io/x/feegrant"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
 // NodeKeeper defines the expected interface for the x/node module.
@@ -26,4 +27,18 @@ type AuthKeeper interface {
 // Used to determine if a node has a feegrant allowance (quota determination).
 type FeegrantKeeper interface {
 	GetAllowance(ctx context.Context, granter, grantee sdk.AccAddress) (feegrant.FeeAllowanceI, error)
+}
+
+// StakingKeeper defines the expected interface for the Staking module.
+// Used to get the active validator set size (N_d) for fee calculations.
+type StakingKeeper interface {
+	GetBondedValidatorsByPower(ctx context.Context) ([]stakingtypes.Validator, error)
+}
+
+// BankKeeper defines the expected interface for the Bank module.
+// Used for collecting and distributing activity fees.
+type BankKeeper interface {
+	SendCoins(ctx context.Context, fromAddr, toAddr sdk.AccAddress, amt sdk.Coins) error
+	SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
+	SendCoinsFromModuleToModule(ctx context.Context, senderModule, recipientModule string, amt sdk.Coins) error
 }

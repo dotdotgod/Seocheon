@@ -1,7 +1,7 @@
 # 구현 가이드: API, 모듈 구조, 로드맵
 
 > **담당**: 전체 개발팀 / PM
-> **관련 문서**: [개요](01_overview.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [체인 업그레이드](10_chain_upgrade.md) · [Circuit Breaker](11_circuit_breaker.md) · [IBC 전략](12_ibc_strategy.md) · [인덱서 아키텍처](13_indexer_architecture.md) · [전체 목차](README.md)
+> **관련 문서**: [개요](01_overview.md) · [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [디렉토리](06_directory_protocol.md) · [토큰 이코노믹스](07_tokenomics.md) · [스팸 방어](08_spam_defense.md) · [체인 업그레이드](10_chain_upgrade.md) · [Circuit Breaker](11_circuit_breaker.md) · [IBC 전략](12_ibc_strategy.md) · [인덱서 아키텍처](13_indexer_architecture.md) · [전체 목차](README.md)
 
 ## 거버넌스
 
@@ -86,7 +86,7 @@ message MsgUpdateAgentAddress {
 // 활동 제출 (타임스탬핑)
 message MsgSubmitActivity {
   string submitter = 1;              // 에이전트 지갑 주소 (TX 서명자)
-  bytes activity_hash = 2;           // 활동 해시 (구성 방법은 제출자 자유)
+  string activity_hash = 2;          // SHA-256 해시 (hex 인코딩, 64자)
   string content_uri = 3;            // 오프체인 데이터 위치
 }
 // submitter는 등록된 노드의 agent_address여야 함
@@ -198,7 +198,7 @@ x/node
 
 | 레이어 | 기술 | 선택 이유 |
 |--------|------|----------|
-| 블록체인 프레임워크 | Cosmos SDK v0.50+ | 모듈식 아키텍처, DPoS 네이티브 지원 |
+| 블록체인 프레임워크 | Cosmos SDK v0.53+ | 모듈식 아키텍처, DPoS 네이티브 지원 |
 | 합의 엔진 | CometBFT | BFT 합의, Cosmos 표준 |
 | 스마트 컨트랙트 | CosmWasm | 디렉토리 등 응용 레이어, 하드포크 없이 업그레이드 |
 | 체인 언어 | Go (체인), Rust (컨트랙트) | Cosmos SDK + CosmWasm 네이티브 |
@@ -211,9 +211,9 @@ x/node
 
 ## 구현 단계
 
-### Phase 0: 기반 구축
+### Phase 0: 기반 구축 ✅ 완료
 
-**Phase 0-A: x/node 모듈 기반**
+**Phase 0-A: x/node 모듈 기반** ✅
 - Cosmos SDK 프로젝트 스캐폴딩 (Ignite CLI)
 - 기본 체인 설정 (chain-id: `seocheon-1`, 제네시스)
 - `x/node` 모듈 스캐폴딩: Node protobuf, Registration Pool + Feegrant Pool ModuleAccount
@@ -224,43 +224,66 @@ x/node
 - Node 쿼리 서비스 (ByID, ByTag, ByOperator)
 - 단위 테스트: 등록 → 풀 차감 → 밸리데이터 생성 확인
 
-**Phase 0-B: 라이프사이클 완성**
+**Phase 0-B: 라이프사이클 완성** ✅
 - MsgUpdateNode, MsgUpdateNodeAgentShare 핸들러 (유예 기간 + 변경 속도 제한)
 - MsgUpdateAgentAddress 핸들러 (키 교체 + feegrant 이전 + 쿨다운)
 - MsgDeactivateNode 핸들러 (언본딩 + Registration Pool 회수)
 - EndBlocker: 언본딩 완료 노드의 1usum 자동 회수
 - 통합 테스트: 등록 → 위임 → 자동 졸업 → 비활성화 전체 플로우
 
-**Phase 0-C: 보상 분배**
+**Phase 0-C: 보상 분배** ✅
 - MsgWithdrawNodeCommission 핸들러 (커미션 인출 + agent_share 분할)
 - 단위 테스트: 커미션 인출 → operator/agent 분배 확인
 
-**Phase 0-D: 제네시스 + 테스트넷**
+**Phase 0-D: 제네시스 + 테스트넷** ✅
 - 제네시스 구성 (Registration Pool 1,000 KKOT, Genesis 1노드: Evangelist)
 - Feegrant Pool 제네시스 설정 (10,000 KKOT)
 - MsgRenewFeegrant 핸들러 (활동 이력 조건부 갱신)
 - 로컬 단일 밸리데이터 테스트넷
 
-### Phase 1: Activity Protocol
-- `x/activity` 모듈: ActivityRecord protobuf + MsgSubmitActivity TX
+### Phase 1: Activity Protocol ✅ 완료
+- `x/activity` 모듈: ActivityRecord protobuf (7필드) + MsgSubmitActivity TX
 - 타임스탬핑 로직: TX 블록 포함 = 타임스탬프
-- 오프체인 Activity Report 표준 형식 정의
-- activity_hash 중복 검증
-- 에포크당 제출 쿼터 (자비 부담 / feegrant 차등, TX 기준 차감)
+- activity_hash 형식: SHA-256 hex 문자열 (64자 고정)
+- activity_hash 중복 검증: 동일 노드 + 동일 에포크 내만 거부
+- 에포크당 제출 쿼터 (자비 부담 100건 / feegrant 10건, TX 기준 차감)
+- 윈도우별 활동 기록 추적 (에포크 8/12 윈도우 자격 판정)
 - 활동 기록 프루닝 EndBlocker (`activity_pruning_keep_blocks`)
+
+### Phase 1.5: 갭 해소 + 활동 비용 모델 🔄 진행 중
+
+**1.5-A: Feegrant AllowedMsgAllowance 래핑** (Gap 2+4)
+- PeriodicAllowance를 AllowedMsgAllowance로 래핑
+- allowed_messages: MsgSubmitActivity, MsgExecuteContract만 허용
+- 거버넌스 파라미터 `agent_feegrant_allowed_msg_types` 추가
+
+**1.5-B: 커미션율 커스텀 구현** (Gap 1)
+- msg_server_register_node.go의 하드코딩 제거
+- msg 필드의 commission_rates 사용
+
+**1.5-C: RenewFeegrant 활동 이력 검증** (Gap 5)
+- x/activity keeper 연동 (CountEligibleEpochs)
+- 직전 30에포크 중 20에포크 활동 자격 검증
+
+**1.5-D: 활동 비용 모델 구현**
+- 7개 거버넌스 파라미터 추가 (fee_threshold_multiplier, base_activity_fee 등)
+- 포화율(S) 기반 단계적 수수료: S ≤ 1.0 무료, S > 1.0 비용 부과
+- feegrant 노드 수수료 면제 + 쿼터 축소
+- EpochFeeState 캐시 (에포크 경계에서 1회 계산)
+- 수수료 분배: 80% 활동 풀 환원 + 20% 커뮤니티 풀
 
 ### Phase 2: CosmWasm + 노드 디렉토리
 - CosmWasm (x/wasm) 모듈 통합
 - 컨트랙트 ↔ x/node 연동 (Stargate Query로 노드 등록 여부 검증)
 - **노드 디렉토리 컨트랙트** 개발 (프로필, 인터페이스 등록, 디스커버리 쿼리)
 
-### Phase 3: 위임 및 보상
+### Phase 3: 이중 보상 풀 (x/distribution 확장)
 - `x/distribution` 확장: **이중 보상 풀** (위임 풀 + 활동 풀) 분배 로직
-  - 윈도우별 활동 기록 추적 및 에포크별 활동 자격 노드 집계 (8/12 윈도우 기준)
   - 위임 풀: 기존 DPoS 지분율 비례 분배
-  - 활동 풀: 자격 노드 균등 분배
+  - 활동 풀: 자격 노드 균등 분배 (에포크 전환 시 일괄)
   - 동적 보상 비율 공식: `delegation_ratio = max(D_min, N_d / (N_a + N_d))`
   - `D_min` 거버넌스 파라미터
+  - 활동 수수료 환원 통합
 - 위임/철회 UX
 - 인덱서 + 대시보드 프로토타입
 

@@ -62,6 +62,7 @@ func (ms msgServer) SubmitActivity(ctx context.Context, msg *types.MsgSubmitActi
 	// 7. Determine quota (feegrant vs self-funded).
 	quota := params.SelfFundedQuota
 	quotaType := "self_funded"
+	isFeegrantNode := false
 
 	if ms.feegrantKeeper != nil && ms.authKeeper != nil {
 		feegrantPoolAddr := ms.authKeeper.GetModuleAddress(nodetypes.FeegrantPoolName)
@@ -70,8 +71,10 @@ func (ms msgServer) SubmitActivity(ctx context.Context, msg *types.MsgSubmitActi
 			if err == nil {
 				allowance, err := ms.feegrantKeeper.GetAllowance(ctx, feegrantPoolAddr, submitterAddr)
 				if err == nil && allowance != nil {
-					quota = params.FeegrantQuota
+					isFeegrantNode = true
 					quotaType = "feegrant"
+					// Use effective quota (adjusted for saturation).
+					quota = uint64(ms.GetEpochEffectiveQuota(ctx, epoch))
 				}
 			}
 		}
@@ -84,6 +87,23 @@ func (ms msgServer) SubmitActivity(ctx context.Context, msg *types.MsgSubmitActi
 	}
 	if quotaUsed >= quota {
 		return nil, types.ErrQuotaExceeded.Wrapf("used %d of %d (%s)", quotaUsed, quota, quotaType)
+	}
+
+	// 8.5. Charge activity fee (if applicable).
+	activityFee := ms.GetEpochActivityFee(ctx, epoch)
+	if activityFee > 0 && !(isFeegrantNode && params.FeegrantFeeExempt) {
+		// Self-funded nodes (or feegrant nodes when feegrant_fee_exempt=false) pay the fee.
+		// Fee is tracked for later distribution at epoch boundary.
+		if err := ms.CollectActivityFee(ctx, epoch, activityFee); err != nil {
+			return nil, err
+		}
+
+		sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeActivityFeeCharged,
+			sdk.NewAttribute(types.AttributeKeyNodeID, nodeID),
+			sdk.NewAttribute("fee_amount", fmt.Sprintf("%d", activityFee)),
+			sdk.NewAttribute(types.AttributeKeyQuotaType, quotaType),
+		))
 	}
 
 	// 9. Get next sequence.

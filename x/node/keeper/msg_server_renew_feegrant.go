@@ -43,9 +43,28 @@ func (k msgServer) RenewFeegrant(ctx context.Context, msg *types.MsgRenewFeegran
 		return nil, errorsmod.Wrap(types.ErrNodeNotFound, "node has no agent address")
 	}
 
-	// TODO: Phase 1 — Check activity history via x/activity module.
+	// Check activity history via x/activity module.
 	// Requirement: At least 20 out of the last 30 epochs with activity qualification.
-	// For Phase 0, we skip this check and allow renewal for any eligible node.
+	if k.activityKeeper != nil {
+		epochLength, err := k.activityKeeper.GetEpochLength(ctx)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to get epoch length")
+		}
+		currentEpoch := sdkCtx.BlockHeight() / epochLength
+
+		const requiredEligibleEpochs int64 = 20
+		const lookbackEpochs int64 = 30
+
+		eligibleCount, err := k.activityKeeper.CountEligibleEpochs(ctx, nodeID, currentEpoch, lookbackEpochs)
+		if err != nil {
+			return nil, errorsmod.Wrap(err, "failed to check activity history")
+		}
+		if eligibleCount < requiredEligibleEpochs {
+			return nil, errorsmod.Wrapf(types.ErrInsufficientActivity,
+				"node %s has %d eligible epochs out of last %d (need %d)",
+				nodeID, eligibleCount, lookbackEpochs, requiredEligibleEpochs)
+		}
+	}
 
 	// Grant new feegrant (overwrites expired grant, best-effort).
 	_ = k.grantAgentFeegrant(ctx, node.AgentAddress)
