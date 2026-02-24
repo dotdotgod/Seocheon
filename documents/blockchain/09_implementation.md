@@ -40,38 +40,36 @@ message MsgRegisterNode {
   string website = 6;                // 운영자 웹사이트
   repeated string tags = 7;          // 노드 태그 (최대 10개, 각 최대 32자)
   google.protobuf.Any consensus_pubkey = 8; // CometBFT 합의 공개키 (ed25519)
-  CommissionRates commission_rates = 9;     // 밸리데이터 커미션율 (Cosmos SDK 표준)
+  string commission_rate = 9;        // 밸리데이터 커미션율 (Dec, 기본 0%)
+  string commission_max_rate = 10;   // 최대 커미션율 (Dec, 기본 100%)
+  string commission_max_change_rate = 11; // 에포크당 최대 커미션 변경폭 (Dec, 기본 100%)
 }
 // 내부적으로 Registration Pool에서 1 usum 대여 → CreateValidator 실행
 
 message MsgUpdateNode {
-  string operator = 1;               // TX 서명자 (operator만 가능)
-  string node_id = 2;
-  string description = 3;            // 업데이트된 설명 (선택)
-  string website = 4;                // 업데이트된 웹사이트 (선택)
-  repeated string tags = 5;          // 업데이트된 태그 (선택)
+  string operator = 1;               // TX 서명자 (operator만 가능, 1:1 노드 조회)
+  string description = 2;            // 업데이트된 설명 (선택)
+  string website = 3;                // 업데이트된 웹사이트 (선택)
+  repeated string tags = 4;          // 업데이트된 태그 (선택)
 }
 // agent_address 변경은 별도 MsgUpdateAgentAddress 사용 (쿨다운 + feegrant 이전)
 // agent_share 변경은 별도 MsgUpdateNodeAgentShare 사용 (유예 기간 적용)
 // 커미션율 변경은 표준 MsgEditValidator 사용
 
 message MsgUpdateNodeAgentShare {
-  string operator = 1;               // TX 서명자 (operator만 가능)
-  string node_id = 2;
-  string new_agent_share = 3;        // 변경 희망값
+  string operator = 1;               // TX 서명자 (operator만 가능, 1:1 노드 조회)
+  string new_agent_share = 2;        // 변경 희망값
 }
 // max_agent_share_change_rate 초과 시 거부
 // 유예 기간 1 에포크(17,280 블록) 후 적용, 대시보드에 "변경 예정" 표시
 
 message MsgWithdrawNodeCommission {
-  string operator = 1;               // TX 서명자 (operator만 가능)
-  string node_id = 2;
+  string operator = 1;               // TX 서명자 (operator만 가능, 1:1 노드 조회)
 }
 // 내부: WithdrawValidatorCommission 호출 후 agent_share 비율로 분할 전송
 
 message MsgDeactivateNode {
-  string operator = 1;               // TX 서명자 (operator만 가능)
-  string node_id = 2;
+  string operator = 1;               // TX 서명자 (operator만 가능, 1:1 노드 조회)
 }
 // 1 usum 언본딩 → Registration Pool 회수
 
@@ -115,37 +113,45 @@ message MsgSubmitActivity {
 ### Query API
 
 ```protobuf
-service Query {
-  // 노드 조회
+// x/node 쿼리 서비스
+service NodeQuery {
+  rpc Params(QueryParamsRequest)
+      returns (QueryParamsResponse);
   rpc Node(QueryNodeRequest)
       returns (QueryNodeResponse);
   rpc NodesByTag(QueryNodesByTagRequest)
       returns (QueryNodesByTagResponse);
-  rpc NodesByOperator(QueryNodesByOperatorRequest)
-      returns (QueryNodesByOperatorResponse);
+  rpc NodeByOperator(QueryNodeByOperatorRequest)
+      returns (QueryNodeByOperatorResponse);
   rpc NodeByAgentAddress(QueryNodeByAgentAddressRequest)
       returns (QueryNodeByAgentAddressResponse);   // CosmWasm 컨트랙트가 Stargate Query로 사용
+  rpc AllNodes(QueryAllNodesRequest)
+      returns (QueryAllNodesResponse);
+}
 
-  // 활동 기록 조회
+// x/activity 쿼리 서비스
+service ActivityQuery {
+  rpc Params(QueryParamsRequest)
+      returns (QueryParamsResponse);
   rpc Activity(QueryActivityRequest)
       returns (QueryActivityResponse);                    // activity_hash로 조회 → 블록 번호 반환
   rpc ActivitiesByNode(QueryActivitiesByNodeRequest)
       returns (QueryActivitiesByNodeResponse);            // 노드별 활동 기록 목록 (페이지네이션)
   rpc ActivitiesByBlock(QueryActivitiesByBlockRequest)
       returns (QueryActivitiesByBlockResponse);           // 특정 블록의 활동 기록 목록
-
-  // 보상 조회
-  rpc PendingRewards(QueryPendingRewardsRequest)
-      returns (QueryPendingRewardsResponse);
-
-  // 노드 디렉토리 조회 (CosmWasm 컨트랙트 쿼리)
-  // wasm/contract/{directory_addr}/smart/{query_json}
-  //   - ProfileByNode { node }                   → 노드 프로필
-  //   - NodesByCapability { capability, ... }    → 능력별 노드 목록
-  //   - NodesByInterface { protocol, ... }       → 인터페이스별 노드 목록
-  //   - InterfaceSpec { node, interface_id }     → 인터페이스 스펙
-  //   - AllCapabilities { ... }                  → 전체 능력 목록
+  rpc EpochInfo(QueryEpochInfoRequest)
+      returns (QueryEpochInfoResponse);                   // 현재 에포크/윈도우 정보
+  rpc NodeEpochActivity(QueryNodeEpochActivityRequest)
+      returns (QueryNodeEpochActivityResponse);           // 노드의 에포크별 활동 요약
 }
+
+// 노드 디렉토리 조회 (CosmWasm 컨트랙트 쿼리)
+// wasm/contract/{directory_addr}/smart/{query_json}
+//   - ProfileByNode { node }                   → 노드 프로필
+//   - NodesByCapability { capability, ... }    → 능력별 노드 목록
+//   - NodesByInterface { protocol, ... }       → 인터페이스별 노드 목록
+//   - InterfaceSpec { node, interface_id }     → 인터페이스 스펙
+//   - AllCapabilities { ... }                  → 전체 능력 목록
 ```
 
 ---
@@ -250,7 +256,7 @@ x/node
 - 윈도우별 활동 기록 추적 (에포크 8/12 윈도우 자격 판정)
 - 활동 기록 프루닝 EndBlocker (`activity_pruning_keep_blocks`)
 
-### Phase 1.5: 갭 해소 + 활동 비용 모델 🔄 진행 중
+### Phase 1.5: 갭 해소 + 활동 비용 모델 ✅ 완료
 
 **1.5-A: Feegrant AllowedMsgAllowance 래핑** (Gap 2+4)
 - PeriodicAllowance를 AllowedMsgAllowance로 래핑
@@ -270,7 +276,7 @@ x/node
 - 포화율(S) 기반 단계적 수수료: S ≤ 1.0 무료, S > 1.0 비용 부과
 - feegrant 노드 수수료 면제 + 쿼터 축소
 - EpochFeeState 캐시 (에포크 경계에서 1회 계산)
-- 수수료 분배: 80% 활동 풀 환원 + 20% 커뮤니티 풀
+- 수수료 수집 (분배는 Phase 3 x/distribution 확장 시 적용: 80% 활동 풀 + 20% 커뮤니티 풀)
 
 ### Phase 2: CosmWasm + 노드 디렉토리
 - CosmWasm (x/wasm) 모듈 통합

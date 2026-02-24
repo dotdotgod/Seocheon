@@ -137,6 +137,7 @@ CREATE TABLE activities (
 CREATE INDEX idx_activities_node_epoch ON activities(node_id, epoch_number);
 CREATE INDEX idx_activities_window ON activities(window_number);
 CREATE INDEX idx_activities_block ON activities(block_height);
+```
 
 ### 에포크/윈도우별 집계 데이터
 

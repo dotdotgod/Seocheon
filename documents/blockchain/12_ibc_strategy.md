@@ -7,7 +7,7 @@
 
 ## 개요
 
-Seocheon의 IBC(Inter-Blockchain Communication) 전략은 세 가지 목표를 추구한다:
+Seocheon의 IBC(Inter-Blockchain Communication) 전략은 두 가지 목표를 추구한다:
 
 1. **KKOT 토큰의 크로스체인 전송**: Cosmos 생태계 내 체인 간 KKOT 이동 경로 확보
 2. **크로스체인 Activity Protocol**: 다른 체인의 에이전트가 Seocheon에 활동을 제출할 수 있는 경로 제공
