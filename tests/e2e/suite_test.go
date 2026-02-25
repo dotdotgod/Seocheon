@@ -11,6 +11,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/testutil/network"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
+	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"seocheon/app"
@@ -57,6 +59,9 @@ func (s *E2ESuite) SetupSuite() {
 
 	// Patch genesis: bank balances for module accounts.
 	s.patchBankGenesis(&cfg)
+
+	// Patch genesis: x/gov fast voting for governance tests.
+	s.patchGovGenesis(&cfg)
 
 	s.cfg = cfg
 
@@ -134,9 +139,14 @@ func (s *E2ESuite) patchBankGenesis(cfg *network.Config) {
 	fgPoolAddr := authtypes_ModuleAddress(nodetypes.FeegrantPoolName)
 	fgPoolCoins := sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(100000)))
 
+	// Fund activity_reward_pool with 1,000,000 usum for reward distribution tests.
+	arPoolAddr := authtypes_ModuleAddress(activitytypes.ActivityRewardPoolName)
+	arPoolCoins := sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(1_000_000)))
+
 	bankGen.Balances = append(bankGen.Balances,
 		banktypes.Balance{Address: regPoolAddr, Coins: regPoolCoins},
 		banktypes.Balance{Address: fgPoolAddr, Coins: fgPoolCoins},
+		banktypes.Balance{Address: arPoolAddr, Coins: arPoolCoins},
 	)
 
 	// Clear supply so InitGenesis auto-calculates from balances.
@@ -146,4 +156,26 @@ func (s *E2ESuite) patchBankGenesis(cfg *network.Config) {
 	bz, err := cfg.Codec.MarshalJSON(&bankGen)
 	s.Require().NoError(err)
 	cfg.GenesisState[banktypes.ModuleName] = bz
+}
+
+// patchGovGenesis configures fast voting period for governance tests.
+func (s *E2ESuite) patchGovGenesis(cfg *network.Config) {
+	var govGen govv1.GenesisState
+	s.Require().NoError(cfg.Codec.UnmarshalJSON(cfg.GenesisState[govtypes.ModuleName], &govGen))
+
+	votingPeriod := 10 * time.Second
+	depositPeriod := 10 * time.Second
+
+	if govGen.Params == nil {
+		govGen.Params = &govv1.Params{}
+	}
+	govGen.Params.VotingPeriod = &votingPeriod
+	govGen.Params.MaxDepositPeriod = &depositPeriod
+	govGen.Params.MinDeposit = sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(10)))
+	govGen.Params.Quorum = "0.000001"
+	govGen.Params.Threshold = "0.5"
+
+	bz, err := cfg.Codec.MarshalJSON(&govGen)
+	s.Require().NoError(err)
+	cfg.GenesisState[govtypes.ModuleName] = bz
 }

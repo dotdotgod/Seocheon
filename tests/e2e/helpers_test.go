@@ -23,6 +23,7 @@ import (
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
+	govv1 "github.com/cosmos/cosmos-sdk/x/gov/types/v1"
 	activitytypes "seocheon/x/activity/types"
 	nodetypes "seocheon/x/node/types"
 )
@@ -235,4 +236,46 @@ func (s *E2ESuite) clientCtxForKey(val *network.Validator, keyName string) clien
 		WithFromAddress(addr).
 		WithFromName(keyName).
 		WithBroadcastMode(flags.BroadcastSync)
+}
+
+// queryActivityParams queries the x/activity module parameters.
+func (s *E2ESuite) queryActivityParams() activitytypes.Params {
+	val := s.network.Validators[0]
+	qc := activitytypes.NewQueryClient(val.ClientCtx)
+	resp, err := qc.Params(context.Background(), &activitytypes.QueryParamsRequest{})
+	s.Require().NoError(err)
+	return resp.Params
+}
+
+// queryNodeByOperator queries a node by its operator address.
+func (s *E2ESuite) queryNodeByOperator(operatorAddr string) nodetypes.Node {
+	val := s.network.Validators[0]
+	qc := nodetypes.NewQueryClient(val.ClientCtx)
+	resp, err := qc.NodeByOperator(context.Background(), &nodetypes.QueryNodeByOperatorRequest{
+		Operator: operatorAddr,
+	})
+	s.Require().NoError(err)
+	return resp.GetNode()
+}
+
+// queryActivitiesByNode queries activity records for a given node ID.
+func (s *E2ESuite) queryActivitiesByNode(nodeID string) []activitytypes.ActivityRecord {
+	val := s.network.Validators[0]
+	qc := activitytypes.NewQueryClient(val.ClientCtx)
+	resp, err := qc.ActivitiesByNode(context.Background(), &activitytypes.QueryActivitiesByNodeRequest{
+		NodeId: nodeID,
+	})
+	s.Require().NoError(err)
+	return resp.GetActivities()
+}
+
+// queryGovProposal queries a governance proposal by ID.
+func (s *E2ESuite) queryGovProposal(proposalID uint64) *govv1.Proposal {
+	val := s.network.Validators[0]
+	qc := govv1.NewQueryClient(val.ClientCtx)
+	resp, err := qc.Proposal(context.Background(), &govv1.QueryProposalRequest{
+		ProposalId: proposalID,
+	})
+	s.Require().NoError(err)
+	return resp.GetProposal()
 }

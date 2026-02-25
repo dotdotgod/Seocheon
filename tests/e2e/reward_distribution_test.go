@@ -114,8 +114,32 @@ func (s *E2ESuite) TestRewardDistribution() {
 	// Their balance may change from staking rewards but not from activity rewards.
 	totalB_before := balOpB_before.Amount.Add(balAgB_before.Amount)
 	totalB_after := balOpB_after.Amount.Add(balAgB_after.Amount)
+	deltaB := totalB_after.Sub(totalB_before)
 	s.T().Logf("node B total change: %s -> %s (delta=%s)",
-		totalB_before, totalB_after, totalB_after.Sub(totalB_before))
+		totalB_before, totalB_after, deltaB)
 
-	s.T().Log("reward distribution test completed")
+	// --- Assertions ---
+	// Activity reward pool was funded with 1,000,000 usum at genesis.
+	// Only Node A (1 eligible node) receives the full pool.
+	// Agent share = 30%: agent gets 300,000, operator gets 700,000.
+	// Using GTE to account for possible mint inflation dust.
+	deltaOpA := balOpA_after.Amount.Sub(balOpA_before.Amount)
+	deltaAgA := balAgA_after.Amount.Sub(balAgA_before.Amount)
+	deltaA := totalA_after.Sub(totalA_before)
+
+	s.T().Logf("node A deltas: operator=%s, agent=%s, total=%s", deltaOpA, deltaAgA, deltaA)
+
+	s.Require().True(deltaOpA.GTE(sdkmath.NewInt(700_000)),
+		"operator A should receive >= 700,000 usum (70%% of pool), got %s", deltaOpA)
+	s.Require().True(deltaAgA.GTE(sdkmath.NewInt(300_000)),
+		"agent A should receive >= 300,000 usum (30%% of pool), got %s", deltaAgA)
+	s.Require().True(deltaA.GTE(sdkmath.NewInt(1_000_000)),
+		"node A total should receive >= 1,000,000 usum (full pool), got %s", deltaA)
+
+	// Node B is ineligible: should receive no activity rewards.
+	// Only possible delta is staking reward dust, which should be small.
+	s.Require().True(deltaB.LT(sdkmath.NewInt(100_000)),
+		"node B total delta should be < 100,000 usum (no activity rewards), got %s", deltaB)
+
+	s.T().Log("reward distribution test completed: assertions passed")
 }
