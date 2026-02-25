@@ -12,6 +12,7 @@ const (
 	EventTypeCommissionWithdrawn   = "node_commission_withdrawn"
 	EventTypeFeegrantRenewed       = "feegrant_renewed"
 	EventTypeFeegrantGrantFailed   = "feegrant_grant_failed"
+	EventTypeNodeJailed            = "node_jailed"
 	EventTypeUndelegateFailed      = "undelegate_failed"
 )
 

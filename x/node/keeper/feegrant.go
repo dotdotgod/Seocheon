@@ -96,6 +96,25 @@ func (k Keeper) grantAgentFeegrant(ctx context.Context, agentAddr string) error 
 	return nil
 }
 
+// revokeAgentFeegrant revokes the feegrant from the Feegrant Pool to the given agent address.
+// This is best-effort: if feegrantMsgServer is not wired or revocation fails, the error is silently ignored.
+func (k Keeper) revokeAgentFeegrant(ctx context.Context, agentAddr string) {
+	if k.feegrantMsgServer == nil || agentAddr == "" {
+		return
+	}
+
+	feegrantPoolAddr := k.authKeeper.GetModuleAddress(nodetypes.FeegrantPoolName)
+	if feegrantPoolAddr == nil {
+		return
+	}
+
+	msg := &feegrant.MsgRevokeAllowance{
+		Granter: feegrantPoolAddr.String(),
+		Grantee: agentAddr,
+	}
+	_, _ = k.feegrantMsgServer.RevokeAllowance(ctx, msg)
+}
+
 // mustPackAllowance wraps a feegrant allowance into an Any for AllowedMsgAllowance.
 func mustPackAllowance(allowance proto.Message) *types.Any {
 	any, err := types.NewAnyWithValue(allowance)

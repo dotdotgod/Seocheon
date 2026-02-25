@@ -41,8 +41,18 @@ func (k msgServer) DeactivateNode(ctx context.Context, msg *types.MsgDeactivateN
 	// Remove any pending agent share changes.
 	_ = k.PendingAgentShareChanges.Remove(ctx, nodeID)
 
-	// Note: agent feegrant will expire naturally (6 months).
-	// Revocation via feegrant MsgServer will be added in Phase 1.
+	// Revoke agent feegrant immediately.
+	k.revokeAgentFeegrant(ctx, node.AgentAddress)
+
+	// Reclaim 1 usum from operator to Registration Pool (pre-paid return).
+	// The 1 usum will also return to operator after unbonding completes via x/staking.
+	if bondDenom, bondErr := k.stakingKeeper.BondDenom(ctx); bondErr == nil {
+		operatorAddr, addrErr := sdk.AccAddressFromBech32(msg.Operator)
+		if addrErr == nil {
+			oneUsum := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(1)))
+			_ = k.bankKeeper.SendCoinsFromAccountToModule(ctx, operatorAddr, types.RegistrationPoolName, oneUsum)
+		}
+	}
 
 	// Begin unbonding 1 usum self-delegation via staking MsgServer.
 	if k.stakingMsgServer != nil && node.ValidatorAddress != "" {

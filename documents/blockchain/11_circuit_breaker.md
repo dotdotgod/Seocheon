@@ -3,6 +3,8 @@
 > **담당**: 체인 코어 개발자 / 보안
 > **관련 문서**: [개요](01_overview.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [스팸 방어](08_spam_defense.md) · [구현 가이드](09_implementation.md) · [체인 업그레이드](10_chain_upgrade.md) · [재단 전략](../foundation_strategy.md) · [전체 목차](README.md)
 
+> **구현 상태**: 현재 Cosmos SDK 표준 `x/circuit` 모듈만 적용되어 있다. 이 문서에 기술된 Seocheon 커스텀 Circuit Breaker는 Phase 2에서 구현 예정이다.
+
 ---
 
 ## 1. 개요

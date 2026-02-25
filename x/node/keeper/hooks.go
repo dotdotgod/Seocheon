@@ -124,6 +124,36 @@ func (h Hooks) AfterDelegationModified(ctx context.Context, delAddr sdk.AccAddre
 	return nil
 }
 func (h Hooks) BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddress, fraction math.LegacyDec) error {
+	valAddrStr, err := sdk.Bech32ifyAddressBytes("seocheonvaloper", valAddr)
+	if err != nil {
+		return nil // silently skip if address conversion fails
+	}
+
+	nodeID, err := h.k.ValidatorIndex.Get(ctx, valAddrStr)
+	if err != nil {
+		return nil // not a registered node, skip
+	}
+
+	node, err := h.k.Nodes.Get(ctx, nodeID)
+	if err != nil {
+		return nil
+	}
+
+	// Transition ACTIVE → JAILED when a validator is slashed.
+	if node.Status == types.NodeStatus_NODE_STATUS_ACTIVE {
+		node.Status = types.NodeStatus_NODE_STATUS_JAILED
+		if err := h.k.Nodes.Set(ctx, nodeID, node); err != nil {
+			return err
+		}
+
+		sdkCtx := sdk.UnwrapSDKContext(ctx)
+		sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
+			types.EventTypeNodeJailed,
+			sdk.NewAttribute(types.AttributeKeyNodeID, nodeID),
+			sdk.NewAttribute(types.AttributeKeyValidatorAddress, valAddrStr),
+		))
+	}
+
 	return nil
 }
 func (h Hooks) AfterUnbondingInitiated(ctx context.Context, id uint64) error {

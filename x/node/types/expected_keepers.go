@@ -49,11 +49,13 @@ type SlashingKeeper interface {
 }
 
 // FeegrantKeeper defines the expected interface for the Feegrant module.
-// Note: RevokeAllowance is private in SDK feegrant keeper. For Phase 0,
-// old feegrants expire naturally (6 months). Revocation will be added in Phase 1
-// via feegrant MsgServer integration.
 type FeegrantKeeper interface {
 	GrantAllowance(ctx context.Context, granter, grantee sdk.AccAddress, feeAllowance feegrant.FeeAllowanceI) error
+}
+
+// FeegrantMsgServer defines the interface for revoking feegrant allowances.
+type FeegrantMsgServer interface {
+	RevokeAllowance(context.Context, *feegrant.MsgRevokeAllowance) (*feegrant.MsgRevokeAllowanceResponse, error)
 }
 
 // ActivityKeeper defines the expected interface for the Activity module.

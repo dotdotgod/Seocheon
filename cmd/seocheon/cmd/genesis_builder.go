@@ -170,6 +170,11 @@ func runGenesisBuild(clientCtx client.Context, genesisFile string, mbm module.Ba
 		return fmt.Errorf("community pool: %w", err)
 	}
 
+	// Register denomination metadata.
+	if err := registerDenomMetadata(cdc, appState); err != nil {
+		return fmt.Errorf("denom metadata: %w", err)
+	}
+
 	// Update bank supply.
 	if err := updateBankSupply(cdc, appState, alloc); err != nil {
 		return fmt.Errorf("bank supply: %w", err)
@@ -402,5 +407,35 @@ func updateBankSupply(cdc codec.Codec, appState map[string]json.RawMessage, allo
 
 	fmt.Printf("  Bank supply set to: %s usum (%s KKOT)\n",
 		totalFromBalances, totalFromBalances.Quo(math.NewInt(usumPerKKOT)))
+	return nil
+}
+
+func registerDenomMetadata(cdc codec.Codec, appState map[string]json.RawMessage) error {
+	var bankGenesis banktypes.GenesisState
+	if err := cdc.UnmarshalJSON(appState[banktypes.ModuleName], &bankGenesis); err != nil {
+		return err
+	}
+
+	bankGenesis.DenomMetadata = []banktypes.Metadata{
+		{
+			Description: "The native token of the Seocheon network",
+			DenomUnits: []*banktypes.DenomUnit{
+				{Denom: "usum", Exponent: 0, Aliases: []string{"microkkot"}},
+				{Denom: "hon", Exponent: 3, Aliases: []string{"millikkkot"}},
+				{Denom: "kkot", Exponent: 6},
+			},
+			Base:    "usum",
+			Display: "kkot",
+			Name:    "KKOT",
+			Symbol:  "KKOT",
+		},
+	}
+
+	bz, err := cdc.MarshalJSON(&bankGenesis)
+	if err != nil {
+		return err
+	}
+	appState[banktypes.ModuleName] = bz
+	fmt.Println("  Registered denom metadata: usum (base) → hon (milli, 10^3) → kkot (display, 10^6)")
 	return nil
 }

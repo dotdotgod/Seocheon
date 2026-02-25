@@ -56,14 +56,14 @@ func (k msgServer) UpdateAgentAddress(ctx context.Context, msg *types.MsgUpdateA
 		}
 	}
 
-	// Remove old agent index.
-	// Note: old agent's feegrant will expire naturally (6 months).
-	// Revocation via feegrant MsgServer will be added in Phase 1.
+	// Remove old agent index and revoke feegrant.
 	oldAgent := node.AgentAddress
 	if oldAgent != "" {
 		if err := k.AgentIndex.Remove(ctx, oldAgent); err != nil {
 			return nil, errorsmod.Wrap(err, "failed to remove old agent index")
 		}
+		// Revoke old agent's feegrant immediately.
+		k.revokeAgentFeegrant(ctx, oldAgent)
 	}
 
 	// Set new agent address.

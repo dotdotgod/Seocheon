@@ -5,6 +5,8 @@
 
 > **면책 조항**: 이 문서는 프로토콜 메커니즘에 대한 기술 설계 문서이며 투자 권유가 아니다. IBC 연결은 기술적 목표이며, 크로스체인 토큰 이동이 어떠한 형태의 수익도 보장하지 않는다.
 
+> **구현 상태**: IBC 기본 인프라(ibc-transfer, ICA)는 구현 완료. 크로스체인 Activity 커스텀 모듈은 Phase 2에서 구현 예정이다.
+
 ## 개요
 
 Seocheon의 IBC(Inter-Blockchain Communication) 전략은 두 가지 목표를 추구한다:

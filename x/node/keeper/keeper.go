@@ -55,6 +55,7 @@ type Keeper struct {
 	distributionKeeper types.DistributionKeeper
 	slashingKeeper     types.SlashingKeeper
 	feegrantKeeper     types.FeegrantKeeper
+	feegrantMsgServer  types.FeegrantMsgServer
 	activityKeeper     types.ActivityKeeper
 }
 
@@ -129,6 +130,11 @@ func (k *Keeper) SetSlashingKeeper(sk types.SlashingKeeper) {
 // SetFeegrantKeeper sets the feegrant keeper.
 func (k *Keeper) SetFeegrantKeeper(fk types.FeegrantKeeper) {
 	k.feegrantKeeper = fk
+}
+
+// SetFeegrantMsgServer sets the feegrant module's MsgServer for RevokeAllowance.
+func (k *Keeper) SetFeegrantMsgServer(fms types.FeegrantMsgServer) {
+	k.feegrantMsgServer = fms
 }
 
 // SetActivityKeeper sets the activity keeper for feegrant renewal eligibility checks.

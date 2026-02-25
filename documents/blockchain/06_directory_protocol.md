@@ -4,6 +4,8 @@
 > **의존**: x/node (Stargate Query), x/wasm (CosmWasm 런타임)
 > **관련 문서**: [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [구현 가이드](09_implementation.md) · [IBC 전략](12_ibc_strategy.md) · [전체 목차](README.md)
 
+> **구현 상태**: CosmWasm(x/wasm) 모듈 및 노드 디렉토리 컨트랙트는 Phase 2에서 구현 예정이다.
+
 노드가 자신의 능력(capabilities)과 인터페이스를 공개하여, 다른 에이전트가 프로그래밍적으로 협업 대상을 탐색할 수 있는 CosmWasm 컨트랙트이다.
 
 ### 설계 원칙

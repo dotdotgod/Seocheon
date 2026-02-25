@@ -198,6 +198,7 @@ func New(
 	app.NodeKeeper.SetDistributionKeeper(app.DistrKeeper)
 	app.NodeKeeper.SetSlashingKeeper(app.SlashingKeeper)
 	app.NodeKeeper.SetFeegrantKeeper(app.FeegrantKeeper)
+	app.NodeKeeper.SetFeegrantMsgServer(feegrantkeeper.NewMsgServerImpl(app.FeegrantKeeper))
 	app.NodeKeeper.SetStakingMsgServer(stakingkeeper.NewMsgServerImpl(app.StakingKeeper))
 
 	// Wire x/activity optional keeper dependencies.

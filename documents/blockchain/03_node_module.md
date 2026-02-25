@@ -463,12 +463,13 @@ MsgDeactivateNode (operator 서명)
 │
 ├── [1] Node 상태 → INACTIVE 전환
 │
-├── [2] 자기위임 1usum 언본딩 시작
-│   └── MinSelfDelegation 미충족 → 밸리데이터 Jail
+├── [2] agent feegrant 즉시 취소 (RevokeAllowance)
 │
-└── [3] 언본딩 완료 후 (362,880 블록, ~21일)
-    ├── 1 usum 회수 → Registration Pool로 반환 (재활용)
-    └── x/node EndBlocker에서 자동 감지 및 회수
+├── [3] 1 usum 즉시 회수 → operator → Registration Pool (선불 반환)
+│
+└── [4] 자기위임 1usum 언본딩 시작
+    └── MinSelfDelegation 미충족 → 밸리데이터 Jail
+    └── 언본딩 완료(~21일) 후 1 usum은 operator에게 반환됨 (x/staking 표준)
 ```
 
 ### 합의 공개키 (Consensus Pubkey) 제공 시점

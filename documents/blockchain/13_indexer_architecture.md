@@ -3,6 +3,8 @@
 > **담당**: 인프라 / 백엔드 개발자
 > **관련 문서**: [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [디렉토리](06_directory_protocol.md) · [구현 가이드](09_implementation.md) · [전체 목차](README.md)
 
+> **구현 상태**: 인덱서는 오프체인 인프라로 Phase 3 이후에 구현 예정이다.
+
 ## 개요
 
 Seocheon 인덱서는 온체인 이벤트를 수집·가공하여 위임자, 노드 운영자, 대시보드에 구조화된 데이터를 제공하는 오프체인 인프라이다.
