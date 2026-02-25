@@ -11,8 +11,9 @@ import (
 	"seocheon/x/node/types"
 )
 
-// UpdateNodeAgentShare requests an agent_share change with rate limiting.
-// The change is stored as a PendingAgentShareChange and applied at the next epoch boundary.
+// UpdateNodeAgentShare requests an agent_share change toward a target value.
+// The change is stored as a PendingAgentShareChange and applied gradually
+// over multiple epochs (max_agent_share_change_rate per epoch) by EndBlocker.
 func (k msgServer) UpdateNodeAgentShare(ctx context.Context, msg *types.MsgUpdateNodeAgentShare) (*types.MsgUpdateNodeAgentShareResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
@@ -38,16 +39,9 @@ func (k msgServer) UpdateNodeAgentShare(ctx context.Context, msg *types.MsgUpdat
 		return nil, errorsmod.Wrapf(types.ErrInvalidAgentShare, "new_agent_share %s out of range [0, 100]", msg.NewAgentShare)
 	}
 
-	// Check rate limit: |new - current| must not exceed max_agent_share_change_rate.
-	diff := msg.NewAgentShare.Sub(node.AgentShare).Abs()
-	if diff.GT(node.MaxAgentShareChangeRate) {
-		return nil, errorsmod.Wrapf(types.ErrAgentShareChangeExceedsMax,
-			"change %s exceeds max rate %s per epoch", diff, node.MaxAgentShareChangeRate)
-	}
-
-	// Check no existing pending change.
+	// Check no existing pending change (must complete before submitting a new target).
 	if has, _ := k.PendingAgentShareChanges.Has(ctx, nodeID); has {
-		return nil, errorsmod.Wrap(types.ErrAgentShareChangeExceedsMax, "a pending agent share change already exists for this node")
+		return nil, errorsmod.Wrap(types.ErrAgentShareChangePending, "a pending agent share change already exists; wait for completion before submitting a new target")
 	}
 
 	// Calculate apply_at_block: next epoch boundary.

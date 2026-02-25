@@ -227,17 +227,18 @@ func applyMintParams(cdc codec.Codec, appState map[string]json.RawMessage) error
 	}
 
 	mintGenesis.Params.MintDenom = "usum"
-	mintGenesis.Params.InflationMin = math.LegacyNewDecWithPrec(7, 2)  // 7%
-	mintGenesis.Params.InflationMax = math.LegacyNewDecWithPrec(15, 2) // 15%
-	mintGenesis.Params.GoalBonded = math.LegacyNewDecWithPrec(67, 2)   // 67%
-	mintGenesis.Params.BlocksPerYear = 6_307_200                       // 5s blocks
+	mintGenesis.Params.InflationMin = math.LegacyNewDecWithPrec(7, 2)          // 7%
+	mintGenesis.Params.InflationMax = math.LegacyNewDecWithPrec(15, 2)         // 15%
+	mintGenesis.Params.InflationRateChange = math.LegacyNewDecWithPrec(8, 2)   // 8%p/year
+	mintGenesis.Params.GoalBonded = math.LegacyNewDecWithPrec(67, 2)           // 67%
+	mintGenesis.Params.BlocksPerYear = 6_307_200                               // 5s blocks
 
 	bz, err := cdc.MarshalJSON(&mintGenesis)
 	if err != nil {
 		return err
 	}
 	appState[minttypes.ModuleName] = bz
-	fmt.Println("  Applied x/mint params: inflation=7-15%, goal_bonded=67%, blocks_per_year=6307200")
+	fmt.Println("  Applied x/mint params: inflation=7-15%, rate_change=8pp/year, goal_bonded=67%, blocks_per_year=6307200")
 	return nil
 }
 

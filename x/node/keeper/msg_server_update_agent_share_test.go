@@ -40,22 +40,27 @@ func TestUpdateNodeAgentShare_Success(t *testing.T) {
 	require.Equal(t, "35.000000000000000000", eventAttribute(evt, types.AttributeKeyNewAgentShare))
 }
 
-func TestUpdateNodeAgentShare_ExceedsMaxRate(t *testing.T) {
+func TestUpdateNodeAgentShare_LargeChange_Accepted(t *testing.T) {
 	f := initFixture(t)
 	ctx := f.ctx
 	msgServer := keeper.NewMsgServerImpl(f.keeper)
 
 	operator := sdk.AccAddress([]byte("op_share2___________")).String()
 	agent := sdk.AccAddress([]byte("ag_share2___________")).String()
-	registerTestNode(t, f, operator, agent)
+	nodeID := registerTestNode(t, f, operator, agent)
 
 	// Current agent_share = 30, MaxChangeRate = 10.
-	// Request change to 50 (exceeds rate by 10).
+	// Request change to 5 (diff=25, exceeds rate). Should be accepted for gradual application.
 	_, err := msgServer.UpdateNodeAgentShare(ctx, &types.MsgUpdateNodeAgentShare{
 		Operator:      operator,
-		NewAgentShare: math.LegacyNewDec(50),
+		NewAgentShare: math.LegacyNewDec(5),
 	})
-	require.ErrorIs(t, err, types.ErrAgentShareChangeExceedsMax)
+	require.NoError(t, err)
+
+	// Pending should store the final target (5).
+	pending, err := f.keeper.PendingAgentShareChanges.Get(ctx, nodeID)
+	require.NoError(t, err)
+	require.Equal(t, math.LegacyNewDec(5), pending.NewAgentShare)
 }
 
 func TestUpdateNodeAgentShare_OutOfRange(t *testing.T) {
@@ -114,7 +119,7 @@ func TestUpdateNodeAgentShare_DuplicatePending(t *testing.T) {
 		Operator:      operator,
 		NewAgentShare: math.LegacyNewDec(25),
 	})
-	require.ErrorIs(t, err, types.ErrAgentShareChangeExceedsMax)
+	require.ErrorIs(t, err, types.ErrAgentShareChangePending)
 }
 
 func TestUpdateNodeAgentShare_InactiveNode(t *testing.T) {

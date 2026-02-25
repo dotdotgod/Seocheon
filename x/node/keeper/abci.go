@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"cosmossdk.io/collections"
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"seocheon/x/node/types"
@@ -25,6 +26,8 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 
 // applyPendingAgentShareChanges iterates all pending changes and applies those
 // scheduled for the current block or earlier.
+// Each epoch, agent_share moves by at most max_agent_share_change_rate toward the target.
+// If the target is not yet reached, the pending change is kept for the next epoch.
 func (k Keeper) applyPendingAgentShareChanges(ctx context.Context, blockHeight int64) error {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
@@ -34,30 +37,53 @@ func (k Keeper) applyPendingAgentShareChanges(ctx context.Context, blockHeight i
 	}
 	defer iter.Close()
 
-	var toRemove []string
+	type pendingAction struct {
+		nodeID  string
+		pending types.PendingAgentShareChange
+	}
+	var toProcess []pendingAction
 
 	for ; iter.Valid(); iter.Next() {
 		kv, err := iter.KeyValue()
 		if err != nil {
 			return err
 		}
-
-		nodeID := kv.Key
-		pending := kv.Value
-
-		if pending.ApplyAtBlock > blockHeight {
+		if kv.Value.ApplyAtBlock > blockHeight {
 			continue
 		}
+		toProcess = append(toProcess, pendingAction{nodeID: kv.Key, pending: kv.Value})
+	}
 
-		// Apply the change.
+	for _, action := range toProcess {
+		nodeID := action.nodeID
+		pending := action.pending
+
 		node, err := k.Nodes.Get(ctx, nodeID)
 		if err != nil {
 			// Node was deleted/deactivated — just remove the pending change.
-			toRemove = append(toRemove, nodeID)
+			_ = k.PendingAgentShareChanges.Remove(ctx, nodeID)
 			continue
 		}
 
-		node.AgentShare = pending.NewAgentShare
+		target := pending.NewAgentShare
+		diff := target.Sub(node.AgentShare)
+		absDiff := diff.Abs()
+		maxRate := node.MaxAgentShareChangeRate
+
+		var newShare math.LegacyDec
+		if absDiff.LTE(maxRate) {
+			// Can reach target in this epoch.
+			newShare = target
+		} else {
+			// Move by max_change_rate toward target.
+			if diff.IsPositive() {
+				newShare = node.AgentShare.Add(maxRate)
+			} else {
+				newShare = node.AgentShare.Sub(maxRate)
+			}
+		}
+
+		node.AgentShare = newShare
 		if err := k.Nodes.Set(ctx, nodeID, node); err != nil {
 			return err
 		}
@@ -65,16 +91,16 @@ func (k Keeper) applyPendingAgentShareChanges(ctx context.Context, blockHeight i
 		sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeAgentShareChanged,
 			sdk.NewAttribute(types.AttributeKeyNodeID, nodeID),
-			sdk.NewAttribute(types.AttributeKeyNewAgentShare, pending.NewAgentShare.String()),
+			sdk.NewAttribute(types.AttributeKeyNewAgentShare, newShare.String()),
 		))
 
-		toRemove = append(toRemove, nodeID)
-	}
-
-	// Remove applied changes.
-	for _, nodeID := range toRemove {
-		if err := k.PendingAgentShareChanges.Remove(ctx, nodeID); err != nil {
-			return err
+		if newShare.Equal(target) {
+			// Target reached — remove pending.
+			_ = k.PendingAgentShareChanges.Remove(ctx, nodeID)
+		} else {
+			// Not yet at target — schedule next step at next epoch boundary.
+			pending.ApplyAtBlock = blockHeight + types.EpochLength
+			_ = k.PendingAgentShareChanges.Set(ctx, nodeID, pending)
 		}
 	}
 

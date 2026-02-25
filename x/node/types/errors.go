@@ -22,4 +22,5 @@ var (
 	ErrInsufficientActivity       = errors.Register(ModuleName, 1115, "insufficient activity history for feegrant renewal")
 	ErrNodeInactive               = errors.Register(ModuleName, 1116, "node is inactive or jailed")
 	ErrValidatorAlreadyExists     = errors.Register(ModuleName, 1117, "validator with this consensus pubkey already exists")
+	ErrAgentShareChangePending    = errors.Register(ModuleName, 1118, "a pending agent share change already exists")
 )

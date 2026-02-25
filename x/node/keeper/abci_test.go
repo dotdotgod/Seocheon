@@ -20,7 +20,7 @@ func TestEndBlocker_AppliesPendingAgentShareChange(t *testing.T) {
 	agent := sdk.AccAddress([]byte("ag_end1_____________")).String()
 	nodeID := registerTestNode(t, f, operator, agent)
 
-	// Schedule agent share change.
+	// Schedule agent share change (within max rate of 10).
 	_, err := msgServer.UpdateNodeAgentShare(ctx, &types.MsgUpdateNodeAgentShare{
 		Operator:      operator,
 		NewAgentShare: math.LegacyNewDec(35),
@@ -48,12 +48,12 @@ func TestEndBlocker_AppliesPendingAgentShareChange(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, math.LegacyNewDec(30), node.AgentShare)
 
-	// EndBlocker at epoch boundary.
+	// EndBlocker at epoch boundary: change within max rate → applied in one step.
 	epochCtx := sdkCtx.WithBlockHeight(types.EpochLength)
 	err = f.keeper.EndBlocker(epochCtx)
 	require.NoError(t, err)
 
-	// Pending should be removed.
+	// Pending should be removed (target reached in one step).
 	has, err = f.keeper.PendingAgentShareChanges.Has(ctx, nodeID)
 	require.NoError(t, err)
 	require.False(t, has)
@@ -62,6 +62,92 @@ func TestEndBlocker_AppliesPendingAgentShareChange(t *testing.T) {
 	node, err = f.keeper.Nodes.Get(ctx, nodeID)
 	require.NoError(t, err)
 	require.Equal(t, math.LegacyNewDec(35), node.AgentShare)
+}
+
+func TestEndBlocker_GradualAgentShareChange(t *testing.T) {
+	f := initFixture(t)
+	ctx := f.ctx
+	msgServer := keeper.NewMsgServerImpl(f.keeper)
+
+	operator := sdk.AccAddress([]byte("op_grad1____________")).String()
+	agent := sdk.AccAddress([]byte("ag_grad1____________")).String()
+	nodeID := registerTestNode(t, f, operator, agent)
+
+	// Current agent_share = 30, MaxChangeRate = 10.
+	// Request change to 5 (diff=25, needs 3 epochs: 30→20→10→5).
+	_, err := msgServer.UpdateNodeAgentShare(ctx, &types.MsgUpdateNodeAgentShare{
+		Operator:      operator,
+		NewAgentShare: math.LegacyNewDec(5),
+	})
+	require.NoError(t, err)
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	// Epoch 1: 30 → 20 (step by max rate 10).
+	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.EpochLength))
+	require.NoError(t, err)
+	node, _ := f.keeper.Nodes.Get(ctx, nodeID)
+	require.Equal(t, math.LegacyNewDec(20), node.AgentShare)
+	// Pending should still exist.
+	has, _ := f.keeper.PendingAgentShareChanges.Has(ctx, nodeID)
+	require.True(t, has)
+
+	// Epoch 2: 20 → 10 (step by max rate 10).
+	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.EpochLength * 2))
+	require.NoError(t, err)
+	node, _ = f.keeper.Nodes.Get(ctx, nodeID)
+	require.Equal(t, math.LegacyNewDec(10), node.AgentShare)
+	has, _ = f.keeper.PendingAgentShareChanges.Has(ctx, nodeID)
+	require.True(t, has)
+
+	// Epoch 3: 10 → 5 (remaining diff=5, within max rate → target reached).
+	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.EpochLength * 3))
+	require.NoError(t, err)
+	node, _ = f.keeper.Nodes.Get(ctx, nodeID)
+	require.Equal(t, math.LegacyNewDec(5), node.AgentShare)
+	// Pending should be removed.
+	has, _ = f.keeper.PendingAgentShareChanges.Has(ctx, nodeID)
+	require.False(t, has)
+}
+
+func TestEndBlocker_GradualAgentShareChange_Increase(t *testing.T) {
+	f := initFixture(t)
+	ctx := f.ctx
+	msgServer := keeper.NewMsgServerImpl(f.keeper)
+
+	operator := sdk.AccAddress([]byte("op_grad2____________")).String()
+	agent := sdk.AccAddress([]byte("ag_grad2____________")).String()
+	nodeID := registerTestNode(t, f, operator, agent)
+
+	// Current agent_share = 30, MaxChangeRate = 10.
+	// Request change to 55 (diff=25, needs 3 epochs: 30→40→50→55).
+	_, err := msgServer.UpdateNodeAgentShare(ctx, &types.MsgUpdateNodeAgentShare{
+		Operator:      operator,
+		NewAgentShare: math.LegacyNewDec(55),
+	})
+	require.NoError(t, err)
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	// Epoch 1: 30 → 40.
+	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.EpochLength))
+	require.NoError(t, err)
+	node, _ := f.keeper.Nodes.Get(ctx, nodeID)
+	require.Equal(t, math.LegacyNewDec(40), node.AgentShare)
+
+	// Epoch 2: 40 → 50.
+	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.EpochLength * 2))
+	require.NoError(t, err)
+	node, _ = f.keeper.Nodes.Get(ctx, nodeID)
+	require.Equal(t, math.LegacyNewDec(50), node.AgentShare)
+
+	// Epoch 3: 50 → 55 (target reached).
+	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.EpochLength * 3))
+	require.NoError(t, err)
+	node, _ = f.keeper.Nodes.Get(ctx, nodeID)
+	require.Equal(t, math.LegacyNewDec(55), node.AgentShare)
+	has, _ := f.keeper.PendingAgentShareChanges.Has(ctx, nodeID)
+	require.False(t, has)
 }
 
 func TestEndBlocker_SkipsNonEpochBoundary(t *testing.T) {
