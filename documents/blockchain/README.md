@@ -59,7 +59,6 @@
 - [에이전트 아키텍처](../agent_architecture.md) — 오프체인 에이전트 참고 아키텍처
 - [재단 전략](../foundation_strategy.md) — 재단 운영, 탈중앙화 전환
 - [아키텍처 리뷰](../architecture_review.md) — 보완 사항 및 미해소 항목
-- [Merkle Tools App](../merkle_tools_app.md) — 프론트엔드 앱 스펙
 
 ---
 

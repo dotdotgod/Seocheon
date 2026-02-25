@@ -32,8 +32,7 @@ documents/
 ├── agent_architecture.md         ← 오프체인 에이전트 참고 아키텍처
 ├── mcp_server_architecture.md    ← MCP 서버 아키텍처 (seocheon-server, vault-server)
 ├── foundation_strategy.md        ← 재단 운영 전략
-├── architecture_review.md        ← 아키텍처 리뷰 및 보완 사항
-└── merkle_tools_app.md           ← Merkle Tools 프론트엔드 앱 스펙
+└── architecture_review.md        ← 아키텍처 리뷰 및 보완 사항
 docs/
 ├── docs.go                       ← Cosmos SDK API 문서 서비스
 └── static/openapi.json           ← OpenAPI 스펙
@@ -47,11 +46,6 @@ docs/
 - **토큰**: KKOT (꽃, 단일 토큰) — base denom: `usum` (숨), milli: `hon` (혼), display: `kkot` (꽃)
 - **합의**: DPoS, Active Validator Set 150~200
 - **해시 알고리즘**: SHA-256
-
-### 프론트엔드 (Merkle Tools App)
-- **React + TypeScript**, Vite, Tailwind CSS
-- **해시**: Web Crypto API (외부 라이브러리 없음)
-- **경로**: `apps/merkle-tools/`
 
 ## 주요 온체인 모듈
 
