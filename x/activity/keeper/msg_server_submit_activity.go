@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"cosmossdk.io/collections"
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	nodetypes "seocheon/x/node/types"
@@ -93,7 +94,19 @@ func (ms msgServer) SubmitActivity(ctx context.Context, msg *types.MsgSubmitActi
 	activityFee := ms.GetEpochActivityFee(ctx, epoch)
 	if activityFee > 0 && !(isFeegrantNode && params.FeegrantFeeExempt) {
 		// Self-funded nodes (or feegrant nodes when feegrant_fee_exempt=false) pay the fee.
-		// Fee is tracked for later distribution at epoch boundary.
+		// Actually transfer the fee from submitter to the activity module account.
+		if ms.bankKeeper != nil {
+			submitterAddr, addrErr := sdk.AccAddressFromBech32(msg.Submitter)
+			if addrErr != nil {
+				return nil, addrErr
+			}
+			feeCoins := sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewIntFromUint64(activityFee)))
+			if err := ms.bankKeeper.SendCoinsFromAccountToModule(ctx, submitterAddr, types.ModuleName, feeCoins); err != nil {
+				return nil, fmt.Errorf("failed to collect activity fee: %w", err)
+			}
+		}
+
+		// Track fee amount for epoch-boundary distribution.
 		if err := ms.CollectActivityFee(ctx, epoch, activityFee); err != nil {
 			return nil, err
 		}

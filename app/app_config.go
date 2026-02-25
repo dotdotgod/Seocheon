@@ -88,6 +88,13 @@ var (
 		{Account: nodemoduletypes.ModuleName, Permissions: []string{authtypes.Minter, authtypes.Burner, authtypes.Staking}},
 		{Account: nodemoduletypes.RegistrationPoolName, Permissions: []string{authtypes.Burner, authtypes.Staking}},
 		{Account: nodemoduletypes.FeegrantPoolName},
+		// x/activity module accounts for dual reward pool.
+		{Account: activitymoduletypes.ModuleName},
+		{Account: activitymoduletypes.ActivityRewardPoolName},
+		// Genesis distribution pool accounts.
+		{Account: "airdrop_pool", Permissions: []string{authtypes.Burner}},
+		{Account: "ecosystem_fund"},
+		{Account: "ecosystem_reserve"},
 	}
 
 	// blocked account addresses
@@ -121,6 +128,11 @@ var (
 					// NOTE: staking module is required if HistoricalEntries param > 0
 					BeginBlockers: []string{
 						minttypes.ModuleName,
+						// IMPORTANT: activity MUST run after mint and BEFORE distribution.
+						// mint deposits inflation tokens into fee_collector.
+						// activity splits fee_collector's activity_ratio into activity_reward_pool.
+						// distribution then distributes the remainder to validators/delegators.
+						activitymoduletypes.ModuleName,
 						distrtypes.ModuleName,
 						slashingtypes.ModuleName,
 						evidencetypes.ModuleName,

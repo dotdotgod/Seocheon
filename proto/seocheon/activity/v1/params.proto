@@ -52,4 +52,15 @@ message Params {
 
   // feegrant_fee_exempt determines whether feegrant nodes are exempt from activity fees.
   bool feegrant_fee_exempt = 13;
+
+  // --- Dual Reward Pool parameters ---
+
+  // d_min is the minimum delegation pool ratio in basis points (3000 = 0.3).
+  // Ensures at least this fraction of block rewards goes to the delegation (DPoS) pool.
+  uint64 d_min = 14;
+
+  // fee_to_activity_pool_ratio is the fraction of collected activity fees
+  // redirected to the activity reward pool, in basis points (8000 = 80%).
+  // The remainder goes to the community pool.
+  uint64 fee_to_activity_pool_ratio = 15;
 }

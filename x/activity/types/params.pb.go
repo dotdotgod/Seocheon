@@ -52,6 +52,11 @@ type Params struct {
 	QuotaReductionRate uint64 `protobuf:"varint,12,opt,name=quota_reduction_rate,json=quotaReductionRate,proto3" json:"quota_reduction_rate,omitempty"`
 	// feegrant_fee_exempt determines whether feegrant nodes are exempt from activity fees.
 	FeegrantFeeExempt bool `protobuf:"varint,13,opt,name=feegrant_fee_exempt,json=feegrantFeeExempt,proto3" json:"feegrant_fee_exempt,omitempty"`
+	// d_min is the minimum delegation pool ratio in basis points (3000 = 0.3).
+	DMin uint64 `protobuf:"varint,14,opt,name=d_min,json=dMin,proto3" json:"d_min,omitempty"`
+	// fee_to_activity_pool_ratio is the fraction of collected activity fees
+	// redirected to the activity reward pool, in basis points (8000 = 80%).
+	FeeToActivityPoolRatio uint64 `protobuf:"varint,15,opt,name=fee_to_activity_pool_ratio,json=feeToActivityPoolRatio,proto3" json:"fee_to_activity_pool_ratio,omitempty"`
 }
 
 func (m *Params) Reset()         { *m = Params{} }
@@ -178,6 +183,20 @@ func (m *Params) GetFeegrantFeeExempt() bool {
 	return false
 }
 
+func (m *Params) GetDMin() uint64 {
+	if m != nil {
+		return m.DMin
+	}
+	return 0
+}
+
+func (m *Params) GetFeeToActivityPoolRatio() uint64 {
+	if m != nil {
+		return m.FeeToActivityPoolRatio
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*Params)(nil), "seocheon.activity.v1.Params")
 }
@@ -268,6 +287,12 @@ func (this *Params) Equal(that interface{}) bool {
 	if this.FeegrantFeeExempt != that1.FeegrantFeeExempt {
 		return false
 	}
+	if this.DMin != that1.DMin {
+		return false
+	}
+	if this.FeeToActivityPoolRatio != that1.FeeToActivityPoolRatio {
+		return false
+	}
 	return true
 }
 func (m *Params) Marshal() (dAtA []byte, err error) {
@@ -290,6 +315,16 @@ func (m *Params) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.FeeToActivityPoolRatio != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.FeeToActivityPoolRatio))
+		i--
+		dAtA[i] = 0x78
+	}
+	if m.DMin != 0 {
+		i = encodeVarintParams(dAtA, i, uint64(m.DMin))
+		i--
+		dAtA[i] = 0x70
+	}
 	if m.FeegrantFeeExempt {
 		i--
 		if m.FeegrantFeeExempt {
@@ -418,6 +453,12 @@ func (m *Params) Size() (n int) {
 	}
 	if m.FeegrantFeeExempt {
 		n += 2
+	}
+	if m.DMin != 0 {
+		n += 1 + sovParams(uint64(m.DMin))
+	}
+	if m.FeeToActivityPoolRatio != 0 {
+		n += 1 + sovParams(uint64(m.FeeToActivityPoolRatio))
 	}
 	return n
 }
@@ -705,6 +746,44 @@ func (m *Params) Unmarshal(dAtA []byte) error {
 				}
 			}
 			m.FeegrantFeeExempt = bool(v != 0)
+		case 14:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field DMin", wireType)
+			}
+			m.DMin = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.DMin |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 15:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field FeeToActivityPoolRatio", wireType)
+			}
+			m.FeeToActivityPoolRatio = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowParams
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.FeeToActivityPoolRatio |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
 		default:
 			iNdEx = preIndex
 			skippy, err := skipParams(dAtA[iNdEx:])

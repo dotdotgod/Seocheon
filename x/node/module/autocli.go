@@ -66,8 +66,7 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 				},
 				{
 					RpcMethod: "RegisterNode",
-					Use:       "register-node",
-					Short:     "Register a new node",
+					Skip:      true, // custom CLI: consensus_pubkey (proto.Any) parsing
 				},
 				{
 					RpcMethod: "UpdateNode",

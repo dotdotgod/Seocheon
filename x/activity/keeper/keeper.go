@@ -56,12 +56,16 @@ type Keeper struct {
 	// EpochCollectedFees: epoch -> total collected fees in usum
 	EpochCollectedFees collections.Map[int64, uint64]
 
+	// EpochActivityRewardPool tracks accumulated reward pool amounts per epoch.
+	EpochActivityRewardPool collections.Map[int64, uint64]
+
 	// Keeper dependencies.
-	nodeKeeper     types.NodeKeeper
-	authKeeper     types.AuthKeeper
-	feegrantKeeper types.FeegrantKeeper
-	stakingKeeper  types.StakingKeeper
-	bankKeeper     types.BankKeeper
+	nodeKeeper         types.NodeKeeper
+	authKeeper         types.AuthKeeper
+	feegrantKeeper     types.FeegrantKeeper
+	stakingKeeper      types.StakingKeeper
+	bankKeeper         types.BankKeeper
+	distributionKeeper types.DistributionKeeper
 }
 
 func NewKeeper(
@@ -137,6 +141,11 @@ func NewKeeper(
 			collections.Int64Key,
 			collections.Uint64Value,
 		),
+
+		EpochActivityRewardPool: collections.NewMap(sb, types.EpochActivityRewardPoolKey, "epoch_activity_reward_pool",
+			collections.Int64Key,
+			collections.Uint64Value,
+		),
 	}
 
 	schema, err := sb.Build()
@@ -176,6 +185,11 @@ func (k *Keeper) SetStakingKeeper(sk types.StakingKeeper) {
 // SetBankKeeper sets the bank keeper for fee collection and distribution.
 func (k *Keeper) SetBankKeeper(bk types.BankKeeper) {
 	k.bankKeeper = bk
+}
+
+// SetDistributionKeeper sets the distribution keeper for community pool funding.
+func (k *Keeper) SetDistributionKeeper(dk types.DistributionKeeper) {
+	k.distributionKeeper = dk
 }
 
 // GetEpochLength returns the current epoch_length parameter.

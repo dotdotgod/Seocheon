@@ -1,0 +1,77 @@
+# Seocheon multi-validator testnet with fast activity parameters.
+#
+# Usage:
+#   1. Build:    docker compose -f docker/docker-compose.testnet.yml build
+#   2. Init:     ./scripts/testnet_init.sh (generates validator configs)
+#   3. Start:    docker compose -f docker/docker-compose.testnet.yml up -d
+#   4. Logs:     docker compose -f docker/docker-compose.testnet.yml logs -f
+#   5. Stop:     docker compose -f docker/docker-compose.testnet.yml down
+#
+# Prerequisites:
+#   - Run 'seocheon multi-node --v 4 --output-dir .testnets' first
+#   - This creates validator0..validator3 directories
+
+services:
+  validator0:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: seocheon-val0
+    volumes:
+      - ../.testnets/validator0:/root/.seocheon
+    ports:
+      - "26657:26657"
+      - "1317:1317"
+      - "9090:9090"
+    command: start --home /root/.seocheon
+    networks:
+      - seocheon-testnet
+
+  validator1:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: seocheon-val1
+    volumes:
+      - ../.testnets/validator1:/root/.seocheon
+    ports:
+      - "26654:26657"
+      - "1316:1317"
+      - "9088:9090"
+    command: start --home /root/.seocheon
+    networks:
+      - seocheon-testnet
+
+  validator2:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: seocheon-val2
+    volumes:
+      - ../.testnets/validator2:/root/.seocheon
+    ports:
+      - "26651:26657"
+      - "1315:1317"
+      - "9086:9090"
+    command: start --home /root/.seocheon
+    networks:
+      - seocheon-testnet
+
+  validator3:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: seocheon-val3
+    volumes:
+      - ../.testnets/validator3:/root/.seocheon
+    ports:
+      - "26648:26657"
+      - "1314:1317"
+      - "9084:9090"
+    command: start --home /root/.seocheon
+    networks:
+      - seocheon-testnet
+
+networks:
+  seocheon-testnet:
+    driver: bridge

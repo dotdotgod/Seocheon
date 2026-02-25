@@ -19,6 +19,10 @@ var (
 	DefaultMinFeegrantQuota      = uint64(8)            // minimum feegrant quota (matches min_active_windows)
 	DefaultQuotaReductionRate    = uint64(5000)         // 0.5 in basis points
 	DefaultFeegrantFeeExempt     = true                 // feegrant nodes exempt from activity fees
+
+	// Dual Reward Pool defaults.
+	DefaultDMin                    = uint64(3000) // 0.3 in basis points — delegation pool minimum 30%
+	DefaultFeeToActivityPoolRatio  = uint64(8000) // 80% of collected activity fees → activity reward pool
 )
 
 // DefaultParams returns a default set of parameters.
@@ -37,6 +41,8 @@ func DefaultParams() Params {
 		MinFeegrantQuota:          DefaultMinFeegrantQuota,
 		QuotaReductionRate:        DefaultQuotaReductionRate,
 		FeegrantFeeExempt:         DefaultFeegrantFeeExempt,
+		DMin:                      DefaultDMin,
+		FeeToActivityPoolRatio:    DefaultFeeToActivityPoolRatio,
 	}
 }
 
@@ -80,6 +86,12 @@ func (p Params) Validate() error {
 	}
 	if p.QuotaReductionRate > 10000 {
 		return fmt.Errorf("quota_reduction_rate must be <= 10000 basis points, got %d", p.QuotaReductionRate)
+	}
+	if p.DMin > 10000 {
+		return fmt.Errorf("d_min must be <= 10000 basis points, got %d", p.DMin)
+	}
+	if p.FeeToActivityPoolRatio > 10000 {
+		return fmt.Errorf("fee_to_activity_pool_ratio must be <= 10000 basis points, got %d", p.FeeToActivityPoolRatio)
 	}
 	return nil
 }

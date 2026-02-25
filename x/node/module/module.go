@@ -12,8 +12,10 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/spf13/cobra"
 	"google.golang.org/grpc"
 
+	"seocheon/x/node/client/cli"
 	"seocheon/x/node/keeper"
 	"seocheon/x/node/types"
 )
@@ -128,6 +130,12 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, _ codec.JSONCodec) json.RawMe
 	}
 
 	return bz
+}
+
+// GetTxCmd returns the custom transaction commands for the node module.
+// This provides the register-node command that properly handles consensus pubkey (proto.Any) parsing.
+func (AppModule) GetTxCmd() *cobra.Command {
+	return cli.GetTxCmd()
 }
 
 // ConsensusVersion is a sequence number for state-breaking change of the module.

@@ -191,6 +191,9 @@ func New(
 		panic(err)
 	}
 
+	// Wire feegrant keeper bank dependency (not injected by depinject in v0.1.1).
+	app.FeegrantKeeper = app.FeegrantKeeper.SetBankKeeper(app.BankKeeper)
+
 	// Wire x/node optional keeper dependencies (not available through depinject).
 	app.NodeKeeper.SetDistributionKeeper(app.DistrKeeper)
 	app.NodeKeeper.SetSlashingKeeper(app.SlashingKeeper)
@@ -201,6 +204,9 @@ func New(
 	app.ActivityKeeper.SetNodeKeeper(app.NodeKeeper)
 	app.ActivityKeeper.SetAuthKeeper(app.AuthKeeper)
 	app.ActivityKeeper.SetFeegrantKeeper(app.FeegrantKeeper)
+	app.ActivityKeeper.SetStakingKeeper(app.StakingKeeper)
+	app.ActivityKeeper.SetBankKeeper(app.BankKeeper)
+	app.ActivityKeeper.SetDistributionKeeper(app.DistrKeeper)
 
 	// add to default baseapp options
 	// enable optimistic execution

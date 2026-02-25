@@ -23,8 +23,9 @@ var (
 	_ module.AppModule      = (*AppModule)(nil)
 	_ module.HasGenesis     = (*AppModule)(nil)
 
-	_ appmodule.AppModule     = (*AppModule)(nil)
-	_ appmodule.HasEndBlocker = (*AppModule)(nil)
+	_ appmodule.AppModule       = (*AppModule)(nil)
+	_ appmodule.HasBeginBlocker = (*AppModule)(nil)
+	_ appmodule.HasEndBlocker   = (*AppModule)(nil)
 )
 
 // AppModule implements the AppModule interface.
@@ -120,7 +121,14 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, _ codec.JSONCodec) json.RawMe
 }
 
 // ConsensusVersion is a sequence number for state-breaking change of the module.
-func (AppModule) ConsensusVersion() uint64 { return 1 }
+// Version 2: added dual reward pool (BeginBlocker reward split, activity reward distribution),
+// new params (d_min, fee_to_activity_pool_ratio), and EpochActivityRewardPool state.
+func (AppModule) ConsensusVersion() uint64 { return 2 }
+
+// BeginBlock splits minted block rewards between activity pool and DPoS distribution.
+func (am AppModule) BeginBlock(ctx context.Context) error {
+	return am.keeper.BeginBlocker(ctx)
+}
 
 // EndBlock contains the logic that is automatically triggered at the end of each block.
 func (am AppModule) EndBlock(ctx context.Context) error {

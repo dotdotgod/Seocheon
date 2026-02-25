@@ -2,8 +2,10 @@ package activity_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
+	"cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"cosmossdk.io/x/feegrant"
 	addresscodec "github.com/cosmos/cosmos-sdk/codec/address"
@@ -48,6 +50,18 @@ func (m *mockNodeKeeper) GetNodeStatus(_ context.Context, nodeID string) (int32,
 		return 0, nil
 	}
 	return status, nil
+}
+
+func (m *mockNodeKeeper) GetNodeOperatorAddress(_ context.Context, nodeID string) (string, error) {
+	return "", fmt.Errorf("not found: %s", nodeID)
+}
+
+func (m *mockNodeKeeper) GetNodeAgentAddress(_ context.Context, nodeID string) (string, error) {
+	return "", fmt.Errorf("not found: %s", nodeID)
+}
+
+func (m *mockNodeKeeper) GetNodeAgentShare(_ context.Context, nodeID string) (math.LegacyDec, error) {
+	return math.LegacyZeroDec(), fmt.Errorf("not found: %s", nodeID)
 }
 
 // mockAuthKeeper implements types.AuthKeeper for testing.
@@ -104,8 +118,8 @@ func TestPointerKeeperPropagation(t *testing.T) {
 	if appModule.Name() != types.ModuleName {
 		t.Fatalf("expected module name %s, got %s", types.ModuleName, appModule.Name())
 	}
-	if appModule.ConsensusVersion() != 1 {
-		t.Fatalf("expected consensus version 1, got %d", appModule.ConsensusVersion())
+	if appModule.ConsensusVersion() != 2 {
+		t.Fatalf("expected consensus version 2, got %d", appModule.ConsensusVersion())
 	}
 
 	genesis := appModule.DefaultGenesis(nil)

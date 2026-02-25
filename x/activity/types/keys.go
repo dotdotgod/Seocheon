@@ -11,6 +11,11 @@ const (
 
 	// GovModuleName duplicates the gov module's name to avoid a dependency with x/gov.
 	GovModuleName = "gov"
+
+	// ActivityRewardPoolName is the module account name for the activity reward pool.
+	// Block rewards (activity_ratio fraction) and 80% of collected activity fees are accumulated here,
+	// then distributed equally to eligible activity nodes at each epoch boundary.
+	ActivityRewardPoolName = "activity_reward_pool"
 )
 
 // Store key prefixes.
@@ -51,4 +56,7 @@ var (
 
 	// EpochCollectedFeesKey: epoch -> total collected fees in usum
 	EpochCollectedFeesKey = collections.NewPrefix(20)
+
+	// EpochActivityRewardPoolKey: epoch -> accumulated reward pool amount in usum for the epoch
+	EpochActivityRewardPoolKey = collections.NewPrefix(21)
 )

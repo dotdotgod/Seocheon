@@ -7,6 +7,7 @@ import (
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
 	corestore "cosmossdk.io/core/store"
+	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
 
 	"seocheon/x/node/types"
@@ -157,5 +158,32 @@ func (k Keeper) GetNodeStatus(ctx context.Context, nodeID string) (int32, error)
 		return 0, fmt.Errorf("node %s not found: %w", nodeID, err)
 	}
 	return int32(node.Status), nil
+}
+
+// GetNodeOperatorAddress returns the operator wallet address for the given node_id.
+func (k Keeper) GetNodeOperatorAddress(ctx context.Context, nodeID string) (string, error) {
+	node, err := k.Nodes.Get(ctx, nodeID)
+	if err != nil {
+		return "", fmt.Errorf("node %s not found: %w", nodeID, err)
+	}
+	return node.Operator, nil
+}
+
+// GetNodeAgentAddress returns the agent wallet address for the given node_id.
+func (k Keeper) GetNodeAgentAddress(ctx context.Context, nodeID string) (string, error) {
+	node, err := k.Nodes.Get(ctx, nodeID)
+	if err != nil {
+		return "", fmt.Errorf("node %s not found: %w", nodeID, err)
+	}
+	return node.AgentAddress, nil
+}
+
+// GetNodeAgentShare returns the agent_share percentage for the given node_id.
+func (k Keeper) GetNodeAgentShare(ctx context.Context, nodeID string) (math.LegacyDec, error) {
+	node, err := k.Nodes.Get(ctx, nodeID)
+	if err != nil {
+		return math.LegacyDec{}, fmt.Errorf("node %s not found: %w", nodeID, err)
+	}
+	return node.AgentShare, nil
 }
 

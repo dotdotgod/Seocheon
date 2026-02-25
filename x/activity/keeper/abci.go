@@ -46,8 +46,13 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 			sdk.NewAttribute(types.AttributeKeyEligibleCount, fmt.Sprintf("%d", eligibleCount)),
 		))
 
-		// Distribute collected fees from the completed epoch.
+		// Distribute collected fees from the completed epoch (80% → activity pool, 20% → community pool).
 		if err := k.DistributeCollectedFees(ctx, completedEpoch); err != nil {
+			return err
+		}
+
+		// Distribute activity reward pool equally to eligible nodes.
+		if err := k.DistributeActivityRewards(ctx, completedEpoch); err != nil {
 			return err
 		}
 

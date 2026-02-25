@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"seocheon/x/activity/types"
@@ -165,24 +166,58 @@ func (k Keeper) CollectActivityFee(ctx context.Context, epoch int64, amount uint
 	return k.EpochCollectedFees.Set(ctx, epoch, current+amount)
 }
 
-// DistributeCollectedFees distributes collected fees at epoch boundary.
-// 80% goes to community pool (to be redistributed as activity rewards).
-// 20% goes to community pool (governance-controlled).
-// In the current implementation, all fees go to the community pool since
-// the activity reward distribution is handled separately in x/distribution extension (Phase 3).
+// DistributeCollectedFees distributes collected activity fees at epoch boundary.
+// fee_to_activity_pool_ratio% (default 80%) → activity_reward_pool (for equal distribution to eligible nodes).
+// Remainder (default 20%) → community pool via x/distribution FundCommunityPool.
 func (k Keeper) DistributeCollectedFees(ctx context.Context, epoch int64) error {
 	total, err := k.EpochCollectedFees.Get(ctx, epoch)
 	if err != nil || total == 0 {
 		return nil // no fees to distribute
 	}
 
-	// For now, fees remain in the activity module account.
-	// Phase 3 (x/distribution extension) will handle the 80/20 split.
+	params, err := k.Params.Get(ctx)
+	if err != nil {
+		return err
+	}
+
+	totalInt := sdkmath.NewIntFromUint64(total)
+
+	// Calculate split amounts.
+	activityPoolRatio := sdkmath.LegacyNewDecWithPrec(int64(params.FeeToActivityPoolRatio), 4)
+	activityAmt := activityPoolRatio.MulInt(totalInt).TruncateInt()
+	communityAmt := totalInt.Sub(activityAmt)
+
+	// 80% → activity_reward_pool
+	if activityAmt.IsPositive() && k.bankKeeper != nil {
+		activityCoins := sdk.NewCoins(sdk.NewCoin("usum", activityAmt))
+		if err := k.bankKeeper.SendCoinsFromModuleToModule(
+			ctx,
+			types.ModuleName,
+			types.ActivityRewardPoolName,
+			activityCoins,
+		); err != nil {
+			return fmt.Errorf("failed to send fees to activity reward pool: %w", err)
+		}
+	}
+
+	// 20% → community pool
+	if communityAmt.IsPositive() && k.bankKeeper != nil && k.distributionKeeper != nil && k.authKeeper != nil {
+		communityCoins := sdk.NewCoins(sdk.NewCoin("usum", communityAmt))
+		moduleAddr := k.authKeeper.GetModuleAddress(types.ModuleName)
+		if moduleAddr != nil {
+			if err := k.distributionKeeper.FundCommunityPool(ctx, communityCoins, moduleAddr); err != nil {
+				return fmt.Errorf("failed to fund community pool from activity fees: %w", err)
+			}
+		}
+	}
+
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
 		types.EventTypeFeesCollected,
 		sdk.NewAttribute(types.AttributeKeyEpoch, fmt.Sprintf("%d", epoch)),
 		sdk.NewAttribute("total_fees", fmt.Sprintf("%d", total)),
+		sdk.NewAttribute("activity_pool_amount", activityAmt.String()),
+		sdk.NewAttribute("community_pool_amount", communityAmt.String()),
 	))
 
 	// Clear collected fees for this epoch.
