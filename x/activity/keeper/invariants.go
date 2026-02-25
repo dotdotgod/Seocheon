@@ -131,7 +131,7 @@ func WindowActivityConsistencyInvariant(k Keeper) sdk.Invariant {
 			if err != nil {
 				return fmt.Sprintf("failed to get value: %v", err), true
 			}
-			window := GetCurrentWindowForBlock(record.BlockHeight, params)
+			window := GetCurrentWindow(record.BlockHeight, params)
 			key := fmt.Sprintf("%s:%d:%d", record.NodeId, record.Epoch, window)
 			counts[key]++
 		}

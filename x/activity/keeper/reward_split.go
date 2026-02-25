@@ -47,7 +47,7 @@ func (k Keeper) BeginBlocker(ctx context.Context) error {
 	prevEpoch := epoch - 1
 	var nA uint64
 	if prevEpoch >= 0 {
-		nA = uint64(k.countEligibleNodes(ctx, prevEpoch))
+		nA = uint64(len(k.getEligibleNodeIDs(ctx, prevEpoch)))
 	}
 
 	// Calculate activity ratio.

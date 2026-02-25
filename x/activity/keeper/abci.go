@@ -38,7 +38,7 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 		completedEpoch := GetCurrentEpoch(blockHeight, params)
 
 		// Count eligible nodes.
-		eligibleCount := k.countEligibleNodes(ctx, completedEpoch)
+		eligibleCount := int64(len(k.getEligibleNodeIDs(ctx, completedEpoch)))
 
 		sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
 			types.EventTypeEpochCompleted,
@@ -77,32 +77,6 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-// countEligibleNodes counts nodes that met the activity threshold for the given epoch.
-func (k Keeper) countEligibleNodes(ctx context.Context, epoch int64) int64 {
-	var count int64
-
-	iter, err := k.EpochSummary.Iterate(ctx, nil)
-	if err != nil {
-		return 0
-	}
-	defer iter.Close()
-
-	for ; iter.Valid(); iter.Next() {
-		kv, err := iter.KeyValue()
-		if err != nil {
-			continue
-		}
-		if kv.Key.K2() != epoch {
-			continue
-		}
-		if kv.Value.Eligible {
-			count++
-		}
-	}
-
-	return count
 }
 
 // pruneOldActivities removes activity records older than pruning_keep_blocks.

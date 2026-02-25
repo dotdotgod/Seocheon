@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 	"fmt"
-	"math"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -36,7 +35,7 @@ func (k Keeper) CalculateAndCacheEpochFeeState(ctx context.Context, epoch int64)
 	prevEpoch := epoch - 1
 	var nA uint64
 	if prevEpoch >= 0 {
-		nA = uint64(k.countEligibleNodes(ctx, prevEpoch))
+		nA = uint64(len(k.getEligibleNodeIDs(ctx, prevEpoch)))
 	}
 
 	// Calculate fee and effective quota.
@@ -69,6 +68,8 @@ func (k Keeper) CalculateAndCacheEpochFeeState(ctx context.Context, epoch int64)
 // S = N_a / (N_d × fee_threshold_multiplier)
 // If S <= 1.0: fee = 0
 // If S > 1.0: fee = base_fee × (S - 1)^exponent, capped at max_fee
+//
+// All arithmetic uses LegacyDec for deterministic results across platforms.
 func calculateActivityFee(nA, nD uint64, params types.Params) uint64 {
 	if params.FeeThresholdMultiplier == 0 || params.BaseActivityFee == 0 {
 		return 0
@@ -81,16 +82,20 @@ func calculateActivityFee(nA, nD uint64, params types.Params) uint64 {
 
 	// S - 1 = (N_a - threshold) / threshold
 	excess := nA - threshold
-	sMinus1 := float64(excess) / float64(threshold)
+	sMinus1 := sdkmath.LegacyNewDec(int64(excess)).Quo(sdkmath.LegacyNewDec(int64(threshold)))
 
-	// Apply exponent (basis points: 5000 = 0.5)
-	exponent := float64(params.FeeExponent) / 10000.0
-	if exponent <= 0 {
-		exponent = 0.5 // default sqrt curve
+	// Apply exponent via deterministic decPow.
+	expBP := params.FeeExponent
+	if expBP == 0 {
+		expBP = 5000 // default sqrt curve
 	}
 
-	factor := math.Pow(sMinus1, exponent)
-	fee := uint64(float64(params.BaseActivityFee) * factor)
+	factor, err := decPow(sMinus1, expBP)
+	if err != nil {
+		return 0
+	}
+
+	fee := factor.MulInt64(int64(params.BaseActivityFee)).TruncateInt().Uint64()
 
 	// Cap at max_activity_fee.
 	if params.MaxActivityFee > 0 && fee > params.MaxActivityFee {
@@ -102,6 +107,8 @@ func calculateActivityFee(nA, nD uint64, params types.Params) uint64 {
 
 // calculateEffectiveQuota computes the adjusted feegrant quota under saturation.
 // effective_quota = max(min_quota, quota - floor(quota × reduction_rate × (S - 1)))
+//
+// All arithmetic uses LegacyDec for deterministic results across platforms.
 func calculateEffectiveQuota(nA, nD uint64, params types.Params) uint64 {
 	if params.FeeThresholdMultiplier == 0 {
 		return params.FeegrantQuota
@@ -114,11 +121,11 @@ func calculateEffectiveQuota(nA, nD uint64, params types.Params) uint64 {
 
 	// S - 1 = (N_a - threshold) / threshold
 	excess := nA - threshold
-	sMinus1 := float64(excess) / float64(threshold)
+	sMinus1 := sdkmath.LegacyNewDec(int64(excess)).Quo(sdkmath.LegacyNewDec(int64(threshold)))
 
 	// reduction_rate in basis points (5000 = 0.5)
-	rate := float64(params.QuotaReductionRate) / 10000.0
-	reduction := uint64(float64(params.FeegrantQuota) * rate * sMinus1)
+	rate := sdkmath.LegacyNewDecWithPrec(int64(params.QuotaReductionRate), 4)
+	reduction := rate.Mul(sMinus1).MulInt64(int64(params.FeegrantQuota)).TruncateInt().Uint64()
 
 	if reduction >= params.FeegrantQuota {
 		return params.MinFeegrantQuota
@@ -130,6 +137,35 @@ func calculateEffectiveQuota(nA, nD uint64, params types.Params) uint64 {
 	}
 
 	return effective
+}
+
+// decPow computes base^(expBP/10000) deterministically using LegacyDec.
+// expBP is the exponent in basis points (5000 = 0.5, 10000 = 1.0).
+// Uses GCD reduction: base^(a/b) = (base^(1/b))^a
+func decPow(base sdkmath.LegacyDec, expBP uint64) (sdkmath.LegacyDec, error) {
+	if expBP == 0 {
+		return sdkmath.LegacyOneDec(), nil
+	}
+	if expBP == 10000 {
+		return base, nil
+	}
+
+	g := gcd(expBP, 10000)
+	a, b := expBP/g, uint64(10000)/g
+
+	root, err := base.ApproxRoot(b) // base^(1/b) — deterministic Newton's method
+	if err != nil {
+		return sdkmath.LegacyDec{}, err
+	}
+	return root.Power(a), nil // (base^(1/b))^a
+}
+
+// gcd returns the greatest common divisor of two uint64 values.
+func gcd(a, b uint64) uint64 {
+	for b != 0 {
+		a, b = b, a%b
+	}
+	return a
 }
 
 // GetEpochActivityFee returns the cached activity fee for the given epoch.

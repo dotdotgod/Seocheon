@@ -63,7 +63,7 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) er
 
 		// Rebuild WindowActivity and EpochSummary.
 		params := genState.Params
-		window := GetCurrentWindowForBlock(activity.BlockHeight, params)
+		window := GetCurrentWindow(activity.BlockHeight, params)
 
 		windowCount, err := k.WindowActivity.Get(ctx, collections.Join3(activity.NodeId, activity.Epoch, window))
 		if err != nil {
@@ -117,14 +117,4 @@ func (k Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error) 
 		Params:     params,
 		Activities: activities,
 	}, nil
-}
-
-// GetCurrentWindowForBlock computes the window number for a block height within its epoch.
-func GetCurrentWindowForBlock(blockHeight int64, params types.Params) int64 {
-	if blockHeight <= 0 {
-		return 0
-	}
-	windowLength := params.EpochLength / params.WindowsPerEpoch
-	blockInEpoch := (blockHeight - 1) % params.EpochLength
-	return blockInEpoch / windowLength
 }
