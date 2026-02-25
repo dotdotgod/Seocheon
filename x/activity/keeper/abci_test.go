@@ -192,9 +192,7 @@ func TestEndBlocker_Pruning_CleanupIndices(t *testing.T) {
 	_, err := f.submitActivity(ctx10, "agent1", hash, "ipfs://c")
 	require.NoError(t, err)
 
-	// Verify all indices exist.
-	_, err = f.keeper.GlobalHashIndex.Get(ctx10, hash)
-	require.NoError(t, err)
+	// Verify HashIndex exists.
 	has, err := f.keeper.HashIndex.Has(ctx10, collections.Join3("node1", int64(0), hash))
 	require.NoError(t, err)
 	require.True(t, has)
@@ -205,9 +203,6 @@ func TestEndBlocker_Pruning_CleanupIndices(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify indices are cleaned up.
-	_, err = f.keeper.GlobalHashIndex.Get(ctx, hash)
-	require.Error(t, err) // Should be gone.
-
 	has, err = f.keeper.HashIndex.Has(ctx, collections.Join3("node1", int64(0), hash))
 	require.NoError(t, err)
 	require.False(t, has)

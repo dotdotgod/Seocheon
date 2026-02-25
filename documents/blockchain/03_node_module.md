@@ -2,7 +2,7 @@
 
 > **담당**: x/node 모듈 개발자 (Go)
 > **의존 모듈**: x/staking, x/bank, x/distribution, x/slashing, x/feegrant
-> **관련 문서**: [개요](01_overview.md) · [핵심 개념](02_core_concepts.md) · [Activity Protocol](04_activity_protocol.md) · [디렉토리](06_directory_protocol.md) · [토큰 이코노믹스](07_tokenomics.md) · [스팸 방어](08_spam_defense.md) · [구현 가이드](09_implementation.md) · [체인 업그레이드](10_chain_upgrade.md) · [Circuit Breaker](11_circuit_breaker.md) · [전체 목차](README.md)
+> **관련 문서**: [개요](01_overview.md) · [핵심 개념](02_core_concepts.md) · [Activity Protocol](04_activity_protocol.md) · [토큰 이코노믹스](07_tokenomics.md) · [스팸 방어](08_spam_defense.md) · [구현 가이드](09_implementation.md) · [체인 업그레이드](10_chain_upgrade.md) · [Circuit Breaker](11_circuit_breaker.md) · [전체 목차](README.md)
 
 > **면책 조항**: 이 문서는 프로토콜 메커니즘에 대한 기술 설계 문서이며 투자 권유가 아니다. 보상 분배는 프로토콜 규칙에 따라 자동 실행되며, 어떠한 형태의 수익도 보장하지 않는다.
 

@@ -2,7 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
 
 	"cosmossdk.io/collections"
 
@@ -23,12 +22,6 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) er
 
 		// Rebuild HashIndex.
 		if err := k.HashIndex.Set(ctx, collections.Join3(activity.NodeId, activity.Epoch, activity.ActivityHash)); err != nil {
-			return err
-		}
-
-		// Rebuild GlobalHashIndex.
-		globalValue := fmt.Sprintf("%s:%d:%d", activity.NodeId, activity.Epoch, activity.Sequence)
-		if err := k.GlobalHashIndex.Set(ctx, activity.ActivityHash, globalValue); err != nil {
 			return err
 		}
 

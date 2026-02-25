@@ -3,7 +3,9 @@
 > **담당**: 체인 코어 개발자 / 보안
 > **관련 문서**: [개요](01_overview.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [스팸 방어](08_spam_defense.md) · [구현 가이드](09_implementation.md) · [체인 업그레이드](10_chain_upgrade.md) · [재단 전략](../foundation_strategy.md) · [전체 목차](README.md)
 
-> **구현 상태**: 현재 Cosmos SDK 표준 `x/circuit` 모듈만 적용되어 있다. 이 문서에 기술된 Seocheon 커스텀 Circuit Breaker는 Phase 2에서 구현 예정이다.
+> **구현 상태**: 현재 Cosmos SDK 표준 `x/circuit` 모듈이 적용되어 있다. Phase 2에서 Guardian 권한 설정과 모듈별 선택적 정지 기능을 추가한다.
+
+> **설계 결정**: 자동 트리거는 검토 결과 보류한다. Seocheon은 DeFi가 아니므로 밀리초 단위 자동 대응이 불필요하며, 기존 스팸 방어(쿼터 10건/에포크, feegrant 1 KKOT 제한)가 활동 급증을 이미 차단한다. 밸리데이터 셋 규모(150~200)에서 수동 대응 조율이 충분히 가능하고, 자동 트리거의 오탐 리스크(정상 활동을 공격으로 오판하여 체인 불필요 정지)가 이점보다 크다.
 
 ---
 
@@ -11,56 +13,22 @@
 
 ### Circuit Breaker 개요
 
-이상 트래픽 급증, 모듈 레벨 취약점 악용, 합의 불안정 시 특정 기능을 선택적으로 정지하는 메커니즘이다.
+보안 취약점 악용, 합의 불안정 시 특정 기능을 선택적으로 정지하는 메커니즘이다.
 
 ### 설계 원칙
 
 ```
 ① 최소 범위 정지: 문제가 발생한 모듈/기능만 선택적으로 정지
-② 거버넌스 통제: 수동 트리거는 반드시 거버넌스 투표로 승인
-③ 자동 복구 옵션: 자동 트리거의 경우 조건 해소 시 자동 복구 가능
-④ 투명성: 정지 상태, 트리거 사유, 복구 조건을 온체인에 기록
-⑤ 탈중앙화 호환: 재단 주도에서 커뮤니티 주도로 자연스럽게 전환
+② 거버넌스 통제: 정지와 해제 모두 거버넌스 투표로 승인
+③ 투명성: 정지 상태, 트리거 사유, 복구 조건을 온체인에 기록
+④ 탈중앙화 호환: 재단 주도에서 커뮤니티 주도로 자연스럽게 전환
 ```
 
 ---
 
-## 2. 트리거 조건
+## 2. 트리거 방식
 
-### 자동 트리거
-
-체인이 사전 정의된 임계치를 감지하여 자동으로 Circuit Breaker를 활성화한다. 사람의 개입 없이 즉각 대응할 수 있는 1차 방어선이다.
-
-```
-자동 트리거 조건:
-
-[A] 이상 활동 급증 (x/activity Circuit Breaker)
-    조건: 단일 윈도우(1,440 블록) 내 전체 MsgSubmitActivity 수 > activity_surge_threshold
-    기본값: activity_surge_threshold = 10,000 (거버넌스 파라미터)
-    동작: x/activity 모듈의 MsgSubmitActivity 수용 일시 정지
-    설계 근거:
-      → 정상 상태: 100 노드 × 에포크당 50건 ÷ 12 윈도우 ≈ 윈도우당 417건
-      → 10,000건은 정상 대비 ~24배 이상으로, 명백한 이상 상태
-      → 임계치는 노드 수 증가에 따라 거버넌스로 조정
-
-[B] 연속 블록 누락 (합의 불안정 감지)
-    조건: 연속 missed_blocks_threshold 블록 동안 2/3+ 밸리데이터 서명 누락
-    기본값: missed_blocks_threshold = 100 (거버넌스 파라미터)
-    동작: 전체 TX 처리 속도 제한 (블록당 최대 TX 수 축소)
-    설계 근거:
-      → 100블록 연속 서명 누락은 네트워크 분할 또는 대규모 장애 징후
-      → 완전 정지가 아닌 속도 제한으로 합의 부하 경감
-
-[C] 컨트랙트 가스 이상 (CosmWasm 보호)
-    조건: 단일 블록 내 CosmWasm 실행 가스 합계 > contract_gas_threshold
-    기본값: contract_gas_threshold = 블록 최대 가스의 80%
-    동작: MsgExecuteContract 수용 일시 정지 (디렉토리 컨트랙트 포함)
-    설계 근거:
-      → 컨트랙트가 블록 가스의 대부분을 소비하면 일반 TX 처리 불가
-      → 컨트랙트 취약점 악용 또는 DoS 공격 패턴
-```
-
-### 수동 트리거
+### 수동 트리거 (유일한 트리거)
 
 재단 또는 커뮤니티가 거버넌스 제안을 통해 Circuit Breaker를 활성화한다.
 
@@ -68,7 +36,7 @@
 수동 트리거 절차:
 
   [1] CircuitBreakerProposal 제출
-      ├── target_module: 정지 대상 ("activity" | "directory" | "all")
+      ├── target_module: 정지 대상 ("activity" | "node" | "all")
       ├── reason: 정지 사유 (문자열)
       ├── duration_blocks: 정지 기간 (0 = 거버넌스로 해제할 때까지)
       └── severity: 정지 수준 ("partial" | "full")
@@ -84,6 +52,58 @@
   → 보안 취약점 발견 → 재단이 ExpeditedCircuitBreakerProposal 제출
   → 단축된 투표 기간(~1일) + 높은 통과 기준(quorum 67%, threshold 67%)
   → 통과 시 즉시 해당 모듈 정지
+```
+
+### Guardian 권한 (x/circuit 활용)
+
+Cosmos SDK 표준 `x/circuit` 모듈의 권한 체계를 활용하여, 거버넌스 투표 없이 즉각 정지할 수 있는 Guardian 역할을 설정한다.
+
+```
+Guardian 권한 설계:
+
+  Guardian 주소: 재단 멀티시그 (Phase A/B), Security Council (Phase C)
+
+  권한 수준:
+    ├── LEVEL_SUPER_ADMIN: 모든 Msg 타입 비활성화 가능
+    ├── LEVEL_ALL_MSGS: 지정된 Msg 타입 비활성화 가능
+    └── LEVEL_SOME_MSGS: 특정 Msg 타입만 비활성화 가능
+
+  즉각 대응 플로우:
+    [1] 보안 이슈 감지
+    [2] Guardian이 x/circuit의 MsgAuthorizeCircuitBreaker 실행
+    [3] 대상 Msg 타입 즉시 차단
+    [4] 사후 거버넌스 투표로 해제 또는 유지 결정
+
+  이점:
+    → 거버넌스 투표 대기(~1일) 없이 수분 내 대응
+    → x/circuit 표준이므로 추가 커스텀 모듈 불필요
+    → Guardian 권한 자체도 거버넌스로 변경 가능
+```
+
+### 자동 트리거 — 보류
+
+```
+자동 트리거 보류 사유:
+
+  [1] 기존 방어선이 충분하다
+      → 활동 쿼터 10건/에포크 + feegrant 1 KKOT 제한
+      → 가스비 체계에 의한 스팸 억제
+      → 활동 급증 자체가 쿼터에서 차단됨
+
+  [2] 오탐 리스크가 이점보다 크다
+      → 생태계 성장에 따라 임계치를 지속적으로 조정해야 함
+      → 정상적인 활동 증가를 공격으로 오판할 가능성
+      → 불필요한 체인 정지는 사용자 신뢰를 손상
+
+  [3] 수동 대응이 현실적이다
+      → 밸리데이터 150~200: 조율 가능한 규모
+      → Guardian 즉각 대응 + 긴급 거버넌스(~1일)
+      → 24/7 모니터링으로 이상 징후 사전 감지
+
+  재검토 조건:
+      → 밸리데이터 수 1,000+ 초과 시
+      → DeFi 기능(대출, 파생상품 등) 추가 시
+      → 수동 대응 실패 사례 발생 시
 ```
 
 ---
@@ -113,29 +133,6 @@ x/activity + x/node 동시 정지:
   └── 용도: 커스텀 모듈 전체에 대한 긴급 점검
 ```
 
-### CosmWasm 컨트랙트 정지
-
-CosmWasm 컨트랙트는 컨트랙트 레벨의 pause 메커니즘과 체인 레벨의 Circuit Breaker를 이중으로 적용한다.
-
-```
-컨트랙트 레벨 pause (1차):
-  ├── 컨트랙트의 admin(재단)이 Pause 실행 메시지 호출
-  ├── 컨트랙트 내부 상태: is_paused = true
-  ├── 차단: 상태 변경 실행 메시지
-  ├── 유지: 쿼리
-  └── 복구: admin이 Unpause 실행 메시지 호출
-
-체인 레벨 Circuit Breaker (2차):
-  ├── CircuitBreaker keeper가 MsgExecuteContract를 대상 컨트랙트로 필터링
-  ├── 차단: 특정 컨트랙트 주소에 대한 모든 MsgExecuteContract
-  ├── 유지: 다른 컨트랙트의 MsgExecuteContract는 정상 처리
-  └── 복구: 거버넌스 투표 또는 자동 복구 타이머
-
-이중 방어의 의미:
-  → 컨트랙트 admin 키가 유출되어도 체인 레벨에서 정지 가능
-  → 컨트랙트 자체의 pause 로직에 버그가 있어도 체인에서 차단 가능
-```
-
 ### 전체 트랜잭션 정지 (극단적 상황)
 
 합의 레이어 취약점이나 체인 전체에 영향을 미치는 상황에서만 사용한다.
@@ -159,8 +156,6 @@ CosmWasm 컨트랙트는 컨트랙트 레벨의 pause 메커니즘과 체인 레
 
 ### 거버넌스 투표를 통한 정상화
 
-수동 트리거로 활성화된 Circuit Breaker는 거버넌스 투표로 해제한다.
-
 ```
 정상화 절차:
 
@@ -181,81 +176,68 @@ CosmWasm 컨트랙트는 컨트랙트 레벨의 pause 메커니즘과 체인 레
       └── 사후 분석 보고서 공개
 ```
 
-### 자동 복구 조건 (타이머 기반)
-
-자동 트리거로 활성화된 Circuit Breaker는 조건 해소 시 자동 복구된다.
+### Guardian에 의한 즉시 해제
 
 ```
-자동 복구 조건:
+Guardian 해제 절차:
 
-[A] 이상 활동 급증 → 자동 복구
-    해제 조건: 연속 3 윈도우(4,320 블록, ~6시간) 동안
-               윈도우당 MsgSubmitActivity 수 < activity_surge_threshold × 0.5
-    동작: x/activity Circuit Breaker 자동 해제
-    안전장치: 최대 자동 정지 기간 = 1 에포크(17,280 블록)
-              초과 시 거버넌스 투표 필요
+  [1] 문제 해소 확인
+  [2] Guardian이 x/circuit의 MsgResetCircuitBreaker 실행
+  [3] 대상 Msg 타입 즉시 재활성화
+  [4] 사후 거버넌스 보고 (투명성 확보)
+```
 
-[B] 연속 블록 누락 → 자동 복구
-    해제 조건: 연속 100 블록 동안 2/3+ 밸리데이터 정상 서명
-    동작: TX 속도 제한 자동 해제
-    안전장치: 최대 자동 정지 기간 = 1 에포크
+### 타이머 기반 자동 해제
 
-[C] 컨트랙트 가스 이상 → 자동 복구
-    해제 조건: 연속 100 블록 동안 CosmWasm 가스 합계 < contract_gas_threshold × 0.5
-    동작: MsgExecuteContract 수용 재개
-    안전장치: 최대 자동 정지 기간 = 1 에포크
-
-자동 복구 공통 규칙:
-  → 자동 복구 횟수 제한: 에포크당 최대 3회 자동 복구
-  → 3회 초과 시: Circuit Breaker 유지 + 거버넌스 투표 필요
-  → 반복적 트리거는 근본 원인 해결이 필요한 신호
+```
+duration_blocks > 0으로 설정된 경우:
+  → 현재 블록 - activated_at >= duration_blocks → 자동 해제
+  → 이벤트 발행: EventCircuitBreakerExpired
+  → 거버넌스 투표 없이 자동 복구
+  → 전체 TX 정지(severity = "full") 시 반드시 설정 권장
 ```
 
 ---
 
 ## 5. 구현 설계
 
-### CircuitBreaker keeper 인터페이스
+### x/circuit 표준 활용
 
-```go
-// CircuitBreaker keeper 인터페이스
-type CircuitBreakerKeeper interface {
-    // 상태 조회
-    IsModulePaused(ctx context.Context, moduleName string) bool
-    IsContractPaused(ctx context.Context, contractAddr string) bool
-    GetCircuitBreakerStatus(ctx context.Context) CircuitBreakerStatus
+Cosmos SDK 표준 `x/circuit` 모듈을 기반으로 구현한다. 커스텀 모듈은 최소화한다.
 
-    // 자동 트리거
-    CheckAndTrigger(ctx context.Context) error
+```
+구현 범위 (Phase 2):
 
-    // 거버넌스 트리거
-    ActivateCircuitBreaker(ctx context.Context, proposal CircuitBreakerProposal) error
-    DeactivateCircuitBreaker(ctx context.Context, proposal CircuitBreakerDeactivateProposal) error
+  표준 x/circuit 활용:
+    ├── Guardian 권한 설정 (재단 멀티시그)
+    ├── Msg 타입별 비활성화/재활성화
+    └── 권한 변경 거버넌스 연동
 
-    // 자동 복구
-    CheckAndRecover(ctx context.Context) error
-}
+  커스텀 확장 (최소):
+    ├── CircuitBreakerProposal: 거버넌스 제안 타입 추가
+    ├── CircuitBreakerDeactivateProposal: 해제 제안 타입 추가
+    ├── duration_blocks 기반 자동 해제 (EndBlocker)
+    └── 이력 기록 (CircuitBreakerEvent)
 ```
 
 ### 상태 저장 구조
 
 ```protobuf
-// Circuit Breaker 상태
+// Circuit Breaker 상태 (커스텀 확장)
 message CircuitBreakerState {
-  string module_name = 1;           // 정지 대상 모듈 ("activity", "node", "directory", "all")
+  string module_name = 1;           // 정지 대상 모듈 ("activity", "node", "all")
   bool is_active = 2;               // Circuit Breaker 활성 여부
-  string trigger_type = 3;          // "auto" | "governance"
+  string trigger_type = 3;          // "guardian" | "governance"
   string reason = 4;                // 정지 사유
   int64 activated_at = 5;           // 활성화 블록 높이
   int64 duration_blocks = 6;        // 정지 기간 (0 = 거버넌스 해제까지)
-  int64 auto_recovery_count = 7;    // 현재 에포크 내 자동 복구 횟수
-  string severity = 8;              // "partial" | "full"
+  string severity = 7;              // "partial" | "full"
 }
 
 // Circuit Breaker 이력
 message CircuitBreakerEvent {
   string module_name = 1;
-  string action = 2;               // "activated" | "deactivated" | "auto_recovered"
+  string action = 2;               // "activated" | "deactivated" | "expired"
   string trigger_type = 3;
   string reason = 4;
   int64 block_height = 5;
@@ -272,75 +254,24 @@ AnteHandler 실행 순서:
   [1] 표준 AnteHandler (서명 검증, 가스 계산 등)
   [2] CircuitBreakerDecorator ← 여기에 삽입
       ├── TX의 메시지 유형 확인
-      ├── 해당 모듈의 Circuit Breaker 상태 조회
-      ├── 활성 상태 → TX 거부 (에러 코드 + 정지 사유 반환)
-      └── 비활성 상태 → 다음 AnteHandler로 전달
+      ├── x/circuit 상태 조회 (해당 Msg 타입이 비활성화되었는가?)
+      ├── 비활성화 상태 → TX 거부 (에러 코드 + 정지 사유 반환)
+      └── 정상 상태 → 다음 AnteHandler로 전달
   [3] 나머지 AnteHandler
-```
 
-```go
-// CircuitBreakerDecorator 동작 의사 코드
-func (cbd CircuitBreakerDecorator) AnteHandle(ctx Context, tx Tx, simulate bool) error {
-    for _, msg := range tx.GetMsgs() {
-        moduleName := getModuleForMsg(msg)
-
-        if cbd.keeper.IsModulePaused(ctx, moduleName) {
-            // 거버넌스 TX는 항상 허용
-            if isGovernanceTx(msg) {
-                continue
-            }
-            return ErrCircuitBreakerActive{
-                Module: moduleName,
-                Reason: cbd.keeper.GetReason(ctx, moduleName),
-            }
-        }
-
-        // 컨트랙트별 필터링
-        if execMsg, ok := msg.(*wasmtypes.MsgExecuteContract); ok {
-            if cbd.keeper.IsContractPaused(ctx, execMsg.Contract) {
-                return ErrContractPaused{Contract: execMsg.Contract}
-            }
-        }
-    }
-    return next(ctx, tx, simulate)
-}
-
-// 메시지 → 모듈 매핑
-func getModuleForMsg(msg sdk.Msg) string {
-    switch msg.(type) {
-    case *activitytypes.MsgSubmitActivity:
-        return "activity"
-    case *nodetypes.MsgRegisterNode, *nodetypes.MsgDeactivateNode:
-        return "node"
-    case *wasmtypes.MsgExecuteContract:
-        return "wasm"
-    default:
-        return ""
-    }
-}
+  예외: 거버넌스 TX는 항상 허용 (정지 해제 투표를 위해)
 ```
 
 ### EndBlocker 통합
 
-자동 트리거와 자동 복구는 EndBlocker에서 실행된다.
+타이머 기반 자동 해제만 EndBlocker에서 처리한다.
 
 ```
 EndBlocker 동작:
 
   매 블록:
-    [1] CheckAndTrigger()
-        ├── 윈도우 내 MsgSubmitActivity 카운트 확인 → 임계치 초과 시 활성화
-        ├── 연속 미서명 블록 카운트 확인 → 임계치 초과 시 속도 제한
-        └── CosmWasm 가스 사용량 확인 → 임계치 초과 시 활성화
-
-    [2] CheckAndRecover()
-        ├── 활성 상태인 자동 트리거 Circuit Breaker 대상
-        ├── 복구 조건 충족 여부 확인
-        ├── 에포크당 자동 복구 횟수 확인 (최대 3회)
-        └── 조건 충족 + 횟수 미초과 → 자동 해제
-
-    [3] 타이머 기반 만료 확인
-        ├── duration_blocks > 0인 거버넌스 Circuit Breaker 대상
+    [1] 타이머 만료 확인
+        ├── duration_blocks > 0인 Circuit Breaker 대상
         ├── 현재 블록 - activated_at >= duration_blocks → 자동 해제
         └── 이벤트 발행: EventCircuitBreakerExpired
 ```
@@ -355,47 +286,17 @@ EndBlocker 동작:
 
 ```
 Phase A: 재단 주도 (Genesis ~ Active Validator Set ≥ 15)
-  ├── Circuit Breaker 거버넌스 제안: 재단 주도
+  ├── Guardian 권한: 재단 단일 주소
   ├── 컨트랙트 pause 실행: 재단이 admin으로서 직접 실행
-  ├── 자동 트리거 파라미터 조정: 재단이 거버넌스 제안
-  └── 의사결정 속도: 빠름 (재단 투표력)
+  └── 의사결정 속도: 빠름 (재단 투표력 + Guardian 즉각 대응)
 
 Phase B: 혼합 (Active Validator Set ≥ 15 ~ ≥ 30 AND 12개월)
-  ├── Circuit Breaker 거버넌스 제안: 재단 + 커뮤니티 밸리데이터
-  ├── 컨트랙트 admin: 멀티시그로 전환 (재단 + 커뮤니티 대표 2-3인)
-  ├── 자동 트리거 파라미터: 커뮤니티 거버넌스로 조정
+  ├── Guardian 권한: 멀티시그 (재단 + 커뮤니티 대표 2-3인)
   └── 커뮤니티 밸리데이터에게 긴급 대응 역할 인수
 
 Phase C: 커뮤니티 주도 (Active Validator Set ≥ 30 AND 12개월 이후)
-  ├── Circuit Breaker 거버넌스 제안: 커뮤니티 Security Council
-  ├── 컨트랙트 admin: 거버넌스 컨트랙트 (x/gov)로 이전
-  │   → admin 권한이 거버넌스 모듈에 있으므로
-  │     pause/unpause도 거버넌스 투표로만 실행
-  ├── 재단 역할: 긴급 상황 시 거버넌스 제안만 (투표권은 다른 참여자와 동일)
-  └── 자동 트리거: 파라미터 조정 포함 모든 결정이 커뮤니티 거버넌스
-```
-
-### 컨트랙트 admin 전환 절차
-
-```
-컨트랙트 admin 전환:
-
-Phase A:
-  admin = 재단 주소 (seocheon1foundation...)
-
-Phase B:
-  [1] 멀티시그 주소 생성 (재단 + 커뮤니티 대표)
-  [2] UpdateAdmin 거버넌스 제안
-      ├── contract: 디렉토리 컨트랙트 주소
-      └── new_admin: 멀티시그 주소
-  [3] 거버넌스 투표 통과 → admin 변경
-
-Phase C:
-  [1] UpdateAdmin 거버넌스 제안
-      ├── contract: 디렉토리 컨트랙트 주소
-      └── new_admin: x/gov 모듈 주소
-  [2] 거버넌스 투표 통과 → admin이 거버넌스 모듈로 이전
-  [3] 이후 pause/unpause는 거버넌스 제안으로만 실행
+  ├── Guardian 권한: Security Council (커뮤니티 선출)
+  └── 재단 역할: 긴급 상황 시 거버넌스 제안만 (투표권은 다른 참여자와 동일)
 ```
 
 ---
@@ -405,22 +306,20 @@ Phase C:
 ```
 Circuit Breaker 모니터링 항목:
 
-  [A] 자동 트리거 근접도
-      ├── 윈도우당 MsgSubmitActivity 수 / activity_surge_threshold
-      ├── 연속 미서명 블록 수 / missed_blocks_threshold
-      └── 블록당 CosmWasm 가스 / contract_gas_threshold
-      → 임계치의 70% 도달 시 경고 알림
-
-  [B] Circuit Breaker 활성 상태
+  [A] Circuit Breaker 활성 상태
       ├── 활성 상태 지속 시간
-      ├── 자동 복구 시도 횟수
+      ├── 정지 대상 모듈 및 Msg 타입
       └── 거버넌스 해제 투표 진행 상황
+
+  [B] 이상 징후 사전 감지 (수동 대응 지원)
+      ├── 윈도우당 MsgSubmitActivity 수 추이
+      ├── 밸리데이터 서명 참여율 추이
+      └── 비정상 패턴 감지 시 Guardian에게 알림
 
   [C] 이력 분석
       ├── Circuit Breaker 활성화 빈도 (에포크당)
       ├── 평균 정지 기간
-      ├── 자동 트리거 vs 수동 트리거 비율
-      └── 반복적 트리거 패턴 감지
+      └── Guardian 대응 vs 거버넌스 대응 비율
 ```
 
 ---
@@ -429,10 +328,8 @@ Circuit Breaker 모니터링 항목:
 
 | 파라미터 | 모듈 | 초기값 | 조정 |
 |----------|------|--------|------|
-| `activity_surge_threshold` | x/circuitbreaker | 10,000 (윈도우당) | 거버넌스 |
-| `missed_blocks_threshold` | x/circuitbreaker | 100 (연속 블록) | 거버넌스 |
-| `contract_gas_threshold` | x/circuitbreaker | 블록 최대 가스의 80% | 거버넌스 |
-| `max_auto_recovery_per_epoch` | x/circuitbreaker | 3 | 거버넌스 |
-| `max_auto_pause_duration` | x/circuitbreaker | 17,280 블록 (1 에포크) | 거버넌스 |
-| `recovery_observation_windows` | x/circuitbreaker | 3 윈도우 | 거버넌스 |
-| `recovery_threshold_ratio` | x/circuitbreaker | 0.5 (임계치의 50% 이하) | 거버넌스 |
+| Guardian 주소 | x/circuit | 재단 멀티시그 | 거버넌스 |
+| Guardian 권한 수준 | x/circuit | LEVEL_SUPER_ADMIN | 거버넌스 |
+| 긴급 투표 기간 | x/gov | 17,280 블록 (~1일) | 거버넌스 |
+| 긴급 투표 quorum | x/gov | 67% | 거버넌스 |
+| 긴급 투표 threshold | x/gov | 67% | 거버넌스 |

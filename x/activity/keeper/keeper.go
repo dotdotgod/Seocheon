@@ -44,9 +44,6 @@ type Keeper struct {
 	// ActivitySequence tracks the next sequence number: (node_id, epoch) -> next_seq
 	ActivitySequence collections.Map[collections.Pair[string, int64], uint64]
 
-	// GlobalHashIndex for hash-only lookups: hash_hex -> "node_id:epoch:sequence"
-	GlobalHashIndex collections.Map[string, string]
-
 	// EpochActivityFee: epoch -> activity_fee in usum (cached per epoch)
 	EpochActivityFee collections.Map[int64, uint64]
 
@@ -120,11 +117,6 @@ func NewKeeper(
 		ActivitySequence: collections.NewMap(sb, types.ActivitySequenceKey, "activity_sequence",
 			collections.PairKeyCodec(collections.StringKey, collections.Int64Key),
 			collections.Uint64Value,
-		),
-
-		GlobalHashIndex: collections.NewMap(sb, types.GlobalHashIndexKey, "global_hash_index",
-			collections.StringKey,
-			collections.StringValue,
 		),
 
 		EpochActivityFee: collections.NewMap(sb, types.EpochActivityFeeKey, "epoch_activity_fee",

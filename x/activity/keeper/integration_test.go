@@ -210,9 +210,10 @@ func TestIntegration_PruningWithResubmission(t *testing.T) {
 	err = f.keeper.EndBlocker(ctxEpoch)
 	require.NoError(t, err)
 
-	// Verify pruned.
-	_, err = f.keeper.GlobalHashIndex.Get(ctxEpoch, hash)
-	require.Error(t, err)
+	// Verify pruned — HashIndex should be gone.
+	has, err := f.keeper.HashIndex.Has(ctxEpoch, collections.Join3("node1", int64(0), hash))
+	require.NoError(t, err)
+	require.False(t, has)
 
 	// In epoch 1, the same hash can be submitted again.
 	ctx1 := f.freshCtx(params.EpochLength + 100)

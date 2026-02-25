@@ -384,7 +384,7 @@ func TestSubmitActivity_MultipleInSameWindow(t *testing.T) {
 	}
 }
 
-func TestSubmitActivity_GlobalHashIndex(t *testing.T) {
+func TestSubmitActivity_HashIndexOnly(t *testing.T) {
 	f := initFixture(t)
 
 	agentAddr := sdk.AccAddress([]byte("agentH_______________")).String()
@@ -397,13 +397,13 @@ func TestSubmitActivity_GlobalHashIndex(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Verify global hash index.
-	value, err := f.keeper.GlobalHashIndex.Get(ctx, hash)
+	// Verify HashIndex contains the entry.
+	has, err := f.keeper.HashIndex.Has(ctx, collections.Join3("nodeH", int64(0), hash))
 	if err != nil {
-		t.Fatalf("global hash index lookup failed: %v", err)
+		t.Fatalf("hash index lookup failed: %v", err)
 	}
-	if value != "nodeH:0:0" {
-		t.Errorf("expected 'nodeH:0:0', got %q", value)
+	if !has {
+		t.Error("expected HashIndex to contain the entry")
 	}
 }
 

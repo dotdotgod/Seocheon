@@ -2,9 +2,6 @@ package keeper
 
 import (
 	"context"
-	"fmt"
-	"strconv"
-	"strings"
 
 	"cosmossdk.io/collections"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -12,30 +9,50 @@ import (
 	"seocheon/x/activity/types"
 )
 
-// Activity queries a single activity by hash using GlobalHashIndex.
+// Activity queries a single activity by hash using HashIndex scan.
 func (qs queryServer) Activity(ctx context.Context, req *types.QueryActivityRequest) (*types.QueryActivityResponse, error) {
 	if req.ActivityHash == "" {
 		return nil, types.ErrInvalidActivityHash
 	}
 
-	// Look up in global hash index.
-	value, err := qs.k.GlobalHashIndex.Get(ctx, req.ActivityHash)
+	// Scan HashIndex for matching hash_hex (3rd key component).
+	iter, err := qs.k.HashIndex.Iterate(ctx, nil)
 	if err != nil {
 		return nil, types.ErrActivityNotFound
 	}
+	defer iter.Close()
 
-	// Parse "node_id:epoch:sequence".
-	nodeID, epoch, seq, err := parseGlobalHashValue(value)
-	if err != nil {
-		return nil, fmt.Errorf("corrupt global hash index: %w", err)
+	for ; iter.Valid(); iter.Next() {
+		key, err := iter.Key()
+		if err != nil {
+			continue
+		}
+		if key.K3() != req.ActivityHash {
+			continue
+		}
+		// Found matching hash — look up the activity by (node_id, epoch).
+		nodeID := key.K1()
+		epoch := key.K2()
+		// Find the record with matching hash in this node+epoch.
+		rng := collections.NewSuperPrefixedTripleRange[string, int64, uint64](nodeID, epoch)
+		actIter, err := qs.k.Activities.Iterate(ctx, rng)
+		if err != nil {
+			continue
+		}
+		for ; actIter.Valid(); actIter.Next() {
+			record, err := actIter.Value()
+			if err != nil {
+				break
+			}
+			if record.ActivityHash == req.ActivityHash {
+				actIter.Close()
+				return &types.QueryActivityResponse{Activity: record}, nil
+			}
+		}
+		actIter.Close()
 	}
 
-	record, err := qs.k.Activities.Get(ctx, collections.Join3(nodeID, epoch, seq))
-	if err != nil {
-		return nil, types.ErrActivityNotFound
-	}
-
-	return &types.QueryActivityResponse{Activity: record}, nil
+	return nil, types.ErrActivityNotFound
 }
 
 // ActivitiesByNode queries activities by node_id with optional epoch filter and pagination.
@@ -180,22 +197,3 @@ func (qs queryServer) NodeEpochActivity(ctx context.Context, req *types.QueryNod
 	}, nil
 }
 
-// parseGlobalHashValue parses "node_id:epoch:sequence" string.
-func parseGlobalHashValue(value string) (string, int64, uint64, error) {
-	parts := strings.SplitN(value, ":", 3)
-	if len(parts) != 3 {
-		return "", 0, 0, fmt.Errorf("invalid format: %s", value)
-	}
-
-	epoch, err := strconv.ParseInt(parts[1], 10, 64)
-	if err != nil {
-		return "", 0, 0, fmt.Errorf("invalid epoch: %w", err)
-	}
-
-	seq, err := strconv.ParseUint(parts[2], 10, 64)
-	if err != nil {
-		return "", 0, 0, fmt.Errorf("invalid sequence: %w", err)
-	}
-
-	return parts[0], epoch, seq, nil
-}

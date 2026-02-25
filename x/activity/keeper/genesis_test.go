@@ -74,12 +74,6 @@ func TestGenesis_WithActivities(t *testing.T) {
 		require.True(t, has, "HashIndex missing for %s", act.ActivityHash)
 	}
 
-	// Verify GlobalHashIndex is rebuilt.
-	for _, act := range genState.Activities {
-		_, err := f2.keeper.GlobalHashIndex.Get(ctx2, act.ActivityHash)
-		require.NoError(t, err, "GlobalHashIndex missing for %s", act.ActivityHash)
-	}
-
 	// Verify EpochQuotaUsed is rebuilt.
 	quotaUsed, err := f2.keeper.EpochQuotaUsed.Get(ctx2, collections.Join("node1", int64(0)))
 	require.NoError(t, err)

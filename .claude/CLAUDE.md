@@ -21,7 +21,6 @@ documents/
 │   ├── 02_core_concepts.md       ← 에포크, 윈도우, 보상 공식 (체인 코어)
 │   ├── 03_node_module.md         ← x/node, Registration Pool (Go 개발자)
 │   ├── 04_activity_protocol.md   ← Activity Protocol (Go 개발자)
-│   ├── 06_directory_protocol.md  ← 디렉토리 컨트랙트 (Rust 개발자)
 │   ├── 07_tokenomics.md          ← 토큰 이코노믹스, Genesis 노드 (이코노미)
 │   ├── 08_spam_defense.md        ← 스팸/게이밍 방어 (보안)
 │   ├── 09_implementation.md      ← API, 모듈 구조, 로드맵, 테스트 (전체 팀)
@@ -42,7 +41,6 @@ docs/
 
 ### 블록체인
 - **Cosmos SDK v0.53+** / CometBFT
-- **CosmWasm**: 노드 디렉토리
 - **토큰**: KKOT (꽃, 단일 토큰) — base denom: `usum` (숨), milli: `hon` (혼), display: `kkot` (꽃)
 - **합의**: DPoS, Active Validator Set 150~200
 - **해시 알고리즘**: SHA-256
@@ -54,7 +52,6 @@ docs/
 | `x/node` | 노드 등록/관리, Registration Pool |
 | `x/activity` | MsgSubmitActivity 제출, 프루닝 |
 | `x/distribution` 확장 | 동적 이중 보상 풀: `delegation_ratio = max(D_min, N_d/(N_a+N_d))`, D_min=0.3 |
-| `x/wasm` (CosmWasm) | 노드 디렉토리 |
 
 ## Git 컨벤션
 

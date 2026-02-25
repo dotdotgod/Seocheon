@@ -45,9 +45,6 @@ var (
 	// ActivitySequenceKey: (node_id, epoch) -> next_sequence
 	ActivitySequenceKey = collections.NewPrefix(16)
 
-	// GlobalHashIndexKey: hash_hex -> (node_id, epoch, sequence) for hash-only lookups
-	GlobalHashIndexKey = collections.NewPrefix(17)
-
 	// EpochActivityFeeKey: epoch -> activity_fee in usum (cached per epoch)
 	EpochActivityFeeKey = collections.NewPrefix(18)
 

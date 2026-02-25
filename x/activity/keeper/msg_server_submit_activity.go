@@ -145,12 +145,6 @@ func (ms msgServer) SubmitActivity(ctx context.Context, msg *types.MsgSubmitActi
 		return nil, err
 	}
 
-	// Update GlobalHashIndex.
-	globalValue := fmt.Sprintf("%s:%d:%d", nodeID, epoch, seq)
-	if err := ms.GlobalHashIndex.Set(ctx, msg.ActivityHash, globalValue); err != nil {
-		return nil, err
-	}
-
 	// Update quota used.
 	if err := ms.EpochQuotaUsed.Set(ctx, collections.Join(nodeID, epoch), quotaUsed+1); err != nil {
 		return nil, err

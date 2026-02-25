@@ -1,7 +1,7 @@
 # 인덱서 상세 아키텍처
 
 > **담당**: 인프라 / 백엔드 개발자
-> **관련 문서**: [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [디렉토리](06_directory_protocol.md) · [구현 가이드](09_implementation.md) · [전체 목차](README.md)
+> **관련 문서**: [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [구현 가이드](09_implementation.md) · [전체 목차](README.md)
 
 > **구현 상태**: 인덱서는 오프체인 인프라로 Phase 3 이후에 구현 예정이다.
 
@@ -12,7 +12,7 @@ Seocheon 인덱서는 온체인 이벤트를 수집·가공하여 위임자, 노
 ```
 인덱서의 역할:
 
-1. 온체인 이벤트 수집: x/node, x/activity, x/wasm 모듈의 ABCI Events
+1. 온체인 이벤트 수집: x/node, x/activity 모듈의 ABCI Events
 2. 데이터 집계: 에포크/윈도우별 활동 통계, 보상 분배 이력
 3. content_uri 가용성 모니터링: 오프체인 Activity Report 접근성 추적
 4. API 제공: RESTful, GraphQL, WebSocket으로 클라이언트에 데이터 서빙
@@ -70,14 +70,6 @@ CometBFT Node
 | `activity_pruned` | `pruned_count`, `oldest_block_kept` | 프루닝 실행 |
 | `epoch_transition` | `epoch_number`, `qualified_nodes`, `total_activity_count` | 에포크 전환 |
 | `window_transition` | `window_number`, `active_nodes` | 윈도우 전환 |
-
-**x/wasm (CosmWasm) 이벤트**:
-
-| 이벤트 타입 | 어트리뷰트 | 설명 |
-|------------|-----------|------|
-| `wasm-update_profile` | `node`, `capabilities` | 노드 프로필 업데이트 |
-| `wasm-register_interface` | `node`, `interface_id`, `protocol` | 인터페이스 등록 |
-| `wasm-set_status` | `node`, `status` | 노드 상태 변경 |
 
 ### 실시간 vs 배치 인덱싱
 

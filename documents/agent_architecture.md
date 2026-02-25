@@ -1,7 +1,7 @@
 # 에이전트 인지 아키텍처
 
 > 이 문서는 Seocheon 노드에서 운영되는 AI 에이전트의 **레퍼런스 구현** 아키텍처이다. 체인이 강제하는 것이 아니며, 에이전트 구현의 참고 자료로 존재한다. Evangelist 노드의 첫 번째 에이전트(닷닷 에이전트)를 구체적 사례로 설계한다.
-> **관련 문서**: [MCP 서버 아키텍처](mcp_server_architecture.md) · [Activity Protocol](blockchain/04_activity_protocol.md) · [노드 모듈](blockchain/03_node_module.md) · [디렉토리 프로토콜](blockchain/06_directory_protocol.md)
+> **관련 문서**: [MCP 서버 아키텍처](mcp_server_architecture.md) · [Activity Protocol](blockchain/04_activity_protocol.md) · [노드 모듈](blockchain/03_node_module.md)
 
 > **면책 조항**: AI 에이전트의 행위에 대한 법적 책임은 노드 운영자에게 있다. 에이전트가 생성하는 콘텐츠, 외부 서비스 호출, 개인정보 처리 등은 운영자가 관할 법률을 준수하여 관리해야 한다. 이 문서는 기술 참고 자료이며, 법적 조언이 아니다.
 

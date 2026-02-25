@@ -213,8 +213,8 @@ func TestQueryActivitiesByNode_EmptyNodeID(t *testing.T) {
 	require.Error(t, err)
 }
 
-// Verify global hash index cross-reference.
-func TestQueryActivity_CrossReference(t *testing.T) {
+// Verify Activity query finds record via HashIndex scan.
+func TestQueryActivity_HashIndexScan(t *testing.T) {
 	f := initFixture(t)
 	ctx := f.freshCtx(100)
 
@@ -223,14 +223,12 @@ func TestQueryActivity_CrossReference(t *testing.T) {
 	_, err := f.submitActivity(ctx, "agent1", hash, "ipfs://test")
 	require.NoError(t, err)
 
-	// Check GlobalHashIndex directly.
-	val, err := f.keeper.GlobalHashIndex.Get(ctx, hash)
+	// Verify HashIndex contains the entry.
+	has, err := f.keeper.HashIndex.Has(ctx, collections.Join3("node1", int64(0), hash))
 	require.NoError(t, err)
+	require.True(t, has)
 
-	// Should parse correctly.
-	require.Contains(t, val, "node1")
-
-	// Query service should match.
+	// Query service should find the record via HashIndex scan.
 	qs := keeper.NewQueryServerImpl(f.keeper)
 	resp, err := qs.Activity(ctx, &types.QueryActivityRequest{ActivityHash: hash})
 	require.NoError(t, err)
