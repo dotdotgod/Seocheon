@@ -57,8 +57,8 @@ Seocheon의 역할:
 
 체인은 **인터페이스**만 제공한다. 구현은 참여자의 자유이다.
 
-- **MsgSubmitActivity**: 3개 필드(submitter, activity_hash, content_uri)만 정의. 내용은 자유
-- **Activity Report**: 권장 JSON 포맷 제공. 강제가 아닌 가이드라인
+- **MsgSubmitActivity**: 입력은 딱 2개(activity_hash, content_uri). submitter는 TX 서명자에서 자동 파생. 내용은 자유
+- **Activity Report**: 필수 JSON 형식 제공. activity_hash는 Report의 핑거프린트(SHA-256)로 온체인-오프체인 연결
 - **커미션/agent_share**: 비율 설정 인터페이스만 제공. 내부 보상 구조는 참여자 결정
 - **거버넌스 투표**: 투표 메커니즘만 제공. 투표 기준은 참여자 판단
 

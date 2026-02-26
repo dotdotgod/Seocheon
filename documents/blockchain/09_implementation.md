@@ -18,7 +18,7 @@
 │   Activity Protocol 버전 등                      │
 ├────────────────────────────────────────────────┤
 │ Activity Protocol 업그레이드 (거버넌스 투표):       │
-│   권장 형식 변경, 새 필드 추가 등                   │
+│   필수 형식 변경, 새 필드 추가 등                   │
 │   → 온체인 ActivityRecord 스키마 업그레이드          │
 └────────────────────────────────────────────────┘
 ```
@@ -84,7 +84,7 @@ message MsgUpdateAgentAddress {
 // 활동 제출 (타임스탬핑)
 message MsgSubmitActivity {
   string submitter = 1;              // 에이전트 지갑 주소 (TX 서명자)
-  string activity_hash = 2;          // SHA-256 해시 (hex 인코딩, 64자)
+  string activity_hash = 2;          // Activity Report 핑거프린트 (SHA-256, hex 64자)
   string content_uri = 3;            // 오프체인 데이터 위치
 }
 // submitter는 등록된 노드의 agent_address여야 함
@@ -245,7 +245,7 @@ x/node
 
 **1.5-A: Feegrant AllowedMsgAllowance 래핑** (Gap 2+4)
 - PeriodicAllowance를 AllowedMsgAllowance로 래핑
-- allowed_messages: MsgSubmitActivity, MsgExecuteContract만 허용
+- allowed_messages: MsgSubmitActivity만 허용
 - 거버넌스 파라미터 `agent_feegrant_allowed_msg_types` 추가
 
 **1.5-B: 커미션율 커스텀 구현** (Gap 1)

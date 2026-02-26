@@ -497,7 +497,7 @@ GraphQL: gqlgen (Go) 또는 graphql-yoga (Node.js)
 수직 (Scale-Up):
   → 초기 단계에서 단일 인스턴스로 운영
   → PostgreSQL: 적절한 인덱스, 쿼리 최적화, 커넥션 풀링
-  → 예상 처리량: ~100 TPS (활동 제출 + 컨트랙트 이벤트)
+  → 예상 처리량: ~100 TPS (활동 제출 이벤트)
 
 수평 (Scale-Out):
   → 읽기 분리: PostgreSQL Read Replica

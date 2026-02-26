@@ -36,6 +36,6 @@ func TestGetAllowedAgentMsgTypes(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, types.DefaultAgentAllowedMsgTypes, allowed)
 	require.Contains(t, allowed, "/seocheon.activity.v1.MsgSubmitActivity")
-	require.Contains(t, allowed, "/cosmwasm.wasm.v1.MsgExecuteContract")
 	require.Contains(t, allowed, "/cosmos.bank.v1beta1.MsgSend")
+	require.Len(t, allowed, 2)
 }

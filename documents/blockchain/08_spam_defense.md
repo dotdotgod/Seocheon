@@ -84,8 +84,7 @@ Foundation → 신규 노드 feegrant 설정:
 
 x/feegrant AllowedMsgAllowance (래핑):
 ├── allowed_messages:
-│   ├── /seocheon.activity.v1.MsgSubmitActivity
-│   └── /cosmwasm.wasm.v1.MsgExecuteContract
+│   └── /seocheon.activity.v1.MsgSubmitActivity
 │   └── (MsgSend, MsgStoreCode 등은 제외)
 │
 └── allowance: PeriodicAllowance
@@ -95,7 +94,7 @@ x/feegrant AllowedMsgAllowance (래핑):
     └── expiration: 등록 후 ~180일 (6개월)
 ```
 
-**AllowedMsgAllowance 래핑**: `PeriodicAllowance`를 `AllowedMsgAllowance`로 래핑하여, feegrant가 `MsgSubmitActivity`와 `MsgExecuteContract`에만 사용되도록 한다. 토큰 전송(`MsgSend`)이나 컨트랙트 배포(`MsgStoreCode`)에는 feegrant를 사용할 수 없다. `allowed_messages`는 거버넌스 파라미터(`agent_feegrant_allowed_msg_types`)로 관리한다.
+**AllowedMsgAllowance 래핑**: `PeriodicAllowance`를 `AllowedMsgAllowance`로 래핑하여, feegrant가 `MsgSubmitActivity`에만 사용되도록 한다. 토큰 전송(`MsgSend`) 등에는 feegrant를 사용할 수 없다. `allowed_messages`는 거버넌스 파라미터(`agent_feegrant_allowed_msg_types`)로 관리한다.
 
 **만료**: 약 180일(6개월) 후 자동 만료. 이 기간 내에 Activity Airdrop을 통해 자체 가스비를 확보하는 것이 기대 시나리오이다. 필요 시 MsgRenewFeegrant로 재신청 가능.
 
@@ -159,7 +158,7 @@ ActivityRecord:
 
 스팸/게이밍 방어 관련 모든 거버넌스 파라미터를 정리한다.
 
-| 파라미터 | 모듈/컨트랙트 | 초기값 | 조정 |
+| 파라미터 | 모듈 | 초기값 | 조정 |
 |----------|--------------|--------|------|
 | **에포크 / 윈도우** | | | |
 | `epoch_length` | x/activity | 17,280 블록 (~24시간) | 거버넌스 |
@@ -177,7 +176,7 @@ ActivityRecord:
 | `registration_cooldown_blocks` | x/node | 100 | 거버넌스 |
 | `registration_deposit` | x/node | 0 usum | 거버넌스 |
 | **Agent 권한** | | | |
-| `agent_allowed_msg_types` | x/node | [MsgSubmitActivity, MsgExecuteContract, MsgSend] | 거버넌스 |
+| `agent_allowed_msg_types` | x/node | [MsgSubmitActivity, MsgSend] | 거버넌스 |
 | `agent_address_change_cooldown` | x/node | 17,280 블록 (1 에포크) | 거버넌스 |
 | **활동 비용 모델** | | | |
 | `fee_threshold_multiplier` | x/activity | 3 | 거버넌스 |

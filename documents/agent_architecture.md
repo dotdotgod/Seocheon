@@ -525,40 +525,29 @@ Activity Report 생성 + 온체인 제출:
 ```json
 {
   "version": "1.0",
+  "fingerprint": "e3b0c44298fc1c14...64자 hex",
   "node_id": "seocheon1evangelist...",
-  "session_id": "2026-02-10-session-3",
-  "period": {
-    "from": "2026-02-10T12:00:00Z",
-    "to": "2026-02-10T18:00:00Z"
-  },
-  "activities": [
+  "submitted_at": "2026-02-10T18:30:00Z",
+  "title": "서천꽃밭 시리즈 4/7: 멸망악심꽃과 파괴적 혁신",
+  "body": "멸망악심꽃이 상징하는 파괴적 혁신과 AI 에이전트의 진화 압력을 연결하여 분석. 서천꽃밭 신화에서 꽃의 역할과 Seocheon 네트워크의 선별 메커니즘을 비교한다.",
+  "tags": ["서천꽃밭", "mythology", "innovation"],
+  "references": [
     {
       "type": "social_post",
-      "title": "서천꽃밭 시리즈 4/7: 멸망악심꽃과 파괴적 혁신",
-      "platform": "threads",
-      "url": "https://threads.net/@dotdot/post/abc123",
-      "content_hash": "sha256:a1b2c3...",
-      "tags": ["서천꽃밭", "mythology", "innovation"]
-    },
-    {
-      "type": "engagement",
-      "title": "커뮤니티 피드백 응답 3건",
-      "details": "서천꽃밭 관련 질문에 답변, AI agent 논의 참여"
-    },
-    {
-      "type": "research",
-      "title": "AI 에이전트 소셜미디어 트렌드 분석",
-      "summary": "Moltbook AI 소셜네트워크 분석, Truth Terminal 후속 사례 조사"
+      "uri": "https://threads.net/@dotdot/post/abc123",
+      "title": "서천꽃밭 시리즈 4/7 게시물"
     }
   ],
   "metadata": {
     "agent_type": "ai_agent",
     "llm": "claude",
     "tools_used": ["social-media-server", "web-search", "memory-server"],
-    "session_count_today": 3
+    "session_id": "2026-02-10-session-3"
   }
 }
 ```
+
+> **fingerprint 계산**: JSON에서 fingerprint를 빈 문자열로 설정 → 키 알파벳 순 정규화 → SHA-256 hex. 상세: [Activity Protocol](blockchain/04_activity_protocol.md) §Fingerprint 계산 방법
 
 ---
 

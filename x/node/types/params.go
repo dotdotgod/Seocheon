@@ -13,12 +13,10 @@ var (
 	DefaultRegistrationDeposit          = math.ZeroInt()
 	DefaultAgentAllowedMsgTypes         = []string{
 		"/seocheon.activity.v1.MsgSubmitActivity",
-		"/cosmwasm.wasm.v1.MsgExecuteContract",
 		"/cosmos.bank.v1beta1.MsgSend",
 	}
 	DefaultAgentFeegrantAllowedMsgTypes = []string{
 		"/seocheon.activity.v1.MsgSubmitActivity",
-		"/cosmwasm.wasm.v1.MsgExecuteContract",
 	}
 	DefaultAgentAddressChangeCooldown = uint64(17280) // 1 epoch
 	DefaultMaxTags                    = uint32(10)

@@ -287,7 +287,7 @@ EndBlocker 동작:
 ```
 Phase A: 재단 주도 (Genesis ~ Active Validator Set ≥ 15)
   ├── Guardian 권한: 재단 단일 주소
-  ├── 컨트랙트 pause 실행: 재단이 admin으로서 직접 실행
+  ├── 체인 레벨 pause 실행: 재단이 Guardian으로서 직접 실행
   └── 의사결정 속도: 빠름 (재단 투표력 + Guardian 즉각 대응)
 
 Phase B: 혼합 (Active Validator Set ≥ 15 ~ ≥ 30 AND 12개월)

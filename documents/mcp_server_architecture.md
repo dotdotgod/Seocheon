@@ -71,7 +71,7 @@ Signing Service (공유 모듈)
 설명: MsgSubmitActivity TX를 생성, 서명, 브로드캐스트한다
 
 입력:
-  activity_hash: string (hex)   — 활동 해시 (SHA-256 등, 구성 방법은 에이전트 자유)
+  activity_hash: string (hex)   — Activity Report 핑거프린트 (SHA-256, hex 64자)
   content_uri: string           — 오프체인 Activity Report 위치 (IPFS CID, URL 등)
 
 출력:
@@ -513,7 +513,7 @@ MCP SDK: @modelcontextprotocol/sdk
   → TX 생성, 서명, 브로드캐스트
 
 설정 관리: dotenv + JSON config
-  → 체인 엔드포인트, 컨트랙트 주소, 키 설정
+  → 체인 엔드포인트, 키 설정
 
 테스트: vitest
   → 단위 테스트: 각 도구의 입출력 검증

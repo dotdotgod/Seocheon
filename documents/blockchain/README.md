@@ -17,8 +17,8 @@
 | 08 | [스팸/게이밍 방어](08_spam_defense.md) | 보안 / 메커니즘 설계 | 6대 방어 카테고리, 거버넌스 파라미터 종합 |
 | 09 | [구현 가이드](09_implementation.md) | 전체 팀 / PM | 거버넌스, API 레퍼런스, 모듈 구조, 로드맵, 테스트 전략 |
 | 10 | [체인 업그레이드 전략](10_chain_upgrade.md) | 체인 코어 / DevOps | x/upgrade, cosmovisor, 상태 마이그레이션, 긴급 업그레이드 |
-| 11 | [Circuit Breaker](11_circuit_breaker.md) | 체인 코어 / 보안 | 긴급 정지 메커니즘, 자동/수동 트리거, 복구 절차 |
-| 12 | [IBC 전략](12_ibc_strategy.md) | 인프라 / 네트워크 | IBC Transfer, 크로스체인 Activity |
+| 11 | [Circuit Breaker](11_circuit_breaker.md) | 체인 코어 / 보안 | 긴급 정지 메커니즘, 수동 트리거 (Guardian), 복구 절차 |
+| 12 | [IBC 전략](12_ibc_strategy.md) | 인프라 / 네트워크 | IBC Transfer, KKOT 크로스체인 전송 |
 | 13 | [인덱서 아키텍처](13_indexer_architecture.md) | 인프라 / 백엔드 | 이벤트 인덱싱, content_uri 가용성, API/대시보드 |
 
 ---
@@ -65,9 +65,8 @@ x/node
 ├── 의존 ───► x/staking, x/bank, x/distribution, x/slashing
 └── x/activity 가 의존 ◄──
 
-x/circuitbreaker
-├── 의존 ───► x/node, x/activity
-└── AnteHandler 체인에 통합
+x/circuit (Cosmos SDK 표준)
+└── Guardian 권한 관리
 
 x/upgrade
 └── 거버넌스(x/gov)를 통한 업그레이드 플랜 관리
