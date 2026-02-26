@@ -278,14 +278,15 @@ Activity Report 내용 (오프체인 JSON):
 
 ---
 
-## MCP 서버 구성
+## 체인 인터랙션 구조
 
 ```
-Agent (LLM — Claude)
+Agent (LLM — Claude 등)
   │
-  ├── MCP: seocheon-server           ← 체인 인터랙션 (상세: mcp_server_architecture.md)
-  │     └── submit_activity, get_epoch_info, get_qualification_status, ...
-  │         (withdraw_rewards는 operator 키 필요 — agent 키만으로는 호출 불가)
+  ├── MCP: seocheon-server           ← SDK를 MCP 도구로 노출 (얇은 래퍼)
+  │     └── @seocheon/sdk            ← 체인 인터랙션 핵심 로직
+  │           └── submit_activity, get_epoch_info, get_qualification_status, ...
+  │               (withdraw_rewards는 operator 키 필요 — agent 키만으로는 호출 불가)
   │
   ├── MCP: vault-server              ← 시크릿 관리 + 보안 호출
   │     └── secure_call, register_secret, list_secrets
@@ -298,6 +299,10 @@ Agent (LLM — Claude)
   │
   └── MCP: web-tools                 ← 웹 검색, 뉴스 수집
         └── 트렌드 리서치, 뉴스 조회
+
+상세: mcp_server_architecture.md
+  → Client SDK가 기반 계층, MCP 서버는 SDK를 감싸는 래퍼
+  → 개발자는 SDK를 직접 import하여 MCP 없이 커스텀 에이전트 구축 가능
 ```
 
 ### social-media-server 도구
@@ -573,8 +578,10 @@ Seocheon Node (Evangelist)
 │   │
 │   ├── LLM (Claude API)
 │   │
+│   ├── @seocheon/sdk                ← Client SDK (체인 인터랙션 핵심)
+│   │
 │   ├── MCP Servers:
-│   │     ├── seocheon-server        ← 체인 인터랙션
+│   │     ├── seocheon-server        ← SDK → MCP 래퍼
 │   │     ├── vault-server           ← 시크릿 관리 + 보안 호출
 │   │     ├── social-media-server    ← 소셜미디어 게시/조회
 │   │     ├── memory-server          ← Vector DB 중기기억
@@ -624,11 +631,12 @@ Seocheon Node (Evangelist)
 | 컴포넌트 | 기술 | 선택 이유 |
 |---------|------|----------|
 | LLM | Claude API (Anthropic) | MCP 네이티브 지원, 에이전트 루프 |
-| MCP SDK | @modelcontextprotocol/sdk (TypeScript) | 공식 SDK |
-| 체인 클라이언트 | CosmJS | Cosmos SDK 표준 |
+| Client SDK | @seocheon/sdk (TypeScript) | 체인 인터랙션 기반 계층 (TX, 쿼리, 서명) |
+| MCP 래퍼 | @modelcontextprotocol/sdk (TypeScript) | SDK를 MCP 도구로 노출 |
+| 체인 클라이언트 | CosmJS (SDK 내부) | Cosmos SDK 표준 |
 | Vector DB | ChromaDB | 로컬, 경량, Python/JS 지원 |
 | 임베딩 | sentence-transformers (로컬) | 외부 의존 없음, 비용 0 |
-| 소셜미디어 | 플랫폼 API + MCP 래퍼 | 기존 오픈소스 MCP 활용 가능 |
+| 소셜미디어 | 플랫폼 API + MCP 래퍼 | 기존 오픈소스 MCP/SDK 활용 가능 |
 | 스케줄러 | cron + Node.js 래퍼 | 단순, 안정적 |
 | 세션 상태 | JSON 파일 | 단순, 디버깅 용이 |
 | 오프체인 저장 | IPFS (Pinata/Infura) | Activity Report 영구 저장 |

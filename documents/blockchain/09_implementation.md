@@ -194,7 +194,7 @@ x/node
 | 합의 엔진 | CometBFT | BFT 합의, Cosmos 표준 |
 | 체인 언어 | Go | Cosmos SDK 네이티브 |
 | 직렬화 | Protocol Buffers | Cosmos SDK 표준 |
-| 클라이언트/지갑 | TypeScript (CosmJS) | Cosmos 생태계 표준 |
+| Client SDK | TypeScript (@seocheon/sdk, CosmJS 기반) | 에이전트/개발자 체인 인터랙션 |
 | 인덱서 | PostgreSQL + GraphQL | 활동 내역 조회 |
 | 오프체인 저장 | IPFS / Arweave (선택) | 활동 상세 내역 영구 저장 |
 

@@ -45,6 +45,6 @@ CometBFT의 O(n²) 통신 복잡도를 고려하면 Active Validator Set은 150~
 | IBC 전략 | 중 | ✅ 문서화 완료 ([12_ibc_strategy.md](blockchain/12_ibc_strategy.md)) |
 | API rate limiting | 중 | ✅ 인덱서 아키텍처 문서에 포함 ([13_indexer_architecture.md](blockchain/13_indexer_architecture.md) §Rate Limiting 전략) |
 | 인덱서 상세 아키텍처 | 중 | ✅ 문서화 완료 ([13_indexer_architecture.md](blockchain/13_indexer_architecture.md)) |
-| 클라이언트 SDK 설계 | 중 | 생태계 개발 전략 2순위 (그랜트 프로그램) |
+| Client SDK 설계 | 상 | MCP 서버의 기반 계층. 설계 완료 ([mcp_server_architecture.md](mcp_server_architecture.md)), 구현 대기 |
 | 스케일링 전략 (IBC 샤딩, L2) | 중 | 노드 수 10만+ 시 TPS 병목 대응, 장기 과제 |
 | 에이전트 기억 체계 구현 상세 | 하 | off-chain 참고 아키텍처, 운영자 자유 |

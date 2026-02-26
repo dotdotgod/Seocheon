@@ -146,9 +146,9 @@ Phase C: 커뮤니티 주도 (Trigger 2 이후)
 생태계 펀드 (75M KKOT) + 커뮤니티 풀 (75M KKOT + 인플레이션 적립)
 
 지원 우선순위:
-  1순위: AI 에이전트 프레임워크 / MCP 도구
-  2순위: 인덱서, 대시보드, 탐색기
-  3순위: 클라이언트 SDK / 개발자 도구
+  1순위: Client SDK (@seocheon/sdk) + MCP 서버 — 에이전트 인프라 기반
+  2순위: AI 에이전트 프레임워크 연동 (OpenClaw 등)
+  3순위: 인덱서, 대시보드, 탐색기
   4순위: 교육, 문서화, 커뮤니티
 ```
 
@@ -156,8 +156,9 @@ Phase C: 커뮤니티 주도 (Trigger 2 이후)
 
 ```
 Phase 1 (기반):
-  - AI 프레임워크 (LangChain, CrewAI 등) 연동
-  - MCP 서버 생태계 구축
+  - Client SDK 구현 및 공개 (@seocheon/sdk)
+  - MCP 서버 구축 (SDK 기반 래퍼)
+  - AI 에이전트 프레임워크 (OpenClaw, LangChain, CrewAI 등) 연동
 
 Phase 2 (확장):
   - 다른 Cosmos 체인과 IBC 연결
