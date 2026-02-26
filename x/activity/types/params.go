@@ -9,7 +9,7 @@ var (
 	DefaultMinActiveWindows         = int64(8)       // 8 out of 12 windows required
 	DefaultSelfFundedQuota          = uint64(100)    // max 100 activities per epoch (self-funded)
 	DefaultFeegrantQuota            = uint64(10)     // max 10 activities per epoch (feegrant)
-	DefaultActivityPruningKeepBlocks = int64(1555200) // ~90 days in blocks
+	DefaultActivityPruningKeepBlocks = int64(6307200) // ~365 days (1 year) in blocks
 
 	// Activity Cost Model defaults.
 	DefaultFeeThresholdMultiplier = uint64(3)           // fee activates when N_a > N_d * 3

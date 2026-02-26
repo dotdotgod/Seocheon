@@ -185,7 +185,7 @@ CREATE TABLE epoch_network_summary (
 ```
 content_uri 헬스체크 전략:
 
-대상: 최근 90일(activity_pruning_keep_blocks) 이내의 ActivityRecord content_uri
+대상: 최근 1년(activity_pruning_keep_blocks) 이내의 ActivityRecord content_uri
 
 방법:
   1. HTTP HEAD 요청 (응답 코드 확인, 본문 미다운로드)
@@ -196,7 +196,7 @@ content_uri 헬스체크 전략:
   → 최근 1 에포크(~1일): 매 윈도우(~2시간)마다 체크
   → 1~7일: 1일 1회
   → 7~30일: 1주 1회
-  → 30~90일: 1월 1회
+  → 30일~1년: 1월 1회
 
 타임아웃: 10초 (연결), 30초 (응답)
 재시도: 3회 (exponential backoff: 5s, 15s, 45s)
@@ -544,13 +544,13 @@ Redis 캐싱 전략:
 데이터 보관 정책 (온체인 프루닝과 연계):
 
 온체인 프루닝:
-  → activity_pruning_keep_blocks: 1,555,200 (~90일)
+  → activity_pruning_keep_blocks: 6,307,200 (~1년)
   → 프루닝된 ActivityRecord는 온체인에서 삭제
 
 인덱서 보관:
   → 상세 데이터 (activities): 180일 보관
   → 집계 데이터 (epoch/window summary): 영구 보관
-  → content_uri 체크 이력: 90일 보관
+  → content_uri 체크 이력: 1년 보관
   → 가용성 점수 (집계): 영구 보관
 
 아카이브:

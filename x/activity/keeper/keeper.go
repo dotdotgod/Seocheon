@@ -26,8 +26,8 @@ type Keeper struct {
 	// Activities stores all activity records: (node_id, epoch, sequence) -> ActivityRecord
 	Activities collections.Map[collections.Triple[string, int64, uint64], types.ActivityRecord]
 
-	// HashIndex for duplicate detection: (node_id, epoch, hash_hex) -> empty
-	HashIndex collections.KeySet[collections.Triple[string, int64, string]]
+	// HashIndex for global duplicate detection: (activity_hash, content_uri) -> empty
+	HashIndex collections.KeySet[collections.Pair[string, string]]
 
 	// EpochQuotaUsed tracks quota usage: (node_id, epoch) -> count
 	EpochQuotaUsed collections.Map[collections.Pair[string, int64], uint64]
@@ -91,7 +91,7 @@ func NewKeeper(
 		),
 
 		HashIndex: collections.NewKeySet(sb, types.HashIndexKey, "hash_index",
-			collections.TripleKeyCodec(collections.StringKey, collections.Int64Key, collections.StringKey),
+			collections.PairKeyCodec(collections.StringKey, collections.StringKey),
 		),
 
 		EpochQuotaUsed: collections.NewMap(sb, types.EpochQuotaUsedKey, "epoch_quota_used",

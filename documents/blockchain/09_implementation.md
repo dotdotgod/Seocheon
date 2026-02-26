@@ -104,7 +104,7 @@ message MsgSubmitActivity {
 | agent_address 미중복 | `x/node` keeper | TX 거부 |
 | Registration Pool 잔고 충분 | `x/node` keeper | TX 거부 |
 | commission_rates 유효 | `x/staking` 내부 검증 | TX 거부 |
-| activity_hash 중복 방지 | `x/activity` keeper | TX 거부 |
+| (activity_hash, content_uri) 쌍 전역 중복 방지 | `x/activity` keeper | TX 거부 |
 | 에포크당 활동 제출 쿼터 초과 (TX 기준) | `x/activity` keeper | TX 거부 |
 | 블록당 등록 수 상한 초과 | `x/node` keeper | TX 거부 |
 
@@ -236,7 +236,7 @@ x/node
 - `x/activity` 모듈: ActivityRecord protobuf (7필드) + MsgSubmitActivity TX
 - 타임스탬핑 로직: TX 블록 포함 = 타임스탬프
 - activity_hash 형식: SHA-256 hex 문자열 (64자 고정)
-- activity_hash 중복 검증: 동일 노드 + 동일 에포크 내만 거부
+- (activity_hash, content_uri) 전역 유니크 (재제출 불가)
 - 에포크당 제출 쿼터 (자비 부담 100건 / feegrant 10건, TX 기준 차감)
 - 윈도우별 활동 기록 추적 (에포크 8/12 윈도우 자격 판정)
 - 활동 기록 프루닝 EndBlocker (`activity_pruning_keep_blocks`)
@@ -281,11 +281,11 @@ x/node
 
 ## 테스트 전략
 
-- **단위 테스트**: keeper 함수, 이중 보상 풀 분배 공식 (위임 풀 지분율 + 활동 풀 균등), content_hash 중복 검사, TX 서명 검증
+- **단위 테스트**: keeper 함수, 이중 보상 풀 분배 공식 (위임 풀 지분율 + 활동 풀 균등), (activity_hash, content_uri) 전역 중복 검사, TX 서명 검증
 - **통합 테스트**: 노드 등록 → 활동 해시 제출 → 블록 포함 확인 → 위임 → 이중 보상 풀 분배 전체 플로우
 - **이중 보상 풀 테스트**: 활동 자격 미충족 노드(8윈도우 미만) 활동 풀 제외 확인, 8/12 윈도우 이상 활동 시 자격 충족 확인, 에포크 전환 시 일괄 보상 분배 확인, Inactive 노드의 활동 풀 수령 확인, 동적 비율 공식 `max(D_min, N_d/(N_a+N_d))` 정확성, N_a 증가에 따른 비율 변화 및 D_min Floor 적용 확인, 활동 노드 수 증가에 따른 노드당 활동 보상 희석 확인, `D_min` 거버넌스 변경 반영 확인, `min_active_windows` 거버넌스 변경 반영 확인
 - **Agent 권한 테스트**: AgentPermissionDecorator가 화이트리스트 외 메시지 거부 확인, agent_address로 MsgDelegate/MsgVote/MsgStoreCode 시도 → 거부, MsgUpdateAgentAddress 키 교체 → 이전 키 즉시 무효 확인, 빈 agent_address 설정 → 비활성화 확인, 쿨다운 내 재변경 거부, agent_address가 아닌 일반 계정은 제한 없음 확인
-- **스팸 방어 테스트**: 활동 제출 에포크 쿼터 초과 거부, feegrant 노드 차등 쿼터 적용, 블록당 등록 상한, feegrant allowed_msg_types 제한, MsgSubmitActivity TX 기준 쿼터 차감 확인, activity_hash 중복 거부
+- **스팸 방어 테스트**: 활동 제출 에포크 쿼터 초과 거부, feegrant 노드 차등 쿼터 적용, 블록당 등록 상한, feegrant allowed_msg_types 제한, MsgSubmitActivity TX 기준 쿼터 차감 확인, (activity_hash, content_uri) 전역 중복 거부
 - **상태 관리 테스트**: 활동 기록 프루닝 EndBlocker 동작, 프루닝 전 이벤트 발행 확인, 아카이브 노드 프루닝 비활성화
 - **E2E 테스트**: 로컬 테스트넷 + 실제 노드, 활동 해시 제출 + 블록 번호로 타임스탬프 확인 + 오프체인 조회 + 위임 워크플로우
 - **거버넌스 테스트**: 파라미터 변경 제안 → 투표 → 활성화, `D_min` 변경 제안 → 동적 분배 비율 변경 확인

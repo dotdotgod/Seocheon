@@ -38,7 +38,7 @@ func TestInvariant_HashIndexConsistency_Broken(t *testing.T) {
 	require.NoError(t, err)
 
 	// Corrupt: remove hash index entry.
-	err = f.keeper.HashIndex.Remove(ctx, collections.Join3("node1", int64(0), hash))
+	err = f.keeper.HashIndex.Remove(ctx, collections.Join(hash, "ipfs://c"))
 	require.NoError(t, err)
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)

@@ -27,7 +27,7 @@ var (
 	// ActivitiesKey: (node_id, epoch, sequence) -> ActivityRecord
 	ActivitiesKey = collections.NewPrefix(10)
 
-	// HashIndexKey: (node_id, epoch, hash_hex) -> empty (duplicate detection)
+	// HashIndexKey: (activity_hash, content_uri) -> empty (global duplicate detection)
 	HashIndexKey = collections.NewPrefix(11)
 
 	// EpochQuotaUsedKey: (node_id, epoch) -> count

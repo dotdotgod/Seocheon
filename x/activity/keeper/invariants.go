@@ -48,7 +48,7 @@ func HashIndexConsistencyInvariant(k Keeper) sdk.Invariant {
 				return fmt.Sprintf("failed to get key-value: %v", err), true
 			}
 			record := kv.Value
-			has, err := k.HashIndex.Has(ctx, collections.Join3(record.NodeId, record.Epoch, record.ActivityHash))
+			has, err := k.HashIndex.Has(ctx, collections.Join(record.ActivityHash, record.ContentUri))
 			if err != nil {
 				return fmt.Sprintf("failed to check hash index: %v", err), true
 			}

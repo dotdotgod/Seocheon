@@ -31,10 +31,10 @@ func (gs GenesisState) Validate() error {
 			return fmt.Errorf("activity %d has empty content_uri", i)
 		}
 
-		// Check for duplicate hashes within the same epoch.
-		key := fmt.Sprintf("%s:%d:%s", activity.NodeId, activity.Epoch, activity.ActivityHash)
+		// Check for globally duplicate (activity_hash, content_uri) pairs.
+		key := activity.ActivityHash + ":" + activity.ContentUri
 		if hashSet[key] {
-			return fmt.Errorf("duplicate activity hash for node %s in epoch %d: %s", activity.NodeId, activity.Epoch, activity.ActivityHash)
+			return fmt.Errorf("duplicate (activity_hash, content_uri) pair: %s, %s", activity.ActivityHash, activity.ContentUri)
 		}
 		hashSet[key] = true
 	}

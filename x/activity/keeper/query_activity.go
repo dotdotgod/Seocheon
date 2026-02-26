@@ -15,41 +15,34 @@ func (qs queryServer) Activity(ctx context.Context, req *types.QueryActivityRequ
 		return nil, types.ErrInvalidActivityHash
 	}
 
-	// Scan HashIndex for matching hash_hex (3rd key component).
-	iter, err := qs.k.HashIndex.Iterate(ctx, nil)
+	// Scan HashIndex by activity_hash prefix to find matching entries.
+	rng := collections.NewPrefixedPairRange[string, string](req.ActivityHash)
+	iter, err := qs.k.HashIndex.Iterate(ctx, rng)
 	if err != nil {
 		return nil, types.ErrActivityNotFound
 	}
 	defer iter.Close()
 
-	for ; iter.Valid(); iter.Next() {
-		key, err := iter.Key()
+	if !iter.Valid() {
+		return nil, types.ErrActivityNotFound
+	}
+
+	// We have at least one matching hash. Find the activity record by scanning Activities.
+	// Activities are keyed by (nodeID, epoch, sequence), so we scan all to match the hash.
+	actIter, err := qs.k.Activities.Iterate(ctx, nil)
+	if err != nil {
+		return nil, types.ErrActivityNotFound
+	}
+	defer actIter.Close()
+
+	for ; actIter.Valid(); actIter.Next() {
+		record, err := actIter.Value()
 		if err != nil {
 			continue
 		}
-		if key.K3() != req.ActivityHash {
-			continue
+		if record.ActivityHash == req.ActivityHash {
+			return &types.QueryActivityResponse{Activity: record}, nil
 		}
-		// Found matching hash — look up the activity by (node_id, epoch).
-		nodeID := key.K1()
-		epoch := key.K2()
-		// Find the record with matching hash in this node+epoch.
-		rng := collections.NewSuperPrefixedTripleRange[string, int64, uint64](nodeID, epoch)
-		actIter, err := qs.k.Activities.Iterate(ctx, rng)
-		if err != nil {
-			continue
-		}
-		for ; actIter.Valid(); actIter.Next() {
-			record, err := actIter.Value()
-			if err != nil {
-				break
-			}
-			if record.ActivityHash == req.ActivityHash {
-				actIter.Close()
-				return &types.QueryActivityResponse{Activity: record}, nil
-			}
-		}
-		actIter.Close()
 	}
 
 	return nil, types.ErrActivityNotFound

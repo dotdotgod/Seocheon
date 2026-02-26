@@ -152,8 +152,8 @@ func (k Keeper) pruneOldActivities(ctx context.Context, currentHeight int64, par
 					nodeIter.Close()
 					return pruned, err
 				}
-				// Remove from HashIndex.
-				_ = k.HashIndex.Remove(ctx, collections.Join3(record.NodeId, record.Epoch, record.ActivityHash))
+				// Remove from HashIndex (same TTL as Activities).
+				_ = k.HashIndex.Remove(ctx, collections.Join(record.ActivityHash, record.ContentUri))
 				break
 			}
 		}

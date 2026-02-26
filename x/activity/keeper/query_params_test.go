@@ -22,5 +22,5 @@ func TestQueryParams_Default(t *testing.T) {
 	require.Equal(t, int64(8), resp.Params.MinActiveWindows)
 	require.Equal(t, uint64(100), resp.Params.SelfFundedQuota)
 	require.Equal(t, uint64(10), resp.Params.FeegrantQuota)
-	require.Equal(t, int64(1555200), resp.Params.ActivityPruningKeepBlocks)
+	require.Equal(t, int64(6307200), resp.Params.ActivityPruningKeepBlocks)
 }

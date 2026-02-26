@@ -113,7 +113,7 @@ func TestGenesisValidate(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "duplicate hash in same epoch",
+			name: "duplicate (hash, uri) pair",
 			gs: types.GenesisState{
 				Params: types.DefaultParams(),
 				Activities: []types.ActivityRecord{
@@ -129,14 +129,14 @@ func TestGenesisValidate(t *testing.T) {
 						Epoch:        1,
 						Sequence:     1,
 						ActivityHash: validHash,
-						ContentUri:   "ipfs://Qm2",
+						ContentUri:   "ipfs://Qm1",
 					},
 				},
 			},
 			wantErr: true,
 		},
 		{
-			name: "same hash different epochs is valid",
+			name: "same hash different uri is valid",
 			gs: types.GenesisState{
 				Params: types.DefaultParams(),
 				Activities: []types.ActivityRecord{

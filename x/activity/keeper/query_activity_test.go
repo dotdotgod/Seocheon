@@ -224,7 +224,7 @@ func TestQueryActivity_HashIndexScan(t *testing.T) {
 	require.NoError(t, err)
 
 	// Verify HashIndex contains the entry.
-	has, err := f.keeper.HashIndex.Has(ctx, collections.Join3("node1", int64(0), hash))
+	has, err := f.keeper.HashIndex.Has(ctx, collections.Join(hash, "ipfs://test"))
 	require.NoError(t, err)
 	require.True(t, has)
 

@@ -107,7 +107,7 @@ func TestIntegration_FullLifecycle(t *testing.T) {
 	require.Equal(t, len(genState.Activities), len(genState2.Activities))
 }
 
-// TestIntegration_CrossEpochBehavior tests that the same hash can be submitted in different epochs.
+// TestIntegration_CrossEpochBehavior tests global (hash, uri) uniqueness across epochs.
 func TestIntegration_CrossEpochBehavior(t *testing.T) {
 	f := initFixture(t)
 	params, _ := f.keeper.Params.Get(f.ctx)
@@ -115,20 +115,30 @@ func TestIntegration_CrossEpochBehavior(t *testing.T) {
 	f.nodeKeeper.registerNode("node1", "agent1", 2)
 
 	hash := generateHash(1)
+	uri := "ipfs://e0"
 
 	// Submit in epoch 0.
 	ctx0 := f.freshCtx(100)
-	_, err := f.submitActivity(ctx0, "agent1", hash, "ipfs://e0")
+	_, err := f.submitActivity(ctx0, "agent1", hash, uri)
 	require.NoError(t, err)
 
-	// Same hash in epoch 0 → should fail (duplicate).
+	// Same hash + same URI in epoch 0 → should fail (global duplicate).
 	ctx0b := f.freshCtx(200)
-	_, err = f.submitActivity(ctx0b, "agent1", hash, "ipfs://e0dup")
+	_, err = f.submitActivity(ctx0b, "agent1", hash, uri)
 	require.Error(t, err)
 	require.ErrorIs(t, err, types.ErrDuplicateActivityHash)
 
-	// Same hash in epoch 1 → should succeed.
+	// Same hash + different URI in epoch 0 → allowed (hash collision resolution).
+	_, err = f.submitActivity(ctx0b, "agent1", hash, "ipfs://e0alt")
+	require.NoError(t, err)
+
+	// Same hash + same URI in epoch 1 → still rejected (global duplicate).
 	ctx1 := f.freshCtx(params.EpochLength + 100)
+	_, err = f.submitActivity(ctx1, "agent1", hash, uri)
+	require.Error(t, err)
+	require.ErrorIs(t, err, types.ErrDuplicateActivityHash)
+
+	// Same hash + new URI in epoch 1 → allowed.
 	_, err = f.submitActivity(ctx1, "agent1", hash, "ipfs://e1")
 	require.NoError(t, err)
 }
@@ -187,36 +197,38 @@ func TestIntegration_CountEligibleEpochs(t *testing.T) {
 }
 
 // TestIntegration_PruningWithResubmission tests that after pruning, the same hash
-// can potentially be resubmitted (if in a new epoch).
+// After pruning (TTL expired), both Activities and HashIndex are removed,
+// so the same (hash, uri) pair can be resubmitted.
 func TestIntegration_PruningWithResubmission(t *testing.T) {
 	f := initFixture(t)
 	params, _ := f.keeper.Params.Get(f.ctx)
 
-	// Short pruning window.
+	// Short pruning window for testing.
 	params.ActivityPruningKeepBlocks = 100
 	require.NoError(t, f.keeper.Params.Set(f.ctx, params))
 
 	f.nodeKeeper.registerNode("node1", "agent1", 2)
 
 	hash := generateHash(1)
+	uri := "ipfs://original"
 
 	// Submit in epoch 0 at block 10.
 	ctx10 := f.freshCtx(10)
-	_, err := f.submitActivity(ctx10, "agent1", hash, "ipfs://original")
+	_, err := f.submitActivity(ctx10, "agent1", hash, uri)
 	require.NoError(t, err)
 
-	// Run EndBlocker to prune.
+	// Run EndBlocker to prune (both Activities and HashIndex).
 	ctxEpoch := f.freshCtx(params.EpochLength)
 	err = f.keeper.EndBlocker(ctxEpoch)
 	require.NoError(t, err)
 
-	// Verify pruned — HashIndex should be gone.
-	has, err := f.keeper.HashIndex.Has(ctxEpoch, collections.Join3("node1", int64(0), hash))
+	// HashIndex is pruned along with Activities.
+	has, err := f.keeper.HashIndex.Has(ctxEpoch, collections.Join(hash, uri))
 	require.NoError(t, err)
 	require.False(t, has)
 
-	// In epoch 1, the same hash can be submitted again.
+	// After pruning, the same (hash, uri) can be resubmitted.
 	ctx1 := f.freshCtx(params.EpochLength + 100)
-	_, err = f.submitActivity(ctx1, "agent1", hash, "ipfs://new")
+	_, err = f.submitActivity(ctx1, "agent1", hash, uri)
 	require.NoError(t, err)
 }

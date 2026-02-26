@@ -51,8 +51,8 @@ func (ms msgServer) SubmitActivity(ctx context.Context, msg *types.MsgSubmitActi
 	epoch := GetCurrentEpoch(blockHeight, params)
 	window := GetCurrentWindow(blockHeight, params)
 
-	// 6. Check for duplicate hash within the same epoch.
-	hasDuplicate, err := ms.HashIndex.Has(ctx, collections.Join3(nodeID, epoch, msg.ActivityHash))
+	// 6. Check for duplicate (hash, uri) pair globally.
+	hasDuplicate, err := ms.HashIndex.Has(ctx, collections.Join(msg.ActivityHash, msg.ContentUri))
 	if err != nil {
 		return nil, err
 	}
@@ -141,7 +141,7 @@ func (ms msgServer) SubmitActivity(ctx context.Context, msg *types.MsgSubmitActi
 	}
 
 	// Update HashIndex.
-	if err := ms.HashIndex.Set(ctx, collections.Join3(nodeID, epoch, msg.ActivityHash)); err != nil {
+	if err := ms.HashIndex.Set(ctx, collections.Join(msg.ActivityHash, msg.ContentUri)); err != nil {
 		return nil, err
 	}
 

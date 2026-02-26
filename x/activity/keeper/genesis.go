@@ -21,7 +21,7 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) er
 		}
 
 		// Rebuild HashIndex.
-		if err := k.HashIndex.Set(ctx, collections.Join3(activity.NodeId, activity.Epoch, activity.ActivityHash)); err != nil {
+		if err := k.HashIndex.Set(ctx, collections.Join(activity.ActivityHash, activity.ContentUri)); err != nil {
 			return err
 		}
 

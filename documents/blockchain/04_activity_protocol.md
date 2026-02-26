@@ -79,7 +79,7 @@ message ActivityRecord {
 - TX 서명이 유효한가 (Cosmos SDK AnteHandler)
 - 제출자가 등록된 노드의 agent_address인가
 - activity_hash가 유효한 SHA-256 hex 형식인가 (정확히 64자 hex 문자)
-- 동일 노드의 동일 에포크 내 중복 해시가 아닌가
+- 동일 (activity_hash, content_uri) 쌍이 이미 존재하지 않는가
 
 ### 핑거프린트 (activity_hash)
 
@@ -92,7 +92,7 @@ message ActivityRecord {
 - **온체인은 핑거프린트만 저장**: SHA-256 hex 문자열 (64자)
 - **쿼터는 TX 기준**: 에포크당 MsgSubmitActivity TX 수로 차감
 - **검증은 오프체인**: 위임자/인덱서가 content_uri의 데이터로 핑거프린트를 재계산하여 대조
-- **중복 검증 범위**: 동일 노드의 동일 에포크 내에서만 중복 거부. 다른 노드가 같은 해시를 제출하거나, 같은 노드가 다른 에포크에 같은 해시를 재제출하는 것은 허용
+- **중복 검증 범위**: (activity_hash, content_uri) 쌍이 전체 노드, 전체 에포크에서 유니크. 동일한 hash+uri 조합은 프루닝 TTL(기본 1년) 이내 재제출 불가. 해시 충돌 시(극히 드묾) 다른 content_uri로 제출하면 허용. TTL 경과 후 프루닝되면 동일 쌍 재제출 가능 (거버넌스로 TTL 조정 가능)
 
 ### 오프체인 데이터 (Activity Report)
 

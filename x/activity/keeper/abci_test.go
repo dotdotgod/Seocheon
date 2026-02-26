@@ -123,7 +123,7 @@ func TestEndBlocker_Pruning_RecentNotDeleted(t *testing.T) {
 	require.NoError(t, err)
 
 	// Run EndBlocker at epoch boundary.
-	// cutoffHeight = EpochLength - pruning_keep_blocks = 17280 - 1555200 < 0 → no pruning.
+	// cutoffHeight = EpochLength - pruning_keep_blocks = 17280 - 6307200 < 0 → no pruning.
 	ctx := f.freshCtx(params.EpochLength)
 	err = f.keeper.EndBlocker(ctx)
 	require.NoError(t, err)
@@ -176,7 +176,7 @@ func TestEndBlocker_MultipleWindowBoundaries(t *testing.T) {
 	}
 }
 
-// Verify pruning cleans up all related indices.
+// Verify pruning cleans up both activity records and HashIndex entries.
 func TestEndBlocker_Pruning_CleanupIndices(t *testing.T) {
 	f := initFixture(t)
 	params, _ := f.keeper.Params.Get(f.ctx)
@@ -189,11 +189,12 @@ func TestEndBlocker_Pruning_CleanupIndices(t *testing.T) {
 	// Submit activity at block 10.
 	ctx10 := f.freshCtx(10)
 	hash := generateHash(42)
-	_, err := f.submitActivity(ctx10, "agent1", hash, "ipfs://c")
+	uri := "ipfs://c"
+	_, err := f.submitActivity(ctx10, "agent1", hash, uri)
 	require.NoError(t, err)
 
 	// Verify HashIndex exists.
-	has, err := f.keeper.HashIndex.Has(ctx10, collections.Join3("node1", int64(0), hash))
+	has, err := f.keeper.HashIndex.Has(ctx10, collections.Join(hash, uri))
 	require.NoError(t, err)
 	require.True(t, has)
 
@@ -202,8 +203,8 @@ func TestEndBlocker_Pruning_CleanupIndices(t *testing.T) {
 	err = f.keeper.EndBlocker(ctx)
 	require.NoError(t, err)
 
-	// Verify indices are cleaned up.
-	has, err = f.keeper.HashIndex.Has(ctx, collections.Join3("node1", int64(0), hash))
+	// HashIndex is pruned along with Activities (same TTL).
+	has, err = f.keeper.HashIndex.Has(ctx, collections.Join(hash, uri))
 	require.NoError(t, err)
 	require.False(t, has)
 

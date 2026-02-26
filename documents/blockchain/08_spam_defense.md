@@ -129,14 +129,14 @@ Layer 5: feegrant 쿼터 자동 축소 (feegrant 노드)
 ```
 활동 기록 상태 관리:
 
-activity_pruning_keep_blocks = 1,555,200     ← 90일 보존 (17,280 × 90, 거버넌스 파라미터)
+activity_pruning_keep_blocks = 6,307,200     ← 1년 보존 (17,280 × 365, 거버넌스 파라미터)
 
 프루닝 동작 (EndBlocker):
-├── 현재 블록 - activity_pruning_keep_blocks 이전의 ActivityRecord 삭제
+├── 현재 블록 - activity_pruning_keep_blocks 이전의 ActivityRecord + HashIndex 삭제
 ├── 삭제 전 이벤트 발행 → 인덱서가 수집하여 영구 보존
 └── 블록당 최대 프루닝 건수 제한 (성능 영향 방지)
 
-풀노드: 최근 1,555,200 블록(~90일) 데이터만 보유
+풀노드: 최근 6,307,200 블록(~1년) 데이터만 보유
 인덱서: 전체 이력 보유 (PostgreSQL + GraphQL로 조회)
 아카이브 노드: 선택적 운영 (프루닝 비활성화)
 ```
@@ -144,13 +144,16 @@ activity_pruning_keep_blocks = 1,555,200     ← 90일 보존 (17,280 × 90, 거
 #### 상태 크기 추정
 
 ```
-시나리오: 100 노드, 1,555,200 블록(~90일) 보존
+시나리오: 100 노드, 6,307,200 블록(~1년) 보존
 
 ActivityRecord:
-  100 노드 × 에포크당 50건 × 90 에포크(90일) = 450,000건
-  × 약 200 bytes/건 = ~90 MB
+  100 노드 × 에포크당 50건 × 365 에포크(1년) = 1,825,000건
+  × 약 200 bytes/건 = ~365 MB
 
-총 온체인 상태: ~90 MB (1,555,200 블록 ≈ 90일 기준, 프루닝 적용 시)
+HashIndex (동일 TTL):
+  1,825,000건 × 약 250 bytes/건 = ~456 MB
+
+총 온체인 상태: ~821 MB (6,307,200 블록 ≈ 1년 기준, 프루닝 적용 시)
 → 풀노드 운영에 부담 없는 수준
 ```
 
@@ -169,7 +172,7 @@ ActivityRecord:
 | **Activity Protocol** | | | |
 | `self_funded_quota` | x/activity | 100 | 거버넌스 |
 | `feegrant_quota` | x/activity | 10 | 거버넌스 |
-| `activity_pruning_keep_blocks` | x/activity | 1,555,200 (90일) | 거버넌스 |
+| `activity_pruning_keep_blocks` | x/activity | 6,307,200 (1년) | 거버넌스 |
 | **노드 등록** | | | |
 | `min_self_delegation` | x/staking | 1 usum | CreateValidator 시 자동 설정 |
 | `max_registrations_per_block` | x/node | 5 | 거버넌스 |

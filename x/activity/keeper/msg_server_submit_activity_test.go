@@ -159,7 +159,7 @@ func TestSubmitActivity_JailedNode(t *testing.T) {
 	}
 }
 
-func TestSubmitActivity_DuplicateHash(t *testing.T) {
+func TestSubmitActivity_DuplicateHashAndURI(t *testing.T) {
 	f := initFixture(t)
 
 	agentAddr := sdk.AccAddress([]byte("agentA_______________")).String()
@@ -167,15 +167,23 @@ func TestSubmitActivity_DuplicateHash(t *testing.T) {
 
 	ctx := f.freshCtx(100)
 	hash := generateHash(10)
+	uri := "ipfs://QmA1"
 
-	_, err := f.submitActivity(ctx, agentAddr, hash, "ipfs://QmA1")
+	_, err := f.submitActivity(ctx, agentAddr, hash, uri)
 	if err != nil {
 		t.Fatalf("first submission should succeed: %v", err)
 	}
 
-	_, err = f.submitActivity(ctx, agentAddr, hash, "ipfs://QmA2")
+	// Same hash + same URI → rejected (global duplicate).
+	_, err = f.submitActivity(ctx, agentAddr, hash, uri)
 	if err == nil {
-		t.Fatal("expected error for duplicate hash")
+		t.Fatal("expected error for duplicate (hash, uri) pair")
+	}
+
+	// Same hash + different URI → allowed (hash collision resolution).
+	_, err = f.submitActivity(ctx, agentAddr, hash, "ipfs://QmA2")
+	if err != nil {
+		t.Fatalf("same hash with different URI should succeed: %v", err)
 	}
 }
 
@@ -186,19 +194,26 @@ func TestSubmitActivity_SameHashDifferentEpochs(t *testing.T) {
 	f.nodeKeeper.registerNode("nodeB", agentAddr, 2)
 
 	hash := generateHash(11)
+	uri := "ipfs://QmB1"
 
 	// Submit in epoch 0.
 	ctx0 := f.freshCtx(100)
-	_, err := f.submitActivity(ctx0, agentAddr, hash, "ipfs://QmB1")
+	_, err := f.submitActivity(ctx0, agentAddr, hash, uri)
 	if err != nil {
 		t.Fatalf("epoch 0 submission failed: %v", err)
 	}
 
-	// Submit same hash in epoch 1 (block 17281+).
+	// Same hash + same URI in different epoch → rejected (global duplicate).
 	ctx1 := f.freshCtx(17400)
+	_, err = f.submitActivity(ctx1, agentAddr, hash, uri)
+	if err == nil {
+		t.Fatal("same (hash, uri) in different epoch should be rejected")
+	}
+
+	// Same hash + different URI in different epoch → allowed.
 	_, err = f.submitActivity(ctx1, agentAddr, hash, "ipfs://QmB2")
 	if err != nil {
-		t.Fatalf("same hash in different epoch should succeed: %v", err)
+		t.Fatalf("same hash with different URI in different epoch should succeed: %v", err)
 	}
 }
 
@@ -392,18 +407,88 @@ func TestSubmitActivity_HashIndexOnly(t *testing.T) {
 
 	ctx := f.freshCtx(100)
 	hash := generateHash(800)
-	_, err := f.submitActivity(ctx, agentAddr, hash, "ipfs://QmH")
+	uri := "ipfs://QmH"
+	_, err := f.submitActivity(ctx, agentAddr, hash, uri)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Verify HashIndex contains the entry.
-	has, err := f.keeper.HashIndex.Has(ctx, collections.Join3("nodeH", int64(0), hash))
+	// Verify HashIndex contains the entry keyed by (hash, uri).
+	has, err := f.keeper.HashIndex.Has(ctx, collections.Join(hash, uri))
 	if err != nil {
 		t.Fatalf("hash index lookup failed: %v", err)
 	}
 	if !has {
 		t.Error("expected HashIndex to contain the entry")
+	}
+}
+
+func TestSubmitActivity_CrossNodeDuplicate(t *testing.T) {
+	f := initFixture(t)
+
+	agent1 := sdk.AccAddress([]byte("agentX1______________")).String()
+	agent2 := sdk.AccAddress([]byte("agentX2______________")).String()
+	f.nodeKeeper.registerNode("nodeX1", agent1, 2)
+	f.nodeKeeper.registerNode("nodeX2", agent2, 2)
+
+	ctx := f.freshCtx(100)
+	hash := generateHash(900)
+	uri := "ipfs://QmCross"
+
+	// First node submits.
+	_, err := f.submitActivity(ctx, agent1, hash, uri)
+	if err != nil {
+		t.Fatalf("first node submission should succeed: %v", err)
+	}
+
+	// Different node submits same hash+uri → rejected (global duplicate).
+	_, err = f.submitActivity(ctx, agent2, hash, uri)
+	if err == nil {
+		t.Fatal("expected error for cross-node duplicate (hash, uri)")
+	}
+}
+
+func TestSubmitActivity_SameHashDifferentURI(t *testing.T) {
+	f := initFixture(t)
+
+	agentAddr := sdk.AccAddress([]byte("agentY_______________")).String()
+	f.nodeKeeper.registerNode("nodeY", agentAddr, 2)
+
+	ctx := f.freshCtx(100)
+	hash := generateHash(901)
+
+	// Submit with URI 1.
+	_, err := f.submitActivity(ctx, agentAddr, hash, "ipfs://QmURI1")
+	if err != nil {
+		t.Fatalf("first submission should succeed: %v", err)
+	}
+
+	// Same hash + different URI → allowed (hash collision resolution).
+	_, err = f.submitActivity(ctx, agentAddr, hash, "ipfs://QmURI2")
+	if err != nil {
+		t.Fatalf("same hash with different URI should succeed: %v", err)
+	}
+}
+
+func TestSubmitActivity_SameURIDifferentHash(t *testing.T) {
+	f := initFixture(t)
+
+	agentAddr := sdk.AccAddress([]byte("agentZ_______________")).String()
+	f.nodeKeeper.registerNode("nodeZ", agentAddr, 2)
+
+	ctx := f.freshCtx(100)
+	uri := "ipfs://QmSameURI"
+
+	// Submit with hash 1.
+	_, err := f.submitActivity(ctx, agentAddr, generateHash(902), uri)
+	if err != nil {
+		t.Fatalf("first submission should succeed: %v", err)
+	}
+
+	// Different hash + same URI → allowed.
+	_, err = f.submitActivity(ctx, agentAddr, generateHash(903), uri)
+	if err != nil {
+		t.Fatalf("different hash with same URI should succeed: %v", err)
 	}
 }
 

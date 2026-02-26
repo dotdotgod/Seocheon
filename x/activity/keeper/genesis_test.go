@@ -69,7 +69,7 @@ func TestGenesis_WithActivities(t *testing.T) {
 
 	// Verify HashIndex is rebuilt.
 	for _, act := range genState.Activities {
-		has, err := f2.keeper.HashIndex.Has(ctx2, collections.Join3(act.NodeId, act.Epoch, act.ActivityHash))
+		has, err := f2.keeper.HashIndex.Has(ctx2, collections.Join(act.ActivityHash, act.ContentUri))
 		require.NoError(t, err)
 		require.True(t, has, "HashIndex missing for %s", act.ActivityHash)
 	}
