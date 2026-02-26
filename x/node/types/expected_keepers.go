@@ -58,12 +58,6 @@ type FeegrantMsgServer interface {
 	RevokeAllowance(context.Context, *feegrant.MsgRevokeAllowance) (*feegrant.MsgRevokeAllowanceResponse, error)
 }
 
-// ActivityKeeper defines the expected interface for the Activity module.
-type ActivityKeeper interface {
-	GetEpochLength(ctx context.Context) (int64, error)
-	CountEligibleEpochs(ctx context.Context, nodeID string, currentEpoch int64, lookback int64) (int64, error)
-}
-
 // StakingMsgServer defines the interface for creating validators through x/staking.
 type StakingMsgServer interface {
 	CreateValidator(ctx context.Context, msg *stakingtypes.MsgCreateValidator) (*stakingtypes.MsgCreateValidatorResponse, error)

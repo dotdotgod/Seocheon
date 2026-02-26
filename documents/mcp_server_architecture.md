@@ -113,10 +113,12 @@ Signing Service (공유 모듈)
     ├── activity_hash: string
     ├── content_uri: string
     ├── block_height: number
-    ├── window_number: number
-    └── tx_hash: string
+    ├── window_number: number   — block_height ÷ window_length로 MCP 서버가 계산
+    └── tx_hash: string          — TX 인덱서에서 조회 (ActivityRecord proto에 미포함)
   total_count: number
 ```
+
+> **proto 매핑 참고**: `ActivityRecord` protobuf에는 `window_number`와 `tx_hash` 필드가 없다. MCP 서버가 블록 높이와 파라미터로 윈도우 번호를 계산하고, TX 해시는 Cosmos SDK TX 인덱서에서 별도 조회한다.
 
 #### `get_activity_quota`
 
@@ -136,6 +138,8 @@ Signing Service (공유 모듈)
   is_feegrant: boolean          — feegrant 노드 여부
   feegrant_expiry: number?      — feegrant 만료 블록 (해당 시)
 ```
+
+> **proto 매핑 참고**: `feegrant_expiry`는 `NodeEpochActivity` proto 응답에 포함되지 않는다. MCP 서버가 Cosmos SDK 표준 feegrant 쿼리(`/cosmos/feegrant/v1beta1/allowance`)로 별도 조회하여 병합한다.
 
 ---
 
@@ -165,6 +169,8 @@ Signing Service (공유 모듈)
   blocks_until_next_epoch: number
 ```
 
+> **proto 매핑 참고**: `QueryEpochInfoResponse` proto는 4개 필드(`current_epoch`, `epoch_start_block`, `current_window`, `blocks_until_next_epoch`)만 반환한다. 나머지 필드(`block_height`, `epoch_end_block`, `epoch_progress`, `window_start_block`, `window_end_block`, `window_progress`, `blocks_until_next_window`)는 MCP 서버가 에포크/윈도우 파라미터와 현재 블록 높이로 계산한다.
+
 #### `get_qualification_status`
 
 현재 에포크의 활동 자격 충족 상태를 조회한다.
@@ -192,6 +198,8 @@ Signing Service (공유 모듈)
     └── has_activity: boolean
 ```
 
+> **proto 매핑 참고**: `NodeEpochActivity` proto 응답은 `EpochActivitySummary`(3필드: `active_windows`, `eligible`, `total_submissions`) + 쿼터 2필드만 반환한다. `elapsed_windows`, `remaining_needed`, `can_still_qualify`는 MCP 서버가 `EpochInfo`와 조합하여 계산한다. `window_detail[]`은 `WindowActivity` 컬렉션을 직접 쿼리하거나 전용 쿼리 추가 시 제공 가능하다.
+
 ---
 
 ### 3. 노드 도구 (Node)
@@ -217,8 +225,8 @@ Signing Service (공유 모듈)
   tags: string[]
   commission_rate: string       — 커미션율
   agent_share: string           — agent_share 비율
-  total_delegation: string      — 총 위임량 (KKOT)
-  self_delegation: string       — 자기위임량
+  total_delegation: string      — 총 위임량 (KKOT) — MCP 서버가 x/staking 쿼리로 병합
+  self_delegation: string       — 자기위임량 — MCP 서버가 x/staking 쿼리로 병합
   validator_address: string     — 밸리데이터 주소
   registered_at: number         — 등록 블록 높이
 ```
@@ -235,7 +243,7 @@ Signing Service (공유 모듈)
   tag: string? (선택)           — 태그 필터
   status: string? (선택)        — 상태 필터 (REGISTERED, ACTIVE 등)
   limit: number? (기본 20)      — 결과 수 제한
-  order_by: string? (기본 "delegation") — 정렬 기준 (delegation, registered_at)
+  order_by: string? (기본 "delegation") — 정렬 기준 (delegation, registered_at) — MCP 서버 레벨 필터링/정렬
 
 출력:
   nodes: array
@@ -246,6 +254,8 @@ Signing Service (공유 모듈)
     └── description: string
   total_count: number
 ```
+
+> **proto 매핑 참고**: `NodesByTag` proto는 태그 필터만, `AllNodes`는 필터 없이 전체 반환한다. `status` 필터와 `order_by` 정렬은 MCP 서버 레벨에서 수행한다. `total_delegation`은 x/staking 쿼리로 병합한다.
 
 ---
 
@@ -271,6 +281,8 @@ Signing Service (공유 모듈)
   agent_share: string           — 커미션 중 agent 몫
 ```
 
+> **proto 매핑 참고**: x/node, x/activity에 pending rewards 전용 쿼리가 없다. MCP 서버가 Cosmos SDK 표준 x/distribution 쿼리(`/cosmos/distribution/v1beta1/validators/{addr}/outstanding_rewards`)와 x/activity 보상 풀 상태를 조합하여 산출한다.
+
 #### `withdraw_rewards`
 
 보상을 인출한다. (TX)
@@ -289,6 +301,10 @@ Signing Service (공유 모듈)
 
 참고: operator 서명이 필요한 TX이므로, operator 키가 Signing Service에 등록되어 있어야 한다.
       agent 키만 있는 경우 이 도구는 사용 불가.
+      Signing Service의 키 관리: vault-server가 키스토어(암호화 파일 또는 HSM)를 관리하며,
+      operator 키와 agent 키를 분리 보관한다. operator 키 등록은 노드 초기 설정 시
+      vault-server의 register_secret 또는 직접 키스토어 설정으로 수행한다.
+      상세: vault-server 도구 (아래) 및 에이전트 아키텍처 §Vault 참조.
 ```
 
 ---
@@ -491,7 +507,7 @@ Agent: { tx_hash, block_height, ... }  [도구 응답 수신]
     → 또는 operator에게 알림
 
   [feegrant 만료 임박]
-    → operator에게 feegrant 갱신 알림
+    → 자비 가스비 전환 준비 안내
 ```
 
 ---

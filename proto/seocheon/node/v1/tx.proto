@@ -34,9 +34,6 @@ service Msg {
 
   // WithdrawNodeCommission withdraws validator commission and splits by agent_share.
   rpc WithdrawNodeCommission(MsgWithdrawNodeCommission) returns (MsgWithdrawNodeCommissionResponse);
-
-  // RenewFeegrant renews an expired feegrant for an active node.
-  rpc RenewFeegrant(MsgRenewFeegrant) returns (MsgRenewFeegrantResponse);
 }
 
 // MsgUpdateParams is the Msg/UpdateParams request type.
@@ -193,14 +190,3 @@ message MsgWithdrawNodeCommissionResponse {
   string agent_amount = 2;
 }
 
-// MsgRenewFeegrant renews an expired feegrant for an eligible node.
-message MsgRenewFeegrant {
-  option (cosmos.msg.v1.signer) = "operator";
-  option (amino.name) = "seocheon/x/node/MsgRenewFeegrant";
-
-  // operator is the TX signer (must be the node operator).
-  string operator = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-}
-
-// MsgRenewFeegrantResponse is the response for MsgRenewFeegrant.
-message MsgRenewFeegrantResponse {}

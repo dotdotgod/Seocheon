@@ -14,10 +14,6 @@
 
 MsgRegisterNode 핸들러 내부에서 `feegrantKeeper.GrantAllowance()`를 원자적으로 호출. 등록 TX 가스비는 RegistrationFeeDecorator가 `node_feegrant_pool`에서 차감. 상세: [03_node_module.md](blockchain/03_node_module.md) §Feegrant Pool, §RegistrationFeeDecorator, §MsgRegisterNode 통합 플로우 [5]단계.
 
-#### ~~2. Feegrant 갱신 절차~~ → ✅ 해소
-
-MsgRenewFeegrant TX로 갱신. 조건: 직전 30 에포크 중 20 에포크 이상 활동 자격 충족. 가스비는 RegistrationFeeDecorator로 면제. 상세: [03_node_module.md](blockchain/03_node_module.md) §Feegrant 갱신.
-
 ---
 
 ## 구현 시 결정 사항

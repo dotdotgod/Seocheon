@@ -18,8 +18,6 @@ var (
 	ErrNodeNotActive              = errors.Register(ModuleName, 1111, "node is not in an active state")
 	ErrInvalidConsensusPubkey     = errors.Register(ModuleName, 1112, "invalid consensus public key")
 	ErrAgentShareChangeExceedsMax = errors.Register(ModuleName, 1113, "agent share change exceeds max change rate")
-	ErrFeegrantNotExpired         = errors.Register(ModuleName, 1114, "feegrant has not expired yet")
-	ErrInsufficientActivity       = errors.Register(ModuleName, 1115, "insufficient activity history for feegrant renewal")
 	ErrNodeInactive               = errors.Register(ModuleName, 1116, "node is inactive or jailed")
 	ErrValidatorAlreadyExists     = errors.Register(ModuleName, 1117, "validator with this consensus pubkey already exists")
 	ErrAgentShareChangePending    = errors.Register(ModuleName, 1118, "a pending agent share change already exists")

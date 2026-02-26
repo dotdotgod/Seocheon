@@ -10,7 +10,6 @@ const (
 	EventTypeAgentShareScheduled   = "agent_share_change_scheduled"
 	EventTypeAgentShareChanged     = "agent_share_changed"
 	EventTypeCommissionWithdrawn   = "node_commission_withdrawn"
-	EventTypeFeegrantRenewed       = "feegrant_renewed"
 	EventTypeFeegrantGrantFailed   = "feegrant_grant_failed"
 	EventTypeNodeJailed            = "node_jailed"
 	EventTypeUndelegateFailed      = "undelegate_failed"

@@ -168,34 +168,6 @@ func TestIntegration_EligibilityCheck(t *testing.T) {
 	require.False(t, eligible2)
 }
 
-// TestIntegration_CountEligibleEpochs tests the lookback count method.
-func TestIntegration_CountEligibleEpochs(t *testing.T) {
-	f := initFixture(t)
-	params, _ := f.keeper.Params.Get(f.ctx)
-	windowLength := params.EpochLength / params.WindowsPerEpoch
-
-	f.nodeKeeper.registerNode("node1", "agent1", 2)
-
-	// Make node1 eligible in epoch 0: 8 windows.
-	for w := int64(0); w < 8; w++ {
-		ctx := f.freshCtx(w*windowLength + 1)
-		_, err := f.submitActivity(ctx, "agent1", generateHash(int(w)), "ipfs://c")
-		require.NoError(t, err)
-	}
-
-	// Make node1 eligible in epoch 1: 8 windows.
-	for w := int64(0); w < 8; w++ {
-		ctx := f.freshCtx(params.EpochLength + w*windowLength + 1)
-		_, err := f.submitActivity(ctx, "agent1", generateHash(100+int(w)), "ipfs://c")
-		require.NoError(t, err)
-	}
-
-	// Count eligible epochs looking back from epoch 3 with lookback 3.
-	count, err := f.keeper.CountEligibleEpochs(f.freshCtx(1), "node1", 3, 3)
-	require.NoError(t, err)
-	require.Equal(t, int64(2), count) // Epochs 0 and 1 are eligible.
-}
-
 // TestIntegration_PruningWithResubmission tests that after pruning, the same hash
 // After pruning (TTL expired), both Activities and HashIndex are removed,
 // so the same (hash, uri) pair can be resubmitted.

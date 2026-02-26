@@ -6,7 +6,7 @@ import (
 	"seocheon/x/node/types"
 )
 
-// RegistrationFeeDecorator allows registration transactions (MsgRegisterNode, MsgRenewFeegrant)
+// RegistrationFeeDecorator allows registration transactions (MsgRegisterNode)
 // to be processed with zero fees. This enables 0-cost participation in the network.
 // It must be placed before the DeductFeeDecorator in the ante handler chain.
 type RegistrationFeeDecorator struct{}
@@ -34,7 +34,7 @@ func isRegistrationOnlyTx(msgs []sdk.Msg) bool {
 
 	for _, msg := range msgs {
 		switch msg.(type) {
-		case *types.MsgRegisterNode, *types.MsgRenewFeegrant:
+		case *types.MsgRegisterNode:
 			continue
 		default:
 			return false

@@ -96,7 +96,7 @@ x/feegrant AllowedMsgAllowance (래핑):
 
 **AllowedMsgAllowance 래핑**: `PeriodicAllowance`를 `AllowedMsgAllowance`로 래핑하여, feegrant가 `MsgSubmitActivity`에만 사용되도록 한다. 토큰 전송(`MsgSend`) 등에는 feegrant를 사용할 수 없다. `allowed_messages`는 거버넌스 파라미터(`agent_feegrant_allowed_msg_types`)로 관리한다.
 
-**만료**: 약 180일(6개월) 후 자동 만료. 이 기간 내에 Activity Airdrop을 통해 자체 가스비를 확보하는 것이 기대 시나리오이다. 필요 시 MsgRenewFeegrant로 재신청 가능.
+**만료**: 약 180일(6개월) 후 자동 만료. 이 기간 내에 Activity Airdrop을 통해 자체 가스비를 확보하는 것이 기대 시나리오이다. 만료 후에는 자비로 가스비를 부담해야 한다.
 
 ### C-1. 활동 비용 모델의 스팸 방어 효과
 

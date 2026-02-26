@@ -15,7 +15,6 @@ func RegisterInterfaces(registrar codectypes.InterfaceRegistry) {
 		&MsgUpdateAgentAddress{},
 		&MsgDeactivateNode{},
 		&MsgWithdrawNodeCommission{},
-		&MsgRenewFeegrant{},
 	)
 	msgservice.RegisterMsgServiceDesc(registrar, &_Msg_serviceDesc)
 }

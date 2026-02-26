@@ -47,19 +47,6 @@ func TestRegistrationFeeDecorator(t *testing.T) {
 		require.Empty(t, capturedCtx.MinGasPrices())
 	})
 
-	t.Run("MsgRenewFeegrant TX also sets min gas prices to zero", func(t *testing.T) {
-		tx := mockTx{
-			msgs: []sdk.Msg{
-				&types.MsgRenewFeegrant{},
-			},
-		}
-
-		ctx := sdk.Context{}.WithMinGasPrices(sdk.DecCoins{sdk.NewDecCoin("usum", math.NewInt(1))})
-		_, err := decorator.AnteHandle(ctx, tx, false, nextHandler)
-		require.NoError(t, err)
-		require.Empty(t, capturedCtx.MinGasPrices())
-	})
-
 	t.Run("mixed TX keeps min gas prices unchanged", func(t *testing.T) {
 		tx := mockTx{
 			msgs: []sdk.Msg{

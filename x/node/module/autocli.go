@@ -93,11 +93,6 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "withdraw-commission",
 					Short:     "Withdraw node commission",
 				},
-				{
-					RpcMethod: "RenewFeegrant",
-					Use:       "renew-feegrant",
-					Short:     "Renew an expired feegrant",
-				},
 			},
 		},
 	}

@@ -185,7 +185,6 @@ func (k *Keeper) SetDistributionKeeper(dk types.DistributionKeeper) {
 }
 
 // GetEpochLength returns the current epoch_length parameter.
-// This method fulfills x/node's ActivityKeeper interface.
 func (k Keeper) GetEpochLength(ctx context.Context) (int64, error) {
 	params, err := k.Params.Get(ctx)
 	if err != nil {
@@ -202,26 +201,6 @@ func (k Keeper) IsNodeEligibleForEpoch(ctx context.Context, nodeID string, epoch
 		return false, nil
 	}
 	return summary.Eligible, nil
-}
-
-// CountEligibleEpochs counts the number of eligible epochs within the lookback window.
-func (k Keeper) CountEligibleEpochs(ctx context.Context, nodeID string, currentEpoch int64, lookback int64) (int64, error) {
-	var count int64
-	startEpoch := currentEpoch - lookback
-	if startEpoch < 0 {
-		startEpoch = 0
-	}
-
-	for epoch := startEpoch; epoch < currentEpoch; epoch++ {
-		eligible, err := k.IsNodeEligibleForEpoch(ctx, nodeID, epoch)
-		if err != nil {
-			return 0, err
-		}
-		if eligible {
-			count++
-		}
-	}
-	return count, nil
 }
 
 // ValidateActivityHash checks that a hex string is exactly 64 hex characters.

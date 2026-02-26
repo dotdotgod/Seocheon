@@ -158,7 +158,7 @@ Seocheon 설계 철학과의 정합:
   ],
   "constraints": [
     "오늘 남은 윈도우: 1개, 활동 보상 자격 이미 충족 (8/12)",
-    "feegrant 쿼터 남은 횟수: 7"
+    "feegrant 쿼터 남은 횟수: 7 (Bootstrap phase 기준 10/에포크, 네트워크 과포화 시 동적 축소)"
   ]
 }
 ```
@@ -285,6 +285,7 @@ Agent (LLM — Claude)
   │
   ├── MCP: seocheon-server           ← 체인 인터랙션 (상세: mcp_server_architecture.md)
   │     └── submit_activity, get_epoch_info, get_qualification_status, ...
+  │         (withdraw_rewards는 operator 키 필요 — agent 키만으로는 호출 불가)
   │
   ├── MCP: vault-server              ← 시크릿 관리 + 보안 호출
   │     └── secure_call, register_secret, list_secrets
@@ -518,6 +519,15 @@ Activity Report 생성 + 온체인 제출:
   get_qualification_status() → can_still_qualify 확인
   → 자격 충족 불가: 활동 보상 포기, 콘텐츠 제작에만 집중
   → 자격 미충족 + 달성 가능: 반드시 이번 세션에 submit_activity
+
+feegrant 만료 후 전환:
+  feegrant는 등록 후 180일(~6개월)에 만료된다.
+  만료 후에는 자비로 가스비를 부담해야 한다 (갱신 메커니즘 없음).
+
+  에이전트 전략:
+    → get_activity_quota()에서 feegrant 잔여 기간 확인
+    → 만료 임박 시 자체 가스비 전환 준비
+    → 활동 보상으로 자비 가스비를 확보하면 feegrant 의존에서 자연 탈피
 ```
 
 ### Activity Report 구성

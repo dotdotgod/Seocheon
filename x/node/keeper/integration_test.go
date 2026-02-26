@@ -19,7 +19,7 @@ var (
 
 // TestNodeLifecycle is an end-to-end integration test covering the full node lifecycle:
 // Register → UpdateMetadata → ScheduleAgentShareChange → EpochBoundary →
-// UpdateAgentAddress → RenewFeegrant → WithdrawCommission → Deactivate → InactiveGuard → Invariants
+// UpdateAgentAddress → WithdrawCommission → Deactivate → InactiveGuard → Invariants
 func TestNodeLifecycle(t *testing.T) {
 	f := initFixture(t)
 
@@ -162,17 +162,8 @@ func TestNodeLifecycle(t *testing.T) {
 		require.Len(t, f.feegrantKeeper.grantCalls, 2)
 	})
 
-	// ── Step 6: RenewFeegrant ──
-	t.Run("6_renew_feegrant", func(t *testing.T) {
-		_, err := ms.RenewFeegrant(f.ctx, &types.MsgRenewFeegrant{
-			Operator: operatorStr,
-		})
-		require.NoError(t, err)
-		require.Len(t, f.feegrantKeeper.grantCalls, 3)
-	})
-
-	// ── Step 7: WithdrawNodeCommission ──
-	t.Run("7_withdraw_commission", func(t *testing.T) {
+	// ── Step 6: WithdrawNodeCommission ──
+	t.Run("6_withdraw_commission", func(t *testing.T) {
 		// Get the validator address to configure mock.
 		node, err := f.keeper.Nodes.Get(f.ctx, nodeID)
 		require.NoError(t, err)
@@ -199,8 +190,8 @@ func TestNodeLifecycle(t *testing.T) {
 		require.Equal(t, sdk.NewCoin("usum", math.NewInt(350)), sent.Amount[0])
 	})
 
-	// ── Step 8: DeactivateNode ──
-	t.Run("8_deactivate", func(t *testing.T) {
+	// ── Step 7: DeactivateNode ──
+	t.Run("7_deactivate", func(t *testing.T) {
 		_, err := ms.DeactivateNode(f.ctx, &types.MsgDeactivateNode{
 			Operator: operatorStr,
 		})
@@ -211,8 +202,8 @@ func TestNodeLifecycle(t *testing.T) {
 		require.Equal(t, types.NodeStatus_NODE_STATUS_INACTIVE, node.Status)
 	})
 
-	// ── Step 9: Operations fail on inactive node ──
-	t.Run("9_inactive_guard", func(t *testing.T) {
+	// ── Step 8: Operations fail on inactive node ──
+	t.Run("8_inactive_guard", func(t *testing.T) {
 		_, err := ms.UpdateNode(f.ctx, &types.MsgUpdateNode{
 			Operator: operatorStr, Description: "fail",
 		})
@@ -228,19 +219,14 @@ func TestNodeLifecycle(t *testing.T) {
 		})
 		require.ErrorContains(t, err, "already inactive")
 
-		_, err = ms.RenewFeegrant(f.ctx, &types.MsgRenewFeegrant{
-			Operator: operatorStr,
-		})
-		require.ErrorContains(t, err, "inactive")
-
 		_, err = ms.WithdrawNodeCommission(f.ctx, &types.MsgWithdrawNodeCommission{
 			Operator: operatorStr,
 		})
 		require.ErrorContains(t, err, "inactive")
 	})
 
-	// ── Step 10: All invariants pass ──
-	t.Run("10_all_invariants_pass", func(t *testing.T) {
+	// ── Step 9: All invariants pass ──
+	t.Run("9_all_invariants_pass", func(t *testing.T) {
 		sdkCtx := sdk.UnwrapSDKContext(f.ctx)
 		msg, broken := keeper.AllInvariants(f.keeper)(sdkCtx)
 		require.False(t, broken, msg)

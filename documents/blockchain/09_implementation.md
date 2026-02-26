@@ -209,7 +209,7 @@ x/node
 - 기본 체인 설정 (chain-id: `seocheon-1`, 제네시스)
 - `x/node` 모듈 스캐폴딩: Node protobuf, Registration Pool + Feegrant Pool ModuleAccount
 - MsgRegisterNode 핸들러 (x/staking CreateValidator + x/feegrant GrantAllowance 내부 호출)
-- RegistrationFeeDecorator 구현 (MsgRegisterNode, MsgRenewFeegrant 가스비 면제)
+- RegistrationFeeDecorator 구현 (MsgRegisterNode 가스비 면제)
 - AgentPermissionDecorator 구현 (agent_allowed_msg_types 화이트리스트 시행)
 - StakingHooks 구현 (AfterValidatorBonded, AfterValidatorBeginUnbonding)
 - Node 쿼리 서비스 (ByID, ByTag, ByOperator)
@@ -229,7 +229,6 @@ x/node
 **Phase 0-D: 제네시스 + 테스트넷** ✅
 - 제네시스 구성 (Registration Pool 1,000 KKOT, Genesis 1노드: Evangelist)
 - Feegrant Pool 제네시스 설정 (10,000 KKOT)
-- MsgRenewFeegrant 핸들러 (활동 이력 조건부 갱신)
 - 로컬 단일 밸리데이터 테스트넷
 
 ### Phase 1: Activity Protocol ✅ 완료
@@ -252,30 +251,33 @@ x/node
 - msg_server_register_node.go의 하드코딩 제거
 - msg 필드의 commission_rates 사용
 
-**1.5-C: RenewFeegrant 활동 이력 검증** (Gap 5)
-- x/activity keeper 연동 (CountEligibleEpochs)
-- 직전 30에포크 중 20에포크 활동 자격 검증
-
-**1.5-D: 활동 비용 모델 구현**
+**1.5-C: 활동 비용 모델 구현**
 - 7개 거버넌스 파라미터 추가 (fee_threshold_multiplier, base_activity_fee 등)
 - 포화율(S) 기반 단계적 수수료: S ≤ 1.0 무료, S > 1.0 비용 부과
 - feegrant 노드 수수료 면제 + 쿼터 축소
 - EpochFeeState 캐시 (에포크 경계에서 1회 계산)
 - 수수료 수집 (분배는 Phase 3 x/distribution 확장 시 적용: 80% 활동 풀 + 20% 커뮤니티 풀)
 
-### Phase 2: 이중 보상 풀 (x/distribution 확장)
-- `x/distribution` 확장: **이중 보상 풀** (위임 풀 + 활동 풀) 분배 로직
-  - 위임 풀: 기존 DPoS 지분율 비례 분배
-  - 활동 풀: 자격 노드 균등 분배 (에포크 전환 시 일괄)
-  - 동적 보상 비율 공식: `delegation_ratio = max(D_min, N_d / (N_a + N_d))`
-  - `D_min` 거버넌스 파라미터
-  - 활동 수수료 환원 통합
-- 위임/철회 UX
-- 인덱서 + 대시보드 프로토타입
+### Phase 2: 이중 보상 풀 (x/distribution 확장) ✅ 완료
+- `x/distribution` 확장: **이중 보상 풀** (위임 풀 + 활동 풀) 분배 로직 ✅
+  - 위임 풀: 기존 DPoS 지분율 비례 분배 ✅
+  - 활동 풀: 자격 노드 균등 분배 (에포크 전환 시 일괄) ✅
+  - 동적 보상 비율 공식: `delegation_ratio = max(D_min, N_d / (N_a + N_d))` ✅
+  - `D_min` 거버넌스 파라미터 ✅
+  - 활동 수수료 환원 통합 (80% 활동 풀 + 20% 커뮤니티 풀) ✅
+- 위임/철회 UX ✅
+- 인덱서 + 대시보드 프로토타입 — 미착수 (별도 Phase에서 진행)
 
-### Phase 3: 테스트넷
-- 멀티 밸리데이터 테스트넷
-- 다양한 노드 유형 테스트 (AI 에이전트 노드, 수동 노드 등)
+### Phase 3: 테스트넷 ✅ 완료
+- 멀티 밸리데이터 테스트넷 ✅
+- 다양한 노드 유형 테스트 (AI 에이전트 노드, 수동 노드 등) ✅
+- E2E 테스트 자동화 (`tests/e2e/`) ✅
+  - 노드 등록 → 활동 제출 → 보상 분배 전체 플로우
+  - 스팸 방어 (쿼터, 중복 방지, 블록당 등록 상한)
+  - 제네시스 라운드트립 (export → import 정합성)
+  - Feegrant 플로우 (자동 부여, 쿼터 적용, agent 주소 변경 시 이전)
+  - 거버넌스 파라미터 변경
+- CI 파이프라인 (`.github/workflows/tests.yml`) ✅
 
 ---
 
