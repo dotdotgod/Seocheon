@@ -1,0 +1,66 @@
+syntax = "proto3";
+package seocheon.randomness.v1;
+
+import "amino/amino.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "seocheon/x/randomness/types";
+
+// Params defines the parameters for the x/randomness module.
+message Params {
+  option (amino.name) = "seocheon/x/randomness/Params";
+  option (gogoproto.equal) = true;
+
+  // beacon_verification_enabled controls whether drand beacon signatures are verified on-chain.
+  // Set to false initially to allow stub-mode operation.
+  bool beacon_verification_enabled = 1;
+
+  // max_beacon_age_blocks is the maximum age (in blocks) for a beacon to be accepted.
+  // Beacons older than current_height - max_beacon_age_blocks are rejected.
+  uint64 max_beacon_age_blocks = 2;
+
+  // drand_genesis_time is the drand network genesis time (Unix seconds).
+  uint64 drand_genesis_time = 3;
+
+  // drand_period_seconds is the drand beacon emission period in seconds.
+  uint64 drand_period_seconds = 4;
+
+  // drand_chain_hash is the drand chain hash for beacon verification.
+  string drand_chain_hash = 5;
+
+  // drand_public_key is the drand quicknet G2 public key (hex-encoded).
+  // Used for BLS12-381 signature verification when beacon_verification_enabled is true.
+  string drand_public_key = 6;
+
+  // drand_scheme_id is the drand signature scheme identifier.
+  // Default: "bls-unchained-g1-rfc9380" for quicknet.
+  string drand_scheme_id = 7;
+
+  // commit_reveal_enabled controls whether the commit-reveal randomness request system is active.
+  // When false, MsgRequestRandomness is rejected.
+  bool commit_reveal_enabled = 8;
+
+  // min_future_rounds is the minimum number of drand rounds into the future for target_round.
+  // Ensures the beacon is not yet available at request time (front-run resistance).
+  uint64 min_future_rounds = 9;
+
+  // request_timeout_blocks is the maximum number of blocks before a pending request expires.
+  uint64 request_timeout_blocks = 10;
+
+  // request_pruning_blocks is the number of blocks after fulfillment/expiry before a request is pruned.
+  uint64 request_pruning_blocks = 11;
+
+  // max_pending_requests is the global maximum number of pending randomness requests.
+  uint64 max_pending_requests = 12;
+
+  // max_requests_per_requester is the maximum number of pending requests per requester address.
+  uint64 max_requests_per_requester = 13;
+
+  // max_fulfills_per_block is the maximum number of requests fulfilled per EndBlocker invocation.
+  uint64 max_fulfills_per_block = 14;
+
+  // min_request_fee is the minimum fee required to submit a randomness request.
+  // Escrowed by the module and paid to the relayer on fulfillment, or refunded on expiry.
+  cosmos.base.v1beta1.Coin min_request_fee = 15 [(gogoproto.nullable) = false];
+}

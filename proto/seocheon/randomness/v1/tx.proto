@@ -1,0 +1,97 @@
+syntax = "proto3";
+package seocheon.randomness.v1;
+
+import "amino/amino.proto";
+import "cosmos/msg/v1/msg.proto";
+import "cosmos_proto/cosmos.proto";
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "seocheon/randomness/v1/params.proto";
+
+option go_package = "seocheon/x/randomness/types";
+
+// Msg defines the x/randomness Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  // UpdateParams defines a governance operation for updating the module parameters.
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+
+  // SubmitBeacon submits a drand randomness beacon for on-chain storage.
+  rpc SubmitBeacon(MsgSubmitBeacon) returns (MsgSubmitBeaconResponse);
+
+  // RequestRandomness submits a commit-reveal randomness request.
+  rpc RequestRandomness(MsgRequestRandomness) returns (MsgRequestRandomnessResponse);
+}
+
+// MsgUpdateParams is the Msg/UpdateParams request type.
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "seocheon/x/randomness/MsgUpdateParams";
+
+  // authority is the address that controls the module (defaults to x/gov).
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // params defines the module parameters to update.
+  Params params = 2 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// MsgUpdateParamsResponse defines the response for MsgUpdateParams.
+message MsgUpdateParamsResponse {}
+
+// MsgSubmitBeacon submits a drand randomness beacon.
+message MsgSubmitBeacon {
+  option (cosmos.msg.v1.signer) = "submitter";
+  option (amino.name) = "seocheon/x/randomness/MsgSubmitBeacon";
+
+  // submitter is the address submitting the beacon (relayer bot or any account).
+  string submitter = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // round is the drand round number.
+  uint64 round = 2;
+
+  // randomness is the 32-byte randomness value (hex-encoded).
+  string randomness = 3;
+
+  // signature is the BLS signature of the beacon (hex-encoded).
+  string signature = 4;
+}
+
+// MsgSubmitBeaconResponse is the response for MsgSubmitBeacon.
+message MsgSubmitBeaconResponse {
+  // round is the stored round number.
+  uint64 round = 1;
+}
+
+// MsgRequestRandomness submits a commit-reveal randomness request.
+message MsgRequestRandomness {
+  option (cosmos.msg.v1.signer) = "requester";
+  option (amino.name) = "seocheon/x/randomness/MsgRequestRandomness";
+
+  // requester is the address requesting randomness.
+  string requester = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+
+  // commit_hash is a hex-encoded SHA-256 commitment for front-run resistance.
+  string commit_hash = 2;
+
+  // num_words is the number of random words requested (1-10).
+  uint32 num_words = 3;
+
+  // callback_data is optional application-specific data (max 256 bytes, hex-encoded).
+  string callback_data = 4;
+
+  // request_fee is the fee to pay the relayer upon fulfillment.
+  cosmos.base.v1beta1.Coin request_fee = 5 [(gogoproto.nullable) = false];
+}
+
+// MsgRequestRandomnessResponse is the response for MsgRequestRandomness.
+message MsgRequestRandomnessResponse {
+  // request_id is the unique identifier for the created request.
+  uint64 request_id = 1;
+
+  // target_round is the drand round assigned for this request.
+  uint64 target_round = 2;
+}

@@ -1,0 +1,122 @@
+syntax = "proto3";
+package seocheon.randomness.v1;
+
+import "amino/amino.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "seocheon/randomness/v1/randomness.proto";
+import "seocheon/randomness/v1/params.proto";
+
+option go_package = "seocheon/x/randomness/types";
+
+// Query defines the gRPC querier service for the x/randomness module.
+service Query {
+  // Params queries the module parameters.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/seocheon/randomness/v1/params";
+  }
+
+  // LatestBeacon queries the most recently stored beacon.
+  rpc LatestBeacon(QueryLatestBeaconRequest) returns (QueryLatestBeaconResponse) {
+    option (google.api.http).get = "/seocheon/randomness/v1/beacons/latest";
+  }
+
+  // Beacon queries a beacon by its round number.
+  rpc Beacon(QueryBeaconRequest) returns (QueryBeaconResponse) {
+    option (google.api.http).get = "/seocheon/randomness/v1/beacons/{round}";
+  }
+
+  // Beacons queries beacons with pagination.
+  rpc Beacons(QueryBeaconsRequest) returns (QueryBeaconsResponse) {
+    option (google.api.http).get = "/seocheon/randomness/v1/beacons";
+  }
+
+  // RandomnessRequest queries a specific randomness request by ID.
+  rpc RandomnessRequest(QueryRandomnessRequestRequest) returns (QueryRandomnessRequestResponse) {
+    option (google.api.http).get = "/seocheon/randomness/v1/requests/{request_id}";
+  }
+
+  // PendingRequests queries all pending randomness requests with pagination.
+  rpc PendingRequests(QueryPendingRequestsRequest) returns (QueryPendingRequestsResponse) {
+    option (google.api.http).get = "/seocheon/randomness/v1/requests/pending";
+  }
+
+  // RequestsByRequester queries randomness requests by requester address with pagination.
+  rpc RequestsByRequester(QueryRequestsByRequesterRequest) returns (QueryRequestsByRequesterResponse) {
+    option (google.api.http).get = "/seocheon/randomness/v1/requests/by_requester/{requester}";
+  }
+}
+
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is the response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+}
+
+// QueryLatestBeaconRequest is the request type for the Query/LatestBeacon RPC method.
+message QueryLatestBeaconRequest {}
+
+// QueryLatestBeaconResponse is the response type for the Query/LatestBeacon RPC method.
+message QueryLatestBeaconResponse {
+  Beacon beacon = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryBeaconRequest is the request type for the Query/Beacon RPC method.
+message QueryBeaconRequest {
+  uint64 round = 1;
+}
+
+// QueryBeaconResponse is the response type for the Query/Beacon RPC method.
+message QueryBeaconResponse {
+  Beacon beacon = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryBeaconsRequest is the request type for the Query/Beacons RPC method.
+message QueryBeaconsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryBeaconsResponse is the response type for the Query/Beacons RPC method.
+message QueryBeaconsResponse {
+  repeated Beacon beacons = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryRandomnessRequestRequest is the request type for the Query/RandomnessRequest RPC method.
+message QueryRandomnessRequestRequest {
+  uint64 request_id = 1;
+}
+
+// QueryRandomnessRequestResponse is the response type for the Query/RandomnessRequest RPC method.
+message QueryRandomnessRequestResponse {
+  RandomnessRequest request = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryPendingRequestsRequest is the request type for the Query/PendingRequests RPC method.
+message QueryPendingRequestsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryPendingRequestsResponse is the response type for the Query/PendingRequests RPC method.
+message QueryPendingRequestsResponse {
+  repeated RandomnessRequest requests = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryRequestsByRequesterRequest is the request type for the Query/RequestsByRequester RPC method.
+message QueryRequestsByRequesterRequest {
+  string requester = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// QueryRequestsByRequesterResponse is the response type for the Query/RequestsByRequester RPC method.
+message QueryRequestsByRequesterResponse {
+  repeated RandomnessRequest requests = 1 [(gogoproto.nullable) = false];
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}

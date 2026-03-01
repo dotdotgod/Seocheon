@@ -1,0 +1,84 @@
+syntax = "proto3";
+package seocheon.randomness.v1;
+
+import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
+
+option go_package = "seocheon/x/randomness/types";
+
+// RandomnessRequestStatus defines the status of a randomness request.
+enum RandomnessRequestStatus {
+  // RANDOMNESS_REQUEST_STATUS_UNSPECIFIED is the default value.
+  RANDOMNESS_REQUEST_STATUS_UNSPECIFIED = 0;
+
+  // RANDOMNESS_REQUEST_STATUS_PENDING indicates the request is waiting for beacon fulfillment.
+  RANDOMNESS_REQUEST_STATUS_PENDING = 1;
+
+  // RANDOMNESS_REQUEST_STATUS_FULFILLED indicates the request has been fulfilled with randomness.
+  RANDOMNESS_REQUEST_STATUS_FULFILLED = 2;
+
+  // RANDOMNESS_REQUEST_STATUS_EXPIRED indicates the request has expired without fulfillment.
+  RANDOMNESS_REQUEST_STATUS_EXPIRED = 3;
+}
+
+// RandomnessRequest represents a user's request for verifiable randomness.
+message RandomnessRequest {
+  option (gogoproto.equal) = true;
+
+  // request_id is the unique identifier for this request.
+  uint64 request_id = 1;
+
+  // requester is the address that submitted the request.
+  string requester = 2;
+
+  // commit_hash is the user's commitment hash for front-run resistance (hex-encoded SHA-256).
+  string commit_hash = 3;
+
+  // num_words is the number of random words requested (1-10).
+  uint32 num_words = 4;
+
+  // callback_data is optional application-specific data (max 256 bytes, hex-encoded).
+  string callback_data = 5;
+
+  // target_round is the drand round from which randomness will be derived.
+  uint64 target_round = 6;
+
+  // status is the current state of the request.
+  RandomnessRequestStatus status = 7;
+
+  // created_at is the block height at which the request was created.
+  int64 created_at = 8;
+
+  // fulfilled_at is the block height at which the request was fulfilled (0 if not yet fulfilled).
+  int64 fulfilled_at = 9;
+
+  // result is the derived randomness result (hex-encoded, empty until fulfilled).
+  // Computed as SHA256(beacon.randomness || AppHash || commit_hash || word_index).
+  string result = 10;
+
+  // beacon_app_hash is the AppHash used in the multi-source mixing (hex-encoded, empty until fulfilled).
+  string beacon_app_hash = 11;
+
+  // request_fee is the fee escrowed for this request.
+  cosmos.base.v1beta1.Coin request_fee = 12 [(gogoproto.nullable) = false];
+}
+
+// Beacon represents a verified drand randomness beacon stored on-chain.
+message Beacon {
+  option (gogoproto.equal) = true;
+
+  // round is the drand round number.
+  uint64 round = 1;
+
+  // randomness is the 32-byte randomness value (hex-encoded).
+  string randomness = 2;
+
+  // signature is the BLS signature of the beacon (hex-encoded).
+  string signature = 3;
+
+  // submitted_at is the block height at which this beacon was stored.
+  int64 submitted_at = 4;
+
+  // submitter is the address that submitted this beacon.
+  string submitter = 5;
+}

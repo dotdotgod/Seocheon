@@ -1,0 +1,27 @@
+syntax = "proto3";
+package seocheon.randomness.v1;
+
+import "amino/amino.proto";
+import "gogoproto/gogo.proto";
+import "seocheon/randomness/v1/randomness.proto";
+import "seocheon/randomness/v1/params.proto";
+
+option go_package = "seocheon/x/randomness/types";
+
+// GenesisState defines the x/randomness module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  // beacons is the list of stored beacons at genesis (usually empty).
+  repeated Beacon beacons = 2 [(gogoproto.nullable) = false];
+
+  // randomness_requests is the list of randomness requests at genesis.
+  repeated RandomnessRequest randomness_requests = 3 [(gogoproto.nullable) = false];
+
+  // next_request_id is the next request ID to be assigned.
+  uint64 next_request_id = 4;
+}

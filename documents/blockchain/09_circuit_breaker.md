@@ -1,7 +1,7 @@
 # 긴급 정지 메커니즘 (Circuit Breaker)
 
 > **담당**: 체인 코어 개발자 / 보안
-> **관련 문서**: [개요](01_overview.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [스팸 방어](08_spam_defense.md) · [구현 가이드](09_implementation.md) · [체인 업그레이드](10_chain_upgrade.md) · [재단 전략](../foundation_strategy.md) · [전체 목차](README.md)
+> **관련 문서**: [개요](01_overview.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [스팸 방어](06_spam_defense.md) · [구현 가이드](07_implementation.md) · [체인 업그레이드](08_chain_upgrade.md) · [재단 전략](../foundation_strategy.md) · [전체 목차](README.md)
 
 > **구현 상태**: 현재 Cosmos SDK 표준 `x/circuit` 모듈이 적용되어 있다. Phase 2에서 Guardian 권한 설정과 모듈별 선택적 정지 기능을 추가한다.
 
