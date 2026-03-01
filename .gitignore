@@ -4,7 +4,7 @@
 # Build
 build/
 dist/
-seocheon
+/seocheon
 
 # Go
 *.exe

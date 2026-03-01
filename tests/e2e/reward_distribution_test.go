@@ -21,9 +21,9 @@ func (s *E2ESuite) TestRewardDistribution() {
 	agAddrA, _, err := s.addKeyToKeyring(val, "agA")
 	s.Require().NoError(err)
 
-	err = s.fundAccount(val, opAddrA, sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(10_000_000))))
+	err = s.fundAccount(val, opAddrA, sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(10_000_000))))
 	s.Require().NoError(err)
-	err = s.fundAccount(val, agAddrA, sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(1_000_000))))
+	err = s.fundAccount(val, agAddrA, sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(1_000_000))))
 	s.Require().NoError(err)
 
 	opCtxA := s.clientCtxForKey(val, "opA")
@@ -37,9 +37,9 @@ func (s *E2ESuite) TestRewardDistribution() {
 	agAddrB, _, err := s.addKeyToKeyring(val, "agB")
 	s.Require().NoError(err)
 
-	err = s.fundAccount(val, opAddrB, sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(10_000_000))))
+	err = s.fundAccount(val, opAddrB, sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(10_000_000))))
 	s.Require().NoError(err)
-	err = s.fundAccount(val, agAddrB, sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(1_000_000))))
+	err = s.fundAccount(val, agAddrB, sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(1_000_000))))
 	s.Require().NoError(err)
 
 	opCtxB := s.clientCtxForKey(val, "opB")
@@ -119,7 +119,7 @@ func (s *E2ESuite) TestRewardDistribution() {
 		totalB_before, totalB_after, deltaB)
 
 	// --- Assertions ---
-	// Activity reward pool was funded with 1,000,000 usum at genesis.
+	// Activity reward pool was funded with 1,000,000 uppyeo at genesis.
 	// Only Node A (1 eligible node) receives the full pool.
 	// Agent share = 30%: agent gets 300,000, operator gets 700,000.
 	// Using GTE to account for possible mint inflation dust.
@@ -130,16 +130,16 @@ func (s *E2ESuite) TestRewardDistribution() {
 	s.T().Logf("node A deltas: operator=%s, agent=%s, total=%s", deltaOpA, deltaAgA, deltaA)
 
 	s.Require().True(deltaOpA.GTE(sdkmath.NewInt(700_000)),
-		"operator A should receive >= 700,000 usum (70%% of pool), got %s", deltaOpA)
+		"operator A should receive >= 700,000 uppyeo (70%% of pool), got %s", deltaOpA)
 	s.Require().True(deltaAgA.GTE(sdkmath.NewInt(300_000)),
-		"agent A should receive >= 300,000 usum (30%% of pool), got %s", deltaAgA)
+		"agent A should receive >= 300,000 uppyeo (30%% of pool), got %s", deltaAgA)
 	s.Require().True(deltaA.GTE(sdkmath.NewInt(1_000_000)),
-		"node A total should receive >= 1,000,000 usum (full pool), got %s", deltaA)
+		"node A total should receive >= 1,000,000 uppyeo (full pool), got %s", deltaA)
 
 	// Node B is ineligible: should receive no activity rewards.
 	// Only possible delta is staking reward dust, which should be small.
 	s.Require().True(deltaB.LT(sdkmath.NewInt(100_000)),
-		"node B total delta should be < 100,000 usum (no activity rewards), got %s", deltaB)
+		"node B total delta should be < 100,000 uppyeo (no activity rewards), got %s", deltaB)
 
 	s.T().Log("reward distribution test completed: assertions passed")
 }

@@ -25,10 +25,10 @@ import (
 )
 
 const (
-	// Total supply: 500M KKOT = 500,000,000 * 10^6 usum.
-	totalSupplyKKOT = 500_000_000
-	usumPerKKOT     = 1_000_000
-	totalSupplyUsum = totalSupplyKKOT * usumPerKKOT // 500,000,000,000,000
+	// Total supply: 500M KKOT = 500,000,000 * 10^10 uppyeo.
+	totalSupplyKKOT   = 500_000_000
+	uppyeoPerKKOT     = 10_000_000_000
+	totalSupplyUppyeo = totalSupplyKKOT * uppyeoPerKKOT // 5,000,000,000,000,000,000
 
 	// Allocation percentages.
 	teamPercent             = 20 // 100M KKOT
@@ -53,7 +53,7 @@ type GenesisAllocation struct {
 }
 
 func computeAllocations() GenesisAllocation {
-	total := math.NewInt(totalSupplyUsum)
+	total := math.NewInt(totalSupplyUppyeo)
 	alloc := GenesisAllocation{
 		Team:             total.Mul(math.NewInt(teamPercent)).Quo(math.NewInt(100)),
 		Foundation:       total.Mul(math.NewInt(foundationPercent)).Quo(math.NewInt(100)),
@@ -78,7 +78,7 @@ This command reads an existing genesis.json (created by 'seocheon init' and gent
 applies Seocheon-specific module parameters, sets up pool accounts, and validates the result.
 
 Parameters configured:
-  x/staking:  max_validators=150, unbonding_time=21d, bond_denom=usum
+  x/staking:  max_validators=150, unbonding_time=21d, bond_denom=uppyeo
   x/mint:     inflation 7-15%, goal_bonded=67%, blocks_per_year=6,307,200
   x/activity: epoch=17280, windows=12, min_active=8, d_min=3000
 
@@ -113,14 +113,14 @@ func runGenesisBuild(clientCtx client.Context, genesisFile string, mbm module.Ba
 
 	// Print allocation summary.
 	fmt.Println("=== Seocheon Genesis Allocation ===")
-	fmt.Printf("  Team (20%%):              %s usum (%s KKOT)\n", alloc.Team, alloc.Team.Quo(math.NewInt(usumPerKKOT)))
-	fmt.Printf("  Foundation (15%%):        %s usum (%s KKOT)\n", alloc.Foundation, alloc.Foundation.Quo(math.NewInt(usumPerKKOT)))
-	fmt.Printf("  Airdrop Pool (15%%):      %s usum (%s KKOT)\n", alloc.Airdrop, alloc.Airdrop.Quo(math.NewInt(usumPerKKOT)))
-	fmt.Printf("  Ecosystem Fund (15%%):    %s usum (%s KKOT)\n", alloc.EcosystemFund, alloc.EcosystemFund.Quo(math.NewInt(usumPerKKOT)))
-	fmt.Printf("  Initial Validators (10%%): %s usum (%s KKOT)\n", alloc.InitialValidator, alloc.InitialValidator.Quo(math.NewInt(usumPerKKOT)))
-	fmt.Printf("  Ecosystem Reserve (10%%): %s usum (%s KKOT)\n", alloc.EcosystemReserve, alloc.EcosystemReserve.Quo(math.NewInt(usumPerKKOT)))
-	fmt.Printf("  Community Pool (15%%):    %s usum (%s KKOT)\n", alloc.CommunityPool, alloc.CommunityPool.Quo(math.NewInt(usumPerKKOT)))
-	fmt.Printf("  TOTAL:                   %s usum (%s KKOT)\n", alloc.Total, alloc.Total.Quo(math.NewInt(usumPerKKOT)))
+	fmt.Printf("  Team (20%%):              %s uppyeo (%s KKOT)\n", alloc.Team, alloc.Team.Quo(math.NewInt(uppyeoPerKKOT)))
+	fmt.Printf("  Foundation (15%%):        %s uppyeo (%s KKOT)\n", alloc.Foundation, alloc.Foundation.Quo(math.NewInt(uppyeoPerKKOT)))
+	fmt.Printf("  Airdrop Pool (15%%):      %s uppyeo (%s KKOT)\n", alloc.Airdrop, alloc.Airdrop.Quo(math.NewInt(uppyeoPerKKOT)))
+	fmt.Printf("  Ecosystem Fund (15%%):    %s uppyeo (%s KKOT)\n", alloc.EcosystemFund, alloc.EcosystemFund.Quo(math.NewInt(uppyeoPerKKOT)))
+	fmt.Printf("  Initial Validators (10%%): %s uppyeo (%s KKOT)\n", alloc.InitialValidator, alloc.InitialValidator.Quo(math.NewInt(uppyeoPerKKOT)))
+	fmt.Printf("  Ecosystem Reserve (10%%): %s uppyeo (%s KKOT)\n", alloc.EcosystemReserve, alloc.EcosystemReserve.Quo(math.NewInt(uppyeoPerKKOT)))
+	fmt.Printf("  Community Pool (15%%):    %s uppyeo (%s KKOT)\n", alloc.CommunityPool, alloc.CommunityPool.Quo(math.NewInt(uppyeoPerKKOT)))
+	fmt.Printf("  TOTAL:                   %s uppyeo (%s KKOT)\n", alloc.Total, alloc.Total.Quo(math.NewInt(uppyeoPerKKOT)))
 
 	// Verify sum.
 	sum := alloc.Team.Add(alloc.Foundation).Add(alloc.Airdrop).Add(alloc.EcosystemFund).
@@ -213,7 +213,7 @@ func applyStakingParams(cdc codec.Codec, appState map[string]json.RawMessage) er
 
 	stakingGenesis.Params.MaxValidators = 150
 	stakingGenesis.Params.UnbondingTime = 21 * 24 * time.Hour // 21 days
-	stakingGenesis.Params.BondDenom = "usum"
+	stakingGenesis.Params.BondDenom = "uppyeo"
 	stakingGenesis.Params.MinCommissionRate = math.LegacyNewDecWithPrec(5, 2) // 5%
 
 	bz, err := cdc.MarshalJSON(&stakingGenesis)
@@ -221,7 +221,7 @@ func applyStakingParams(cdc codec.Codec, appState map[string]json.RawMessage) er
 		return err
 	}
 	appState[stakingtypes.ModuleName] = bz
-	fmt.Println("  Applied x/staking params: max_validators=150, unbonding=21d, bond_denom=usum")
+	fmt.Println("  Applied x/staking params: max_validators=150, unbonding=21d, bond_denom=uppyeo")
 	return nil
 }
 
@@ -231,7 +231,7 @@ func applyMintParams(cdc codec.Codec, appState map[string]json.RawMessage) error
 		return err
 	}
 
-	mintGenesis.Params.MintDenom = "usum"
+	mintGenesis.Params.MintDenom = "uppyeo"
 	mintGenesis.Params.InflationMin = math.LegacyNewDecWithPrec(7, 2)          // 7%
 	mintGenesis.Params.InflationMax = math.LegacyNewDecWithPrec(15, 2)         // 15%
 	mintGenesis.Params.InflationRateChange = math.LegacyNewDecWithPrec(8, 2)   // 8%p/year
@@ -263,9 +263,9 @@ func applyActivityParams(cdc codec.Codec, appState map[string]json.RawMessage) e
 		FeegrantQuota:            10,
 		ActivityPruningKeepBlocks: 1_555_200, // ~90 days
 		FeeThresholdMultiplier:   3,
-		BaseActivityFee:          1_000_000,   // 1 KKOT
-		FeeExponent:              5000,        // 0.5
-		MaxActivityFee:           100_000_000, // 100 KKOT
+		BaseActivityFee:          10_000_000_000,     // 1 KKOT
+		FeeExponent:              5000,              // 0.5
+		MaxActivityFee:           1_000_000_000_000, // 100 KKOT
 		MinFeegrantQuota:         8,
 		QuotaReductionRate:       5000,        // 0.5
 		FeegrantFeeExempt:        true,
@@ -293,12 +293,12 @@ func applyNodeParams(cdc codec.Codec, appState map[string]json.RawMessage) error
 	// Ensure pool balances are set.
 	if len(nodeGenesis.RegistrationPoolBalance) == 0 {
 		nodeGenesis.RegistrationPoolBalance = sdk.NewCoins(
-			sdk.NewCoin("usum", math.NewInt(1_000_000_000_000)), // 1,000 KKOT
+			sdk.NewCoin("uppyeo", math.NewInt(10_000_000_000_000_000)), // 1,000 KKOT
 		)
 	}
 	if len(nodeGenesis.FeegrantPoolBalance) == 0 {
 		nodeGenesis.FeegrantPoolBalance = sdk.NewCoins(
-			sdk.NewCoin("usum", math.NewInt(10_000_000_000_000)), // 10,000 KKOT
+			sdk.NewCoin("uppyeo", math.NewInt(100_000_000_000_000_000)), // 10,000 KKOT
 		)
 	}
 
@@ -329,14 +329,14 @@ func fundPoolAccounts(cdc codec.Codec, appState map[string]json.RawMessage, allo
 
 	for _, pool := range pools {
 		addr := authtypes.NewModuleAddress(pool.name)
-		coins := sdk.NewCoins(sdk.NewCoin("usum", pool.amount))
+		coins := sdk.NewCoins(sdk.NewCoin("uppyeo", pool.amount))
 
 		// Add balance.
 		bankGenesis.Balances = append(bankGenesis.Balances, banktypes.Balance{
 			Address: addr.String(),
 			Coins:   coins,
 		})
-		fmt.Printf("  Funded %s: %s KKOT\n", pool.name, pool.amount.Quo(math.NewInt(usumPerKKOT)))
+		fmt.Printf("  Funded %s: %s KKOT\n", pool.name, pool.amount.Quo(math.NewInt(uppyeoPerKKOT)))
 	}
 
 	bz, err := cdc.MarshalJSON(&bankGenesis)
@@ -354,7 +354,7 @@ func fundCommunityPool(cdc codec.Codec, appState map[string]json.RawMessage, all
 	}
 
 	// Add community pool balance.
-	communityPoolCoins := sdk.NewDecCoinsFromCoins(sdk.NewCoin("usum", alloc.CommunityPool))
+	communityPoolCoins := sdk.NewDecCoinsFromCoins(sdk.NewCoin("uppyeo", alloc.CommunityPool))
 	distrGenesis.FeePool.CommunityPool = distrGenesis.FeePool.CommunityPool.Add(communityPoolCoins...)
 
 	bz, err := cdc.MarshalJSON(&distrGenesis)
@@ -372,7 +372,7 @@ func fundCommunityPool(cdc codec.Codec, appState map[string]json.RawMessage, all
 	distrAddr := authtypes.NewModuleAddress(distrtypes.ModuleName)
 	bankGenesis.Balances = append(bankGenesis.Balances, banktypes.Balance{
 		Address: distrAddr.String(),
-		Coins:   sdk.NewCoins(sdk.NewCoin("usum", alloc.CommunityPool)),
+		Coins:   sdk.NewCoins(sdk.NewCoin("uppyeo", alloc.CommunityPool)),
 	})
 
 	bz, err = cdc.MarshalJSON(&bankGenesis)
@@ -381,7 +381,7 @@ func fundCommunityPool(cdc codec.Codec, appState map[string]json.RawMessage, all
 	}
 	appState[banktypes.ModuleName] = bz
 
-	fmt.Printf("  Funded community pool: %s KKOT\n", alloc.CommunityPool.Quo(math.NewInt(usumPerKKOT)))
+	fmt.Printf("  Funded community pool: %s KKOT\n", alloc.CommunityPool.Quo(math.NewInt(uppyeoPerKKOT)))
 	return nil
 }
 
@@ -394,10 +394,10 @@ func updateBankSupply(cdc codec.Codec, appState map[string]json.RawMessage, allo
 	// Calculate total supply from all balances.
 	totalFromBalances := math.ZeroInt()
 	for _, bal := range bankGenesis.Balances {
-		totalFromBalances = totalFromBalances.Add(bal.Coins.AmountOf("usum"))
+		totalFromBalances = totalFromBalances.Add(bal.Coins.AmountOf("uppyeo"))
 	}
 
-	bankGenesis.Supply = sdk.NewCoins(sdk.NewCoin("usum", totalFromBalances))
+	bankGenesis.Supply = sdk.NewCoins(sdk.NewCoin("uppyeo", totalFromBalances))
 
 	bz, err := cdc.MarshalJSON(&bankGenesis)
 	if err != nil {
@@ -405,8 +405,8 @@ func updateBankSupply(cdc codec.Codec, appState map[string]json.RawMessage, allo
 	}
 	appState[banktypes.ModuleName] = bz
 
-	fmt.Printf("  Bank supply set to: %s usum (%s KKOT)\n",
-		totalFromBalances, totalFromBalances.Quo(math.NewInt(usumPerKKOT)))
+	fmt.Printf("  Bank supply set to: %s uppyeo (%s KKOT)\n",
+		totalFromBalances, totalFromBalances.Quo(math.NewInt(uppyeoPerKKOT)))
 	return nil
 }
 
@@ -418,13 +418,16 @@ func registerDenomMetadata(cdc codec.Codec, appState map[string]json.RawMessage)
 
 	bankGenesis.DenomMetadata = []banktypes.Metadata{
 		{
-			Description: "The native token of the Seocheon network",
+			Description: "The native token of the Seocheon network — 서천꽃밭(이공본풀이) 환생 순서: 뼈→살→피→숨→혼→꽃",
 			DenomUnits: []*banktypes.DenomUnit{
-				{Denom: "usum", Exponent: 0, Aliases: []string{"microkkot"}},
-				{Denom: "hon", Exponent: 3, Aliases: []string{"millikkkot"}},
-				{Denom: "kkot", Exponent: 6},
+				{Denom: "uppyeo", Exponent: 0, Aliases: []string{"뼈"}},
+				{Denom: "sal", Exponent: 2, Aliases: []string{"살"}},
+				{Denom: "pi", Exponent: 4, Aliases: []string{"피"}},
+				{Denom: "sum", Exponent: 6, Aliases: []string{"숨"}},
+				{Denom: "hon", Exponent: 8, Aliases: []string{"혼"}},
+				{Denom: "kkot", Exponent: 10},
 			},
-			Base:    "usum",
+			Base:    "uppyeo",
 			Display: "kkot",
 			Name:    "KKOT",
 			Symbol:  "KKOT",
@@ -436,6 +439,6 @@ func registerDenomMetadata(cdc codec.Codec, appState map[string]json.RawMessage)
 		return err
 	}
 	appState[banktypes.ModuleName] = bz
-	fmt.Println("  Registered denom metadata: usum (base) → hon (milli, 10^3) → kkot (display, 10^6)")
+	fmt.Println("  Registered denom metadata: uppyeo (뼈, base) → sal (살, 10^2) → pi (피, 10^4) → sum (숨, 10^6) → hon (혼, 10^8) → kkot (꽃, display, 10^10)")
 	return nil
 }

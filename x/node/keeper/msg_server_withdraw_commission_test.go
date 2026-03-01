@@ -63,8 +63,8 @@ func TestWithdrawNodeCommission_Split30Percent(t *testing.T) {
 	require.NoError(t, err)
 	valAddr := sdk.ValAddress(valAddrBytes)
 
-	// Set commission: 1000 usum.
-	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(1000)))
+	// Set commission: 1000 uppyeo.
+	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(1000)))
 
 	resp, err := msgServer.WithdrawNodeCommission(ctx, &types.MsgWithdrawNodeCommission{
 		Operator: operator,
@@ -72,13 +72,13 @@ func TestWithdrawNodeCommission_Split30Percent(t *testing.T) {
 	require.NoError(t, err)
 
 	// 30% of 1000 = 300 to agent, 700 to operator.
-	require.Equal(t, "300usum", resp.AgentAmount)
-	require.Equal(t, "700usum", resp.OperatorAmount)
+	require.Equal(t, "300uppyeo", resp.AgentAmount)
+	require.Equal(t, "700uppyeo", resp.OperatorAmount)
 
 	// Verify bank.SendCoins was called with agent's share.
 	require.Len(t, f.bankKeeper.sentCoinsRecords, 1)
 	require.Equal(t, agent, f.bankKeeper.sentCoinsRecords[0].To.String())
-	require.Equal(t, sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(300))), f.bankKeeper.sentCoinsRecords[0].Amount)
+	require.Equal(t, sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(300))), f.bankKeeper.sentCoinsRecords[0].Amount)
 }
 
 func TestWithdrawNodeCommission_ZeroAgentShare(t *testing.T) {
@@ -106,7 +106,7 @@ func TestWithdrawNodeCommission_ZeroAgentShare(t *testing.T) {
 	node, _ := f.keeper.Nodes.Get(ctx, resp.NodeId)
 	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
 	valAddr := sdk.ValAddress(valAddrBytes)
-	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(500)))
+	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(500)))
 
 	withdrawResp, err := msgServer.WithdrawNodeCommission(ctx, &types.MsgWithdrawNodeCommission{
 		Operator: operator,
@@ -114,7 +114,7 @@ func TestWithdrawNodeCommission_ZeroAgentShare(t *testing.T) {
 	require.NoError(t, err)
 
 	// All goes to operator.
-	require.Equal(t, "500usum", withdrawResp.OperatorAmount)
+	require.Equal(t, "500uppyeo", withdrawResp.OperatorAmount)
 	require.Equal(t, "", withdrawResp.AgentAmount)
 
 	// No SendCoins called (agent gets nothing).
@@ -145,14 +145,14 @@ func TestWithdrawNodeCommission_100PercentAgent(t *testing.T) {
 	node, _ := f.keeper.Nodes.Get(ctx, resp.NodeId)
 	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
 	valAddr := sdk.ValAddress(valAddrBytes)
-	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(1000)))
+	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(1000)))
 
 	withdrawResp, err := msgServer.WithdrawNodeCommission(ctx, &types.MsgWithdrawNodeCommission{
 		Operator: operator,
 	})
 	require.NoError(t, err)
 
-	require.Equal(t, "1000usum", withdrawResp.AgentAmount)
+	require.Equal(t, "1000uppyeo", withdrawResp.AgentAmount)
 	require.Equal(t, "", withdrawResp.OperatorAmount)
 }
 
@@ -247,8 +247,8 @@ func TestWithdrawNodeCommission_TruncateSmallAmount(t *testing.T) {
 	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
 	valAddr := sdk.ValAddress(valAddrBytes)
 
-	// 1 usum at 33% → agent = TruncateInt(0.33) = 0, operator = 1.
-	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(1)))
+	// 1 uppyeo at 33% → agent = TruncateInt(0.33) = 0, operator = 1.
+	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(1)))
 
 	withdrawResp, err := msgServer.WithdrawNodeCommission(ctx, &types.MsgWithdrawNodeCommission{
 		Operator: operator,
@@ -256,7 +256,7 @@ func TestWithdrawNodeCommission_TruncateSmallAmount(t *testing.T) {
 	require.NoError(t, err)
 
 	// 33% of 1 = 0.33, truncated to 0. Agent gets nothing, operator gets 1.
-	require.Equal(t, "1usum", withdrawResp.OperatorAmount)
+	require.Equal(t, "1uppyeo", withdrawResp.OperatorAmount)
 	require.Equal(t, "", withdrawResp.AgentAmount)
 
 	// No SendCoins because agent amount is zero.
@@ -287,15 +287,15 @@ func TestWithdrawNodeCommission_TruncateAt10(t *testing.T) {
 	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
 	valAddr := sdk.ValAddress(valAddrBytes)
 
-	// 10 usum at 33% → agent = TruncateInt(3.3) = 3, operator = 7.
-	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(10)))
+	// 10 uppyeo at 33% → agent = TruncateInt(3.3) = 3, operator = 7.
+	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(10)))
 
 	withdrawResp, err := msgServer.WithdrawNodeCommission(ctx, &types.MsgWithdrawNodeCommission{
 		Operator: operator,
 	})
 	require.NoError(t, err)
-	require.Equal(t, "3usum", withdrawResp.AgentAmount)
-	require.Equal(t, "7usum", withdrawResp.OperatorAmount)
+	require.Equal(t, "3uppyeo", withdrawResp.AgentAmount)
+	require.Equal(t, "7uppyeo", withdrawResp.OperatorAmount)
 }
 
 func TestWithdrawNodeCommission_1PercentShare(t *testing.T) {
@@ -322,15 +322,15 @@ func TestWithdrawNodeCommission_1PercentShare(t *testing.T) {
 	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
 	valAddr := sdk.ValAddress(valAddrBytes)
 
-	// 100 usum at 1% → agent = 1, operator = 99.
-	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(100)))
+	// 100 uppyeo at 1% → agent = 1, operator = 99.
+	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(100)))
 
 	withdrawResp, err := msgServer.WithdrawNodeCommission(ctx, &types.MsgWithdrawNodeCommission{
 		Operator: operator,
 	})
 	require.NoError(t, err)
-	require.Equal(t, "1usum", withdrawResp.AgentAmount)
-	require.Equal(t, "99usum", withdrawResp.OperatorAmount)
+	require.Equal(t, "1uppyeo", withdrawResp.AgentAmount)
+	require.Equal(t, "99uppyeo", withdrawResp.OperatorAmount)
 }
 
 func TestWithdrawNodeCommission_EmitsEvent(t *testing.T) {
@@ -345,7 +345,7 @@ func TestWithdrawNodeCommission_EmitsEvent(t *testing.T) {
 	node, _ := f.keeper.Nodes.Get(ctx, expectedNodeID(operator))
 	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
 	valAddr := sdk.ValAddress(valAddrBytes)
-	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(100)))
+	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(100)))
 
 	_, err := msgServer.WithdrawNodeCommission(ctx, &types.MsgWithdrawNodeCommission{
 		Operator: operator,
@@ -380,7 +380,7 @@ func TestWithdrawNodeCommission_NoAgent(t *testing.T) {
 	node, _ := f.keeper.Nodes.Get(ctx, resp.NodeId)
 	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
 	valAddr := sdk.ValAddress(valAddrBytes)
-	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(1000)))
+	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(1000)))
 
 	withdrawResp, err := msgServer.WithdrawNodeCommission(ctx, &types.MsgWithdrawNodeCommission{
 		Operator: operator,
@@ -388,6 +388,6 @@ func TestWithdrawNodeCommission_NoAgent(t *testing.T) {
 	require.NoError(t, err)
 
 	// All goes to operator since no agent address.
-	require.Equal(t, "1000usum", withdrawResp.OperatorAmount)
+	require.Equal(t, "1000uppyeo", withdrawResp.OperatorAmount)
 	require.Equal(t, "", withdrawResp.AgentAmount)
 }

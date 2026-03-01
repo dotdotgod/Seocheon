@@ -22,7 +22,7 @@ func NewGenesisAirdropCmd() *cobra.Command {
 		Short: "Add airdrop recipients to genesis from a CSV file",
 		Long: `Add airdrop recipients to the genesis bank balances from a CSV file.
 
-CSV format (no header): address,amount_usum
+CSV format (no header): address,amount_uppyeo
 Example:
   seocheon1abc...,1000000000
   seocheon1def...,2000000000
@@ -115,7 +115,7 @@ func runGenesisAirdrop(clientCtx client.Context, genesisFile, csvFile string) er
 
 	fmt.Printf("=== Genesis Airdrop ===\n")
 	fmt.Printf("  Recipients: %d\n", len(entries))
-	fmt.Printf("  Total:      %s usum (%s KKOT)\n", totalAirdrop, totalAirdrop.Quo(math.NewInt(usumPerKKOT)))
+	fmt.Printf("  Total:      %s uppyeo (%s KKOT)\n", totalAirdrop, totalAirdrop.Quo(math.NewInt(uppyeoPerKKOT)))
 
 	// Read genesis file.
 	genesisBytes, err := os.ReadFile(genesisFile)
@@ -142,14 +142,14 @@ func runGenesisAirdrop(clientCtx client.Context, genesisFile, csvFile string) er
 	for _, entry := range entries {
 		bankGenesis.Balances = append(bankGenesis.Balances, banktypes.Balance{
 			Address: entry.Address,
-			Coins:   sdk.NewCoins(sdk.NewCoin("usum", entry.Amount)),
+			Coins:   sdk.NewCoins(sdk.NewCoin("uppyeo", entry.Amount)),
 		})
 	}
 
 	// Update supply.
-	currentSupply := bankGenesis.Supply.AmountOf("usum")
+	currentSupply := bankGenesis.Supply.AmountOf("uppyeo")
 	newSupply := currentSupply.Add(totalAirdrop)
-	bankGenesis.Supply = sdk.NewCoins(sdk.NewCoin("usum", newSupply))
+	bankGenesis.Supply = sdk.NewCoins(sdk.NewCoin("uppyeo", newSupply))
 
 	bz, err := cdc.MarshalJSON(&bankGenesis)
 	if err != nil {
@@ -174,6 +174,6 @@ func runGenesisAirdrop(clientCtx client.Context, genesisFile, csvFile string) er
 	}
 
 	fmt.Printf("  Genesis updated: %s\n", genesisFile)
-	fmt.Printf("  New total supply: %s usum\n", newSupply)
+	fmt.Printf("  New total supply: %s uppyeo\n", newSupply)
 	return nil
 }

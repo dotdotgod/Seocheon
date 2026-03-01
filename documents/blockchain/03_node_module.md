@@ -2,7 +2,7 @@
 
 > **담당**: x/node 모듈 개발자 (Go)
 > **의존 모듈**: x/staking, x/bank, x/distribution, x/slashing, x/feegrant
-> **관련 문서**: [개요](01_overview.md) · [핵심 개념](02_core_concepts.md) · [Activity Protocol](04_activity_protocol.md) · [토큰 이코노믹스](07_tokenomics.md) · [스팸 방어](08_spam_defense.md) · [구현 가이드](09_implementation.md) · [체인 업그레이드](10_chain_upgrade.md) · [Circuit Breaker](11_circuit_breaker.md) · [전체 목차](README.md)
+> **관련 문서**: [개요](01_overview.md) · [핵심 개념](02_core_concepts.md) · [Activity Protocol](04_activity_protocol.md) · [토큰 이코노믹스](05_tokenomics.md) · [스팸 방어](06_spam_defense.md) · [구현 가이드](07_implementation.md) · [체인 업그레이드](08_chain_upgrade.md) · [Circuit Breaker](09_circuit_breaker.md) · [전체 목차](README.md)
 
 > **면책 조항**: 이 문서는 프로토콜 메커니즘에 대한 기술 설계 문서이며 투자 권유가 아니다. 보상 분배는 프로토콜 규칙에 따라 자동 실행되며, 어떠한 형태의 수익도 보장하지 않는다.
 
@@ -103,7 +103,7 @@ Cosmos SDK v0.53의 `x/staking` 모듈에는 다음 제약이 존재한다:
 |------|------|------|
 | 위임 대상 = 밸리데이터만 | `MsgDelegate`는 `ValidatorAddress`만 수용 | 밸리데이터 미등록 노드에 위임 불가 |
 | `MsgCreateValidator` 필수 자기위임 | `BondAmount`가 반드시 양수여야 함 | 0 KKOT 등록 불가 |
-| `MinSelfDelegation >= 1` | 최소 1 단위(1 usum) 이상 필수 | 완전 무비용 불가 |
+| `MinSelfDelegation >= 1` | 최소 1 단위(1 uppyeo) 이상 필수 | 완전 무비용 불가 |
 | 합의 공개키 필수 | `ConsensusPubkey`가 필수 | 등록 시점에 CometBFT 노드 키 필요 |
 
 **핵심 결론**: 0원 참여 플로우의 3단계(위임자가 위임)가 가능하려면, 1단계(노드 등록) 시점에 이미 Cosmos SDK 밸리데이터가 생성되어 있어야 한다. 따라서 **`MsgRegisterNode`는 내부적으로 `MsgCreateValidator`를 실행**한다.
@@ -112,19 +112,19 @@ Cosmos SDK v0.53의 `x/staking` 모듈에는 다음 제약이 존재한다:
 
 Cosmos SDK 코어를 포크하지 않고 "0원 참여"를 달성하기 위한 메커니즘이다.
 
-**구현 방식**: x/node 모듈이 Registration Pool을 관리한다. 제네시스에 풀 자금을 설정하고, 등록 시 1usum을 자동 대여한다. SDK 코어를 수정하지 않으므로 업스트림 호환성을 유지하며, 완전 자동화된다.
+**구현 방식**: x/node 모듈이 Registration Pool을 관리한다. 제네시스에 풀 자금을 설정하고, 등록 시 1uppyeo을 자동 대여한다. SDK 코어를 수정하지 않으므로 업스트림 호환성을 유지하며, 완전 자동화된다.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
 │                   Registration Pool                       │
 │                  (node_registration_pool)                  │
 │                                                          │
-│  제네시스: 1,000,000 KKOT 할당 (= 1,000,000,000,000 usum)   │
+│  제네시스: 1,000,000 KKOT 할당 (= 10,000,000,000,000,000 uppyeo)│
 │  → 최대 1조 개 노드 등록 가능 (사실상 무제한)               │
 │  → 자금 출처: 재단 할당 (10%) 중 일부                       │
 │                                                          │
-│  등록 시:  풀 → 1 usum → x/staking (자기위임)              │
-│  비활성화: x/staking → 1 usum → 풀 (회수, 언본딩 후)       │
+│  등록 시:  풀 → 1 uppyeo → x/staking (자기위임)             │
+│  비활성화: x/staking → 1 uppyeo → 풀 (회수, 언본딩 후)     │
 │                                                          │
 │  풀 잔고 부족 시: MsgRegisterNode 거부                     │
 │  풀 보충: x/gov 거버넌스 제안으로 재단에서 추가 전송         │
@@ -216,13 +216,13 @@ MsgRegisterNode 수신 (operator 서명)
 ├── [2] 블록당 등록 제한 확인
 │   └── max_registrations_per_block 초과 시 거부
 │
-├── [3] 등록 풀 잔고 확인 (>= 1 usum)
+├── [3] 등록 풀 잔고 확인 (>= 1 uppyeo)
 │
 ├── [4] Cosmos SDK 밸리데이터 생성 (내부 실행)
-│   ├── 등록 풀에서 1 usum을 operator 계정으로 전송
+│   ├── 등록 풀에서 1 uppyeo을 operator 계정으로 전송
 │   └── stakingKeeper.CreateValidator() 호출
 │       ├── ConsensusPubkey: msg.consensus_pubkey
-│       ├── BondAmount: 1 usum (자기위임)
+│       ├── BondAmount: 1 uppyeo (자기위임)
 │       ├── MinSelfDelegation: 1
 │       └── CommissionRates: msg.commission_rates
 │
@@ -237,7 +237,7 @@ MsgRegisterNode 수신 (operator 서명)
 │         allowance: AllowedMsgAllowance{
 │           allowance: PeriodicAllowance{
 │             period:            17,280 블록 (1 에포크, ~24시간),
-│             period_spend_limit: 1,000,000 usum (1 KKOT),
+│             period_spend_limit: 10,000,000,000 uppyeo (1 KKOT),
 │             expiration:        3,110,400 블록 (180일) 후
 │           },
 │           allowed_messages: [
@@ -261,14 +261,14 @@ Operator                x/node Keeper           Registration Pool       x/stakin
   │                         │                         │                    │
   │  MsgRegisterNode        │                         │                    │
   │────────────────────────>│                         │                    │
-  │                         │  잔고 확인 (>= 1usum)    │                    │
+  │                         │  잔고 확인 (>= 1uppyeo)  │                    │
   │                         │────────────────────────>│                    │
   │                         │         OK              │                    │
   │                         │<────────────────────────│                    │
-  │                         │  1usum 전송 → operator   │                    │
+  │                         │  1uppyeo 전송 → operator │                    │
   │                         │────────────────────────>│                    │
   │                         │                         │                    │
-  │                         │  CreateValidator(1usum, pubkey, commission)  │
+  │                         │  CreateValidator(1uppyeo, pubkey, commission) │
   │                         │────────────────────────────────────────────>│
   │                         │      Validator Created (Unbonded)           │
   │                         │<────────────────────────────────────────────│
@@ -459,11 +459,11 @@ MsgDeactivateNode (operator 서명)
 │
 ├── [2] agent feegrant 즉시 취소 (RevokeAllowance)
 │
-├── [3] 1 usum 즉시 회수 → operator → Registration Pool (선불 반환)
+├── [3] 1 uppyeo 즉시 회수 → operator → Registration Pool (선불 반환)
 │
-└── [4] 자기위임 1usum 언본딩 시작
+└── [4] 자기위임 1uppyeo 언본딩 시작
     └── MinSelfDelegation 미충족 → 밸리데이터 Jail
-    └── 언본딩 완료(~21일) 후 1 usum은 operator에게 반환됨 (x/staking 표준)
+    └── 언본딩 완료(~21일) 후 1 uppyeo은 operator에게 반환됨 (x/staking 표준)
 ```
 
 ### 합의 공개키 (Consensus Pubkey) 제공 시점
@@ -486,7 +486,7 @@ MsgDeactivateNode (operator 서명)
 
 | 위험 | 영향 | 완화 방안 |
 |------|------|----------|
-| Registration Pool 고갈 | 신규 등록 불가 | 거버넌스로 재단 추가 전송; 비활성화 시 1usum 자동 회수 |
+| Registration Pool 고갈 | 신규 등록 불가 | 거버넌스로 재단 추가 전송; 비활성화 시 1uppyeo 자동 회수 |
 | Feegrant Pool 고갈 | 신규 노드 가스비 대납 불가 | 제네시스 할당 + 거버넌스 보충; 잔고 모니터링으로 조기 대응 |
 | Sybil 공격 (대량 등록) | Pool 고갈, 스팸 | feegrant allowance 한도, 등록 cooldown 파라미터 |
 | agent 키 탈취 | 가짜 활동, 잔고 탈취 | AgentPermissionDecorator 화이트리스트로 피해 범위 제한; operator가 MsgUpdateAgentAddress로 즉시 키 교체 |
@@ -499,12 +499,12 @@ MsgDeactivateNode (operator 서명)
 
 ### Operator → Validator 자동 졸업
 
-Seocheon은 **0원 참여**를 허용한다. 누구나 토큰 없이 노드를 등록하고 활동 내역을 공개할 수 있다. Registration Pool이 1 usum(0.000001 KKOT, 1숨)을 자동 대여하여 Cosmos SDK의 최소 자기위임 요구사항을 충족한다 (상세: "x/node ↔ x/staking 통합 메커니즘" 섹션 참조).
+Seocheon은 **0원 참여**를 허용한다. 누구나 토큰 없이 노드를 등록하고 활동 내역을 공개할 수 있다. Registration Pool이 1 uppyeo(0.0000000001 KKOT, 1뼈)을 자동 대여하여 Cosmos SDK의 최소 자기위임 요구사항을 충족한다 (상세: "x/node ↔ x/staking 통합 메커니즘" 섹션 참조).
 
 ```
 0원 참여 플로우:
   1. 노드 등록 (MsgRegisterNode, 가스비: RegistrationFeeDecorator로 면제)
-     ├── Registration Pool에서 1 usum 자동 대여 → 밸리데이터 생성 (Unbonded)
+     ├── Registration Pool에서 1 uppyeo 자동 대여 → 밸리데이터 생성 (Unbonded)
      └── agent_address에 feegrant 자동 부여 (6개월, 에포크당 1 KKOT)
   2. 활동 수행 → MsgSubmitActivity 제출 (가스비: feegrant 대납) → 블록 타임스탬핑
   3. 활동 보상 수령 (에포크 전환 시, 자격 충족 시)

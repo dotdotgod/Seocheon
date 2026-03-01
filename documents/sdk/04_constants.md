@@ -23,9 +23,9 @@ ACTIVITY_PRUNING_KEEP_BLOCKS  = 6307200       // 활동 기록 보존 블록 수
 
 // 활동 비용 모델 (x/activity params)
 FEE_THRESHOLD_MULTIPLIER      = 3             // 수수료 활성화 임계치 배수
-BASE_ACTIVITY_FEE             = 1000000       // 기본 활동 수수료 (usum, 1 KKOT)
+BASE_ACTIVITY_FEE             = 10000000000   // 기본 활동 수수료 (uppyeo, 1 KKOT)
 FEE_EXPONENT                  = 5000          // 비용 곡선 지수 (basis points, 0.5)
-MAX_ACTIVITY_FEE              = 100000000     // 최대 활동 수수료 (usum, 100 KKOT)
+MAX_ACTIVITY_FEE              = 1000000000000 // 최대 활동 수수료 (uppyeo, 100 KKOT)
 MIN_FEEGRANT_QUOTA            = 8             // 포화 시 feegrant 최소 쿼터
 QUOTA_REDUCTION_RATE          = 5000          // 쿼터 축소율 (basis points, 0.5)
 FEEGRANT_FEE_EXEMPT           = true          // feegrant 노드 수수료 면제
@@ -37,7 +37,7 @@ FEE_TO_ACTIVITY_POOL_RATIO    = 8000          // 수수료→활동풀 비율 (b
 // 노드 등록 (x/node params)
 MAX_REGISTRATIONS_PER_BLOCK   = 5
 REGISTRATION_COOLDOWN_BLOCKS  = 100
-REGISTRATION_DEPOSIT          = "0"           // usum (초기값 0)
+REGISTRATION_DEPOSIT          = "0"           // uppyeo (초기값 0)
 MAX_TAGS                      = 10
 MAX_TAG_LENGTH                = 32
 
@@ -56,30 +56,42 @@ FEEGRANT_EXPIRY_BLOCKS        = 3110400       // ~180일 (6개월)
 
 ## 4.2 토큰 Denomination 상수
 
+서천꽃밭 신화(이공본풀이)의 환생 순서에서 착안한 6단계 denomination 체계이다.
+
 ```
-// Denomination 정의
-TOKEN_BASE_DENOM              = "usum"        // base denomination (10^0)
-TOKEN_MILLI_DENOM             = "hon"         // milli denomination (10^3)
-TOKEN_DISPLAY_DENOM           = "kkot"        // display denomination (10^6)
+// Denomination 정의 (6단계: 뼈→살→피→숨→혼→꽃)
+TOKEN_BASE_DENOM              = "uppyeo"      // 뼈 — base denomination (10^0)
+TOKEN_SAL_DENOM               = "sal"         // 살 — denomination (10^2)
+TOKEN_PI_DENOM                = "pi"          // 피 — denomination (10^4)
+TOKEN_SUM_DENOM               = "sum"         // 숨 — denomination (10^6)
+TOKEN_HON_DENOM               = "hon"         // 혼 — denomination (10^8)
+TOKEN_DISPLAY_DENOM           = "kkot"        // 꽃 — display denomination (10^10)
 
 // 변환 계수
-USUM_PER_HON                  = 1000          // 1 hon = 1,000 usum
-USUM_PER_KKOT                 = 1000000       // 1 KKOT = 1,000,000 usum
-HON_PER_KKOT                  = 1000          // 1 KKOT = 1,000 hon
+UPPYEO_PER_SAL                = 100           // 1 sal = 100 uppyeo
+UPPYEO_PER_PI                 = 10000         // 1 pi = 10,000 uppyeo
+UPPYEO_PER_SUM                = 1000000       // 1 sum = 1,000,000 uppyeo
+UPPYEO_PER_HON                = 100000000     // 1 hon = 100,000,000 uppyeo
+UPPYEO_PER_KKOT               = 10000000000   // 1 KKOT = 10,000,000,000 uppyeo
+SAL_PER_PI                    = 100           // 1 pi = 100 sal
+PI_PER_SUM                    = 100           // 1 sum = 100 pi
+SUM_PER_HON                   = 100           // 1 hon = 100 sum
+HON_PER_KKOT                  = 100           // 1 KKOT = 100 hon
 
-// 유래: 서천꽃밭 신화(이공본풀이)
-// 숨(usum) = 호흡 → 혼(hon) = 영혼 → 꽃(kkot) = 만개
+// 유래: 서천꽃밭 신화(이공본풀이) 환생 순서
+// 뼈(uppyeo) → 살(sal) → 피(pi) → 숨(sum) → 혼(hon) → 꽃(kkot)
+// 각 단계가 100배씩 증가하여 총 10^10 배의 정밀도를 제공한다
 ```
 
 **변환 함수**:
 ```pseudocode
-function usum_to_kkot(usum: uint64) → string:
-  integer_part = usum / USUM_PER_KKOT
-  decimal_part = usum % USUM_PER_KKOT
-  RETURN format("{}.{:06d}", integer_part, decimal_part)
+function uppyeo_to_kkot(uppyeo: uint64) → string:
+  integer_part = uppyeo / UPPYEO_PER_KKOT
+  decimal_part = uppyeo % UPPYEO_PER_KKOT
+  RETURN format("{}.{:010d}", integer_part, decimal_part)
 
-function kkot_to_usum(kkot: string) → uint64:
-  RETURN parse_decimal(kkot) * USUM_PER_KKOT
+function kkot_to_uppyeo(kkot: string) → uint64:
+  RETURN parse_decimal(kkot) * UPPYEO_PER_KKOT
 ```
 
 ## 4.3 에러 코드 상수
@@ -150,7 +162,7 @@ function kkot_to_usum(kkot: string) → uint64:
         "chain_id": { "type": "string", "description": "Chain ID", "examples": ["seocheon-1"] },
         "rpc_endpoint": { "type": "string", "format": "uri", "description": "CometBFT RPC endpoint" },
         "grpc_endpoint": { "type": "string", "format": "uri", "description": "Cosmos gRPC endpoint" },
-        "gas_price": { "type": "string", "default": "0.025usum", "pattern": "^[0-9.]+[a-z]+$" },
+        "gas_price": { "type": "string", "default": "250uppyeo", "pattern": "^[0-9.]+[a-z]+$" },
         "gas_adjustment": { "type": "number", "default": 1.3, "minimum": 1.0 }
       }
     },

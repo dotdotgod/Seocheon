@@ -1,7 +1,7 @@
 # 인덱서 상세 아키텍처
 
 > **담당**: 인프라 / 백엔드 개발자
-> **관련 문서**: [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [구현 가이드](09_implementation.md) · [전체 목차](README.md)
+> **관련 문서**: [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [구현 가이드](07_implementation.md) · [전체 목차](README.md)
 
 > **구현 상태**: 인덱서는 오프체인 인프라로 Phase 3 이후에 구현 예정이다.
 
@@ -152,8 +152,8 @@ CREATE TABLE epoch_node_summary (
     total_submissions   BIGINT DEFAULT 0,
     active_windows      INT DEFAULT 0,        -- 활동한 윈도우 수 (8이상이면 자격 충족)
     is_qualified        BOOLEAN DEFAULT FALSE, -- 활동 자격 충족 여부
-    delegation_reward   BIGINT DEFAULT 0,      -- 위임 보상 (usum)
-    activity_reward     BIGINT DEFAULT 0,      -- 활동 보상 (usum)
+    delegation_reward   BIGINT DEFAULT 0,      -- 위임 보상 (uppyeo)
+    activity_reward     BIGINT DEFAULT 0,      -- 활동 보상 (uppyeo)
     total_reward        BIGINT DEFAULT 0,      -- 총 보상
     PRIMARY KEY (node_id, epoch_number)
 );
@@ -167,7 +167,7 @@ CREATE TABLE epoch_network_summary (
     active_nodes        INT NOT NULL,          -- ACTIVE 상태
     qualified_nodes     INT NOT NULL,          -- 활동 자격 충족
     total_submissions   BIGINT NOT NULL,
-    total_delegation    BIGINT NOT NULL,       -- 총 위임량 (usum)
+    total_delegation    BIGINT NOT NULL,       -- 총 위임량 (uppyeo)
     delegation_pool     BIGINT NOT NULL,       -- 위임 풀 보상 총액
     activity_pool       BIGINT NOT NULL,       -- 활동 풀 보상 총액
     inflation_rate      DECIMAL(5,4)

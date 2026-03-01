@@ -112,7 +112,7 @@ func runVerifyRewards(clientCtx client.Context, cmd *cobra.Command) error {
 	poolAddr := activitytypes.ActivityRewardPoolName
 	poolAccResp, err := bankClient.Balance(clientCtx.CmdContext, &banktypes.QueryBalanceRequest{
 		Address: poolAddr,
-		Denom:   "usum",
+		Denom:   "uppyeo",
 	})
 
 	fmt.Printf("--- Reward Pool Status ---\n")
@@ -120,7 +120,7 @@ func runVerifyRewards(clientCtx client.Context, cmd *cobra.Command) error {
 		fmt.Printf("  Activity reward pool: (query failed: %v)\n", err)
 		fmt.Printf("  Note: Pool address may need module account address lookup\n")
 	} else {
-		fmt.Printf("  Activity reward pool balance: %s usum\n", poolAccResp.Balance.Amount)
+		fmt.Printf("  Activity reward pool balance: %s uppyeo\n", poolAccResp.Balance.Amount)
 	}
 	fmt.Println()
 
@@ -145,7 +145,7 @@ func runVerifyRewards(clientCtx client.Context, cmd *cobra.Command) error {
 			// Query operator balance.
 			opBalResp, err := bankClient.Balance(clientCtx.CmdContext, &banktypes.QueryBalanceRequest{
 				Address: operatorAddr,
-				Denom:   "usum",
+				Denom:   "uppyeo",
 			})
 			opBal := math.ZeroInt()
 			if err == nil && opBalResp.Balance != nil {
@@ -157,7 +157,7 @@ func runVerifyRewards(clientCtx client.Context, cmd *cobra.Command) error {
 			if agentAddr != "" {
 				agBalResp, err := bankClient.Balance(clientCtx.CmdContext, &banktypes.QueryBalanceRequest{
 					Address: agentAddr,
-					Denom:   "usum",
+					Denom:   "uppyeo",
 				})
 				if err == nil && agBalResp.Balance != nil {
 					agentBal = agBalResp.Balance.Amount
@@ -167,12 +167,12 @@ func runVerifyRewards(clientCtx client.Context, cmd *cobra.Command) error {
 			combined := opBal.Add(agentBal)
 			totalDistributed = totalDistributed.Add(combined)
 
-			fmt.Printf("  %-20s operator=%s  agent=%s  total=%s usum\n",
+			fmt.Printf("  %-20s operator=%s  agent=%s  total=%s uppyeo\n",
 				nodeID, opBal, agentBal, combined)
 		}
 
-		fmt.Printf("  Combined total: %s usum (%s KKOT)\n\n",
-			totalDistributed, totalDistributed.Quo(math.NewInt(usumPerKKOT)))
+		fmt.Printf("  Combined total: %s uppyeo (%s KKOT)\n\n",
+			totalDistributed, totalDistributed.Quo(math.NewInt(uppyeoPerKKOT)))
 	}
 
 	// Step 5: Query current epoch info.

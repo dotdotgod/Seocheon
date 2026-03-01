@@ -21,13 +21,15 @@ documents/
 │   ├── 02_core_concepts.md       ← 에포크, 윈도우, 보상 공식 (체인 코어)
 │   ├── 03_node_module.md         ← x/node, Registration Pool (Go 개발자)
 │   ├── 04_activity_protocol.md   ← Activity Protocol (Go 개발자)
-│   ├── 07_tokenomics.md          ← 토큰 이코노믹스, Genesis 노드 (이코노미)
-│   ├── 08_spam_defense.md        ← 스팸/게이밍 방어 (보안)
-│   ├── 09_implementation.md      ← API, 모듈 구조, 로드맵, 테스트 (전체 팀)
-│   ├── 10_chain_upgrade.md       ← 체인 업그레이드 전략 (체인 코어/DevOps)
-│   ├── 11_circuit_breaker.md     ← 긴급 정지 메커니즘 (체인 코어/보안)
-│   ├── 12_ibc_strategy.md        ← IBC 전략 (인프라/네트워크)
-│   └── 13_indexer_architecture.md ← 인덱서 아키텍처 (인프라/백엔드)
+│   ├── 05_tokenomics.md          ← 토큰 이코노믹스, Genesis 노드 (이코노미)
+│   ├── 06_spam_defense.md        ← 스팸/게이밍 방어 (보안)
+│   ├── 07_implementation.md      ← API, 모듈 구조, 로드맵, 테스트 (전체 팀)
+│   ├── 08_chain_upgrade.md       ← 체인 업그레이드 전략 (체인 코어/DevOps)
+│   ├── 09_circuit_breaker.md     ← 긴급 정지 메커니즘 (체인 코어/보안)
+│   ├── 10_ibc_strategy.md        ← IBC 전략 (인프라/네트워크)
+│   ├── 11_indexer_architecture.md ← 인덱서 아키텍처 (인프라/백엔드)
+│   ├── 12_randomness_module.md   ← Randomness 모듈 (체인 코어/인프라)
+│   └── 13_cosmwasm_integration.md ← CosmWasm 통합 (체인 코어/인프라)
 ├── sdk_specification.md          ← Client SDK 설계 스펙 인덱스 (목차)
 ├── sdk/                          ← SDK 설계 스펙 분리 문서
 │   ├── README.md                 ← 전체 목차 + 담당별 분류
@@ -95,7 +97,7 @@ scripts/                                 ← genesis_build.sh
 ### 블록체인
 - **Cosmos SDK v0.53+** / CometBFT
 - **Go**: 1.24.1
-- **토큰**: KKOT (꽃, 단일 토큰) — base denom: `usum` (숨), milli: `hon` (혼), display: `kkot` (꽃)
+- **토큰**: KKOT (꽃, 단일 토큰) — 6단계 denomination: `uppyeo`(뼈, 10^0) → `sal`(살, 10^2) → `pi`(피, 10^4) → `sum`(숨, 10^6) → `hon`(혼, 10^8) → `kkot`(꽃, 10^10)
 - **합의**: DPoS, Active Validator Set 150~200
 - **해시 알고리즘**: SHA-256
 

@@ -43,7 +43,7 @@ func (s *E2ESuite) broadcastTx(clientCtx client.Context, msgs ...sdk.Msg) (*sdk.
 		WithAccountRetriever(s.cfg.AccountRetriever).
 		WithGas(500000).
 		WithGasAdjustment(1.5).
-		WithFees("0usum")
+		WithFees("0uppyeo")
 
 	// Set account number and sequence.
 	txf, err := txf.Prepare(clientCtx)
@@ -198,13 +198,13 @@ func generateHash(seed string) string {
 	return hex.EncodeToString(h[:])
 }
 
-// queryBalance queries the usum balance for the given address via the first validator.
+// queryBalance queries the uppyeo balance for the given address via the first validator.
 func (s *E2ESuite) queryBalance(addr sdk.AccAddress) sdk.Coin {
 	val := s.network.Validators[0]
 	queryClient := banktypes.NewQueryClient(val.ClientCtx)
 	resp, err := queryClient.Balance(context.Background(), &banktypes.QueryBalanceRequest{
 		Address: addr.String(),
-		Denom:   "usum",
+		Denom:   "uppyeo",
 	})
 	s.Require().NoError(err)
 	return *resp.Balance

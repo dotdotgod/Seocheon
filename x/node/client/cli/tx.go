@@ -28,7 +28,7 @@ func NewRegisterNodeCmd() *cobra.Command {
 		Use:   "register-node",
 		Short: "Register a new node",
 		Long: `Register a new node on the Seocheon network. This creates a validator
-with 1 usum self-delegation funded from the Registration Pool.
+with 1 uppyeo self-delegation funded from the Registration Pool.
 
 The consensus pubkey can be obtained from CometBFT:
   seocheon comet show-validator

@@ -39,8 +39,8 @@ func (s *E2ESuite) SetupSuite() {
 
 	// Override for fast epoch progression.
 	cfg.NumValidators = 2
-	cfg.BondDenom = "usum"
-	cfg.MinGasPrices = "0usum"
+	cfg.BondDenom = "uppyeo"
+	cfg.MinGasPrices = "0uppyeo"
 	cfg.TimeoutCommit = 500 * time.Millisecond
 
 	// Increase validator staking tokens for sufficient delegation.
@@ -48,7 +48,7 @@ func (s *E2ESuite) SetupSuite() {
 	cfg.BondedTokens = sdkmath.NewInt(100_000_000)
 	cfg.AccountTokens = sdkmath.NewInt(10_000_000_000)
 
-	// Patch genesis: x/staking bond_denom = usum.
+	// Patch genesis: x/staking bond_denom = uppyeo.
 	s.patchStakingGenesis(&cfg)
 
 	// Patch genesis: x/activity fast testnet params.
@@ -78,11 +78,11 @@ func (s *E2ESuite) TearDownSuite() {
 	s.network.Cleanup()
 }
 
-// patchStakingGenesis sets the bond denom to "usum".
+// patchStakingGenesis sets the bond denom to "uppyeo".
 func (s *E2ESuite) patchStakingGenesis(cfg *network.Config) {
 	var stakingGen stakingtypes.GenesisState
 	s.Require().NoError(cfg.Codec.UnmarshalJSON(cfg.GenesisState[stakingtypes.ModuleName], &stakingGen))
-	stakingGen.Params.BondDenom = "usum"
+	stakingGen.Params.BondDenom = "uppyeo"
 	bz, err := cfg.Codec.MarshalJSON(&stakingGen)
 	s.Require().NoError(err)
 	cfg.GenesisState[stakingtypes.ModuleName] = bz
@@ -131,17 +131,17 @@ func (s *E2ESuite) patchBankGenesis(cfg *network.Config) {
 	var bankGen banktypes.GenesisState
 	s.Require().NoError(cfg.Codec.UnmarshalJSON(cfg.GenesisState[banktypes.ModuleName], &bankGen))
 
-	// Fund registration_pool with 1000 usum (enough for many test registrations).
+	// Fund registration_pool with 1000 uppyeo (enough for many test registrations).
 	regPoolAddr := authtypes_ModuleAddress(nodetypes.RegistrationPoolName)
-	regPoolCoins := sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(1000)))
+	regPoolCoins := sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(1000)))
 
-	// Fund feegrant_pool with 100000 usum.
+	// Fund feegrant_pool with 100000 uppyeo.
 	fgPoolAddr := authtypes_ModuleAddress(nodetypes.FeegrantPoolName)
-	fgPoolCoins := sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(100000)))
+	fgPoolCoins := sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(100000)))
 
-	// Fund activity_reward_pool with 1,000,000 usum for reward distribution tests.
+	// Fund activity_reward_pool with 1,000,000 uppyeo for reward distribution tests.
 	arPoolAddr := authtypes_ModuleAddress(activitytypes.ActivityRewardPoolName)
-	arPoolCoins := sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(1_000_000)))
+	arPoolCoins := sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(1_000_000)))
 
 	bankGen.Balances = append(bankGen.Balances,
 		banktypes.Balance{Address: regPoolAddr, Coins: regPoolCoins},
@@ -171,7 +171,7 @@ func (s *E2ESuite) patchGovGenesis(cfg *network.Config) {
 	}
 	govGen.Params.VotingPeriod = &votingPeriod
 	govGen.Params.MaxDepositPeriod = &depositPeriod
-	govGen.Params.MinDeposit = sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(10)))
+	govGen.Params.MinDeposit = sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(10)))
 	govGen.Params.Quorum = "0.000001"
 	govGen.Params.Threshold = "0.5"
 

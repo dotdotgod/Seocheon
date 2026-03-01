@@ -13,9 +13,9 @@ var (
 
 	// Activity Cost Model defaults.
 	DefaultFeeThresholdMultiplier = uint64(3)           // fee activates when N_a > N_d * 3
-	DefaultBaseActivityFee       = uint64(1_000_000)    // 1 KKOT in usum
-	DefaultFeeExponent           = uint64(5000)         // 0.5 in basis points (sqrt curve)
-	DefaultMaxActivityFee        = uint64(100_000_000)  // 100 KKOT in usum
+	DefaultBaseActivityFee       = uint64(10_000_000_000)    // 1 KKOT in uppyeo
+	DefaultFeeExponent           = uint64(5000)              // 0.5 in basis points (sqrt curve)
+	DefaultMaxActivityFee        = uint64(1_000_000_000_000) // 100 KKOT in uppyeo
 	DefaultMinFeegrantQuota      = uint64(8)            // minimum feegrant quota (matches min_active_windows)
 	DefaultQuotaReductionRate    = uint64(5000)         // 0.5 in basis points
 	DefaultFeegrantFeeExempt     = true                 // feegrant nodes exempt from activity fees

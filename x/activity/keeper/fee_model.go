@@ -225,7 +225,7 @@ func (k Keeper) DistributeCollectedFees(ctx context.Context, epoch int64) error 
 
 	// 80% → activity_reward_pool
 	if activityAmt.IsPositive() && k.bankKeeper != nil {
-		activityCoins := sdk.NewCoins(sdk.NewCoin("usum", activityAmt))
+		activityCoins := sdk.NewCoins(sdk.NewCoin("uppyeo", activityAmt))
 		if err := k.bankKeeper.SendCoinsFromModuleToModule(
 			ctx,
 			types.ModuleName,
@@ -238,7 +238,7 @@ func (k Keeper) DistributeCollectedFees(ctx context.Context, epoch int64) error 
 
 	// 20% → community pool
 	if communityAmt.IsPositive() && k.bankKeeper != nil && k.distributionKeeper != nil && k.authKeeper != nil {
-		communityCoins := sdk.NewCoins(sdk.NewCoin("usum", communityAmt))
+		communityCoins := sdk.NewCoins(sdk.NewCoin("uppyeo", communityAmt))
 		moduleAddr := k.authKeeper.GetModuleAddress(types.ModuleName)
 		if moduleAddr != nil {
 			if err := k.distributionKeeper.FundCommunityPool(ctx, communityCoins, moduleAddr); err != nil {

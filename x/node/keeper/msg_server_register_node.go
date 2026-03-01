@@ -88,22 +88,22 @@ func (k msgServer) RegisterNode(ctx context.Context, msg *types.MsgRegisterNode)
 		return nil, errorsmod.Wrap(err, "failed to get bond denom")
 	}
 	regPoolBalance := k.bankKeeper.GetBalance(ctx, regPoolAddr, bondDenom)
-	oneUsum := sdk.NewCoin(bondDenom, math.NewInt(1))
-	if regPoolBalance.IsLT(oneUsum) {
+	oneUppyeo := sdk.NewCoin(bondDenom, math.NewInt(1))
+	if regPoolBalance.IsLT(oneUppyeo) {
 		return nil, errorsmod.Wrap(types.ErrRegistrationPoolDepleted, "insufficient registration pool balance")
 	}
 
-	// [4] Transfer 1 usum from Registration Pool to operator.
+	// [4] Transfer 1 uppyeo from Registration Pool to operator.
 	operatorAddr, err := sdk.AccAddressFromBech32(msg.Operator)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "invalid operator address")
 	}
-	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.RegistrationPoolName, operatorAddr, sdk.NewCoins(oneUsum))
+	err = k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.RegistrationPoolName, operatorAddr, sdk.NewCoins(oneUppyeo))
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "failed to transfer from registration pool")
 	}
 
-	// [5] Create validator via x/staking (self-delegation of 1 usum).
+	// [5] Create validator via x/staking (self-delegation of 1 uppyeo).
 	valAddr := sdk.ValAddress(operatorAddr)
 	valAddrStr, err := sdk.Bech32ifyAddressBytes("seocheonvaloper", valAddr)
 	if err != nil {
@@ -137,7 +137,7 @@ func (k msgServer) RegisterNode(ctx context.Context, msg *types.MsgRegisterNode)
 			DelegatorAddress:  msg.Operator,
 			ValidatorAddress:  valAddrStr,
 			Pubkey:            msg.ConsensusPubkey,
-			Value:             oneUsum,
+			Value:             oneUppyeo,
 		}
 		if _, err := k.stakingMsgServer.CreateValidator(ctx, createValMsg); err != nil {
 			return nil, errorsmod.Wrap(err, "failed to create validator")

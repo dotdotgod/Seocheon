@@ -8,11 +8,11 @@ import (
 )
 
 // Default pool balances.
-// Registration Pool: 1,000 KKOT = 1,000,000,000,000 usum (10^12)
-// Feegrant Pool: 10,000 KKOT = 10,000,000,000,000 usum (10^13)
+// Registration Pool: 1,000 KKOT = 10,000,000,000,000,000 uppyeo (10^16)
+// Feegrant Pool: 10,000 KKOT = 100,000,000,000,000,000 uppyeo (10^17)
 var (
-	DefaultRegistrationPoolBalance = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(1_000_000_000_000)))
-	DefaultFeegrantPoolBalance     = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(10_000_000_000_000)))
+	DefaultRegistrationPoolBalance = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(10_000_000_000_000_000)))
+	DefaultFeegrantPoolBalance     = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(100_000_000_000_000_000)))
 )
 
 // DefaultGenesis returns the default genesis state.

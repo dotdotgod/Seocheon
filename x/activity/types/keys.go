@@ -45,15 +45,15 @@ var (
 	// ActivitySequenceKey: (node_id, epoch) -> next_sequence
 	ActivitySequenceKey = collections.NewPrefix(16)
 
-	// EpochActivityFeeKey: epoch -> activity_fee in usum (cached per epoch)
+	// EpochActivityFeeKey: epoch -> activity_fee in uppyeo (cached per epoch)
 	EpochActivityFeeKey = collections.NewPrefix(18)
 
 	// EpochEffectiveQuotaKey: epoch -> effective feegrant quota (cached per epoch)
 	EpochEffectiveQuotaKey = collections.NewPrefix(19)
 
-	// EpochCollectedFeesKey: epoch -> total collected fees in usum
+	// EpochCollectedFeesKey: epoch -> total collected fees in uppyeo
 	EpochCollectedFeesKey = collections.NewPrefix(20)
 
-	// EpochActivityRewardPoolKey: epoch -> accumulated reward pool amount in usum for the epoch
+	// EpochActivityRewardPoolKey: epoch -> accumulated reward pool amount in uppyeo for the epoch
 	EpochActivityRewardPoolKey = collections.NewPrefix(21)
 )

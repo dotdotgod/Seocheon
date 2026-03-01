@@ -44,7 +44,7 @@ struct ChainConfig:
   chain_id: string                    // 체인 ID (예: "seocheon-1")
   rpc_endpoint: string                // CometBFT RPC URL (예: "http://localhost:26657")
   grpc_endpoint: string               // Cosmos gRPC URL (예: "http://localhost:9090")
-  gas_price: string                   // 가스 가격 (예: "0.025usum")
+  gas_price: string                   // 가스 가격 (예: "250uppyeo")
   gas_adjustment: float64             // 가스 보정 계수 (예: 1.3)
 
 struct SigningConfig:
@@ -242,8 +242,8 @@ struct WithdrawRewardsResponse:
 
 struct BalanceResponse:
   address: string
-  balance: string                     // usum 단위
-  balance_kkot: string                // SDK 파생 필드: usum → KKOT 변환
+  balance: string                     // uppyeo 단위
+  balance_kkot: string                // SDK 파생 필드: uppyeo → KKOT 변환
 
 struct SendTokensResponse:
   tx_hash: string

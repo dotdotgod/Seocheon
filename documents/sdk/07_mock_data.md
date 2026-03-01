@@ -106,7 +106,7 @@ SDK 파생 후 `EpochInfoResponse`:
 ```json
 {
   "balance": {
-    "denom": "usum",
+    "denom": "uppyeo",
     "amount": "1500000000"
   }
 }
@@ -128,8 +128,8 @@ SDK 파생 후 `EpochInfoResponse`:
         "expiration": "2026-08-10T00:00:00Z"
       },
       "period": "86400s",
-      "period_spend_limit": [{ "denom": "usum", "amount": "1000000" }],
-      "period_can_spend": [{ "denom": "usum", "amount": "800000" }],
+      "period_spend_limit": [{ "denom": "uppyeo", "amount": "10000000000" }],
+      "period_can_spend": [{ "denom": "uppyeo", "amount": "8000000000" }],
       "period_reset": "2026-02-27T00:00:00Z"
     }
   }
@@ -285,7 +285,7 @@ SDK 파생 후 `EpochInfoResponse`:
       "attributes": [
         { "key": "recipient", "value": "seocheon1recipient..." },
         { "key": "sender", "value": "seocheon1agent789" },
-        { "key": "amount", "value": "1000000usum" }
+        { "key": "amount", "value": "10000000000uppyeo" }
       ]
     },
     {

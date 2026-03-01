@@ -30,7 +30,7 @@ func (k Keeper) DistributeActivityRewards(ctx context.Context, epoch int64) erro
 	if poolAddr == nil {
 		return nil
 	}
-	poolBalance := k.bankKeeper.GetBalance(ctx, poolAddr, "usum")
+	poolBalance := k.bankKeeper.GetBalance(ctx, poolAddr, "uppyeo")
 	if poolBalance.IsZero() {
 		return nil
 	}
@@ -78,7 +78,7 @@ func (k Keeper) DistributeActivityRewards(ctx context.Context, epoch int64) erro
 			if err != nil {
 				continue
 			}
-			opCoins := sdk.NewCoins(sdk.NewCoin("usum", operatorAmount))
+			opCoins := sdk.NewCoins(sdk.NewCoin("uppyeo", operatorAmount))
 			if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ActivityRewardPoolName, opAddr, opCoins); err != nil {
 				return fmt.Errorf("failed to send activity reward to operator %s: %w", operatorAddr, err)
 			}
@@ -91,14 +91,14 @@ func (k Keeper) DistributeActivityRewards(ctx context.Context, epoch int64) erro
 			if err != nil {
 				// If agent address is invalid, send agent portion to operator.
 				opAddr, _ := sdk.AccAddressFromBech32(operatorAddr)
-				agentCoins := sdk.NewCoins(sdk.NewCoin("usum", agentAmount))
+				agentCoins := sdk.NewCoins(sdk.NewCoin("uppyeo", agentAmount))
 				if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ActivityRewardPoolName, opAddr, agentCoins); err != nil {
 					return fmt.Errorf("failed to send agent portion to operator %s: %w", operatorAddr, err)
 				}
 				totalDistributed = totalDistributed.Add(agentAmount)
 				continue
 			}
-			agentCoins := sdk.NewCoins(sdk.NewCoin("usum", agentAmount))
+			agentCoins := sdk.NewCoins(sdk.NewCoin("uppyeo", agentAmount))
 			if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ActivityRewardPoolName, agAddr, agentCoins); err != nil {
 				return fmt.Errorf("failed to send activity reward to agent %s: %w", agentAddr, err)
 			}

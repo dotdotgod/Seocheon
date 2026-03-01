@@ -56,8 +56,8 @@ func TestGenesis(t *testing.T) {
 		genesisState := types.GenesisState{
 			Params:                  types.DefaultParams(),
 			Nodes:                   []types.Node{node1, node2},
-			RegistrationPoolBalance: sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(500))),
-			FeegrantPoolBalance:     sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(50))),
+			RegistrationPoolBalance: sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(500))),
+			FeegrantPoolBalance:     sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(50))),
 		}
 
 		err := f.keeper.InitGenesis(f.ctx, genesisState)
@@ -100,7 +100,7 @@ func TestGenesis(t *testing.T) {
 		require.Len(t, got.Nodes, 2)
 
 		// Pool balances should come from the mock bank keeper.
-		// The mock has Registration Pool with 1000 usum and Feegrant Pool with 100 usum.
+		// The mock has Registration Pool with 1000 uppyeo and Feegrant Pool with 100 uppyeo.
 		require.NotNil(t, got.RegistrationPoolBalance)
 		require.NotNil(t, got.FeegrantPoolBalance)
 	})

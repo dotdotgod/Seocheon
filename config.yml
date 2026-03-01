@@ -1,15 +1,15 @@
 version: 1
 validation: sovereign
-default_denom: usum
+default_denom: uppyeo
 accounts:
 - name: alice
   coins:
   - 20000token
-  - 200000000usum
+  - 2000000000000uppyeo
 - name: bob
   coins:
   - 10000token
-  - 100000000usum
+  - 1000000000000uppyeo
 client:
   openapi:
     path: docs/static/openapi.json
@@ -17,11 +17,11 @@ faucet:
   name: bob
   coins:
   - 5token
-  - 100000usum
+  - 1000000000uppyeo
 validators:
 - name: alice
-  bonded: 100000000usum
+  bonded: 1000000000000uppyeo
 - name: validator1
-  bonded: 200000000usum
+  bonded: 2000000000000uppyeo
 - name: validator2
-  bonded: 100000000usum
+  bonded: 1000000000000uppyeo

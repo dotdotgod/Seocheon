@@ -44,13 +44,13 @@ type Keeper struct {
 	// ActivitySequence tracks the next sequence number: (node_id, epoch) -> next_seq
 	ActivitySequence collections.Map[collections.Pair[string, int64], uint64]
 
-	// EpochActivityFee: epoch -> activity_fee in usum (cached per epoch)
+	// EpochActivityFee: epoch -> activity_fee in uppyeo (cached per epoch)
 	EpochActivityFee collections.Map[int64, uint64]
 
 	// EpochEffectiveQuota: epoch -> effective feegrant quota (cached per epoch)
 	EpochEffectiveQuota collections.Map[int64, uint64]
 
-	// EpochCollectedFees: epoch -> total collected fees in usum
+	// EpochCollectedFees: epoch -> total collected fees in uppyeo
 	EpochCollectedFees collections.Map[int64, uint64]
 
 	// EpochActivityRewardPool tracks accumulated reward pool amounts per epoch.

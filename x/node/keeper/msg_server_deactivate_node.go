@@ -12,7 +12,7 @@ import (
 )
 
 // DeactivateNode deactivates a node by setting its status to INACTIVE
-// and begins unbonding the 1 usum self-delegation.
+// and begins unbonding the 1 uppyeo self-delegation.
 func (k msgServer) DeactivateNode(ctx context.Context, msg *types.MsgDeactivateNode) (*types.MsgDeactivateNodeResponse, error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
@@ -44,17 +44,17 @@ func (k msgServer) DeactivateNode(ctx context.Context, msg *types.MsgDeactivateN
 	// Revoke agent feegrant immediately.
 	k.revokeAgentFeegrant(ctx, node.AgentAddress)
 
-	// Reclaim 1 usum from operator to Registration Pool (pre-paid return).
-	// The 1 usum will also return to operator after unbonding completes via x/staking.
+	// Reclaim 1 uppyeo from operator to Registration Pool (pre-paid return).
+	// The 1 uppyeo will also return to operator after unbonding completes via x/staking.
 	if bondDenom, bondErr := k.stakingKeeper.BondDenom(ctx); bondErr == nil {
 		operatorAddr, addrErr := sdk.AccAddressFromBech32(msg.Operator)
 		if addrErr == nil {
-			oneUsum := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(1)))
-			_ = k.bankKeeper.SendCoinsFromAccountToModule(ctx, operatorAddr, types.RegistrationPoolName, oneUsum)
+			oneUppyeo := sdk.NewCoins(sdk.NewCoin(bondDenom, math.NewInt(1)))
+			_ = k.bankKeeper.SendCoinsFromAccountToModule(ctx, operatorAddr, types.RegistrationPoolName, oneUppyeo)
 		}
 	}
 
-	// Begin unbonding 1 usum self-delegation via staking MsgServer.
+	// Begin unbonding 1 uppyeo self-delegation via staking MsgServer.
 	if k.stakingMsgServer != nil && node.ValidatorAddress != "" {
 		bondDenom, bondErr := k.stakingKeeper.BondDenom(ctx)
 		if bondErr == nil {

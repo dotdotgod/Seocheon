@@ -96,16 +96,16 @@
 
 | # | 구분 | 입력 | 기대 결과 |
 |---|------|------|----------|
-| 1 | 정상 | `(null, null)` | 자기 주소 usum 잔고 |
-| 2 | 정상 | `("seocheon1abc...", "usum")` | 지정 주소 잔고 |
-| 3 | 경계 | 존재하지 않는 주소 | balance: "0", balance_kkot: "0.000000" |
-| 4 | 정상 | 잔고 1,500,000 usum | balance: "1500000", balance_kkot: "1.500000" |
+| 1 | 정상 | `(null, null)` | 자기 주소 uppyeo 잔고 |
+| 2 | 정상 | `("seocheon1abc...", "uppyeo")` | 지정 주소 잔고 |
+| 3 | 경계 | 존재하지 않는 주소 | balance: "0", balance_kkot: "0.0000000000" |
+| 4 | 정상 | 잔고 15,000,000,000 uppyeo | balance: "15000000000", balance_kkot: "1.5000000000" |
 
 ### `cosmos.sendTokens`
 
 | # | 구분 | 입력 | 기대 결과 |
 |---|------|------|----------|
-| 1 | 정상 | `("seocheon1abc...", "1000000", "usum")` | tx_hash, block_height > 0 |
+| 1 | 정상 | `("seocheon1abc...", "10000000000", "uppyeo")` | tx_hash, block_height > 0 |
 | 2 | 에러 | 잔고 부족 | INSUFFICIENT_FUNDS |
 | 3 | 에러 | 잘못된 주소 | INVALID_ADDRESS |
 

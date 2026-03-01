@@ -100,7 +100,7 @@ func (ms msgServer) SubmitActivity(ctx context.Context, msg *types.MsgSubmitActi
 			if addrErr != nil {
 				return nil, addrErr
 			}
-			feeCoins := sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewIntFromUint64(activityFee)))
+			feeCoins := sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewIntFromUint64(activityFee)))
 			if err := ms.bankKeeper.SendCoinsFromAccountToModule(ctx, submitterAddr, types.ModuleName, feeCoins); err != nil {
 				return nil, fmt.Errorf("failed to collect activity fee: %w", err)
 			}

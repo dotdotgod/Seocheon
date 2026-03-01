@@ -22,9 +22,9 @@ func (s *E2ESuite) TestSpamDefense() {
 	s.Require().NoError(err)
 
 	// Fund accounts.
-	err = s.fundAccount(val, opAddr, sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(10_000_000))))
+	err = s.fundAccount(val, opAddr, sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(10_000_000))))
 	s.Require().NoError(err)
-	err = s.fundAccount(val, agAddr, sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(5_000_000))))
+	err = s.fundAccount(val, agAddr, sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(5_000_000))))
 	s.Require().NoError(err)
 
 	// Register node (auto-grants feegrant → feegrant_quota=10 applies).

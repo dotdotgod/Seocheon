@@ -19,11 +19,11 @@ func (s *E2ESuite) TestNodeActivityFlow() {
 	s.Require().NoError(err)
 
 	// 2. Fund operator account (needs tokens for delegation via registration).
-	err = s.fundAccount(val, operatorAddr, sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(10_000_000))))
+	err = s.fundAccount(val, operatorAddr, sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(10_000_000))))
 	s.Require().NoError(err)
 
 	// 3. Fund agent account with some gas for activity submission.
-	err = s.fundAccount(val, agentAddr, sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(1_000_000))))
+	err = s.fundAccount(val, agentAddr, sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(1_000_000))))
 	s.Require().NoError(err)
 
 	// 4. Register node.

@@ -448,7 +448,7 @@ getInfo(
 ```pseudocode
 // total_delegation: 밸리데이터의 총 위임량
 validator = query_validator(node.validator_address)
-total_delegation = validator.tokens  // usum → KKOT 변환
+total_delegation = validator.tokens  // uppyeo → KKOT 변환
 
 // self_delegation: operator 자기위임량
 self_del = query_delegation(node.operator, node.validator_address)
@@ -612,11 +612,11 @@ getPending(
 ```pseudocode
 // 위임 보상
 outstanding = query_validator_outstanding_rewards(validator_address)
-delegation_reward = outstanding.rewards.filter(r => r.denom == "usum").amount
+delegation_reward = outstanding.rewards.filter(r => r.denom == "uppyeo").amount
 
 // 커미션 (위임 보상에서 분리)
 commission = query_validator_commission(validator_address)
-commission_total = commission.commission.filter(r => r.denom == "usum").amount
+commission_total = commission.commission.filter(r => r.denom == "uppyeo").amount
 
 // 활동 보상: 현재 에포크의 활동 풀 분배 예상치
 // (에포크 완료 전이므로 예상치)
@@ -648,8 +648,8 @@ function getPending(node_id):
   outstanding = query_outstanding_rewards(node.validator_address)
   commission = query_commission(node.validator_address)
 
-  delegation_reward = sum_denom(outstanding.rewards, "usum")
-  commission_total = sum_denom(commission.commission, "usum")
+  delegation_reward = sum_denom(outstanding.rewards, "uppyeo")
+  commission_total = sum_denom(commission.commission, "uppyeo")
   activity_reward = estimate_activity_reward(effective_node_id)
   total_reward = delegation_reward + activity_reward
 
@@ -724,7 +724,7 @@ function withdraw():
 ```
 getBalance(
   address?: string,                   // 선택. 미지정 시 자기 agent 주소
-  denom?: string                      // 선택. 기본 "usum"
+  denom?: string                      // 선택. 기본 "uppyeo"
 ) → BalanceResponse
 ```
 
@@ -735,8 +735,8 @@ getBalance(
 
 **파생 필드 계산**:
 ```pseudocode
-// usum → KKOT 변환
-balance_kkot = format_decimal(balance_usum / 1_000_000, 6)
+// uppyeo → KKOT 변환
+balance_kkot = format_decimal(balance_uppyeo / 10_000_000_000, 10)
 ```
 
 **에러 코드**: 없음 (존재하지 않는 주소는 잔고 0 반환)
@@ -745,19 +745,19 @@ balance_kkot = format_decimal(balance_usum / 1_000_000, 6)
 ```pseudocode
 function getBalance(address, denom):
   effective_address = address ?? signing_service.getAddress()
-  effective_denom = denom ?? "usum"
+  effective_denom = denom ?? "uppyeo"
 
   response = chain_client.queryGrpc(
     "cosmos.bank.v1beta1.Query", "Balance",
     { address: effective_address, denom: effective_denom }
   )
 
-  balance_usum = parse_int(response.balance.amount)
+  balance_uppyeo = parse_int(response.balance.amount)
 
   RETURN BalanceResponse {
     address: effective_address,
     balance: response.balance.amount,
-    balance_kkot: format_decimal(balance_usum, 6)  // ÷ 1,000,000
+    balance_kkot: format_decimal(balance_uppyeo, 10)  // ÷ 10,000,000,000
   }
 ```
 
@@ -771,8 +771,8 @@ function getBalance(address, denom):
 ```
 sendTokens(
   to_address: string,                 // 필수. 수신자 주소
-  amount: string,                     // 필수. 금액 (usum)
-  denom?: string                      // 선택. 기본 "usum"
+  amount: string,                     // 필수. 금액 (uppyeo)
+  denom?: string                      // 선택. 기본 "uppyeo"
 ) → SendTokensResponse
 ```
 
@@ -792,7 +792,7 @@ sendTokens(
 **처리 플로우**:
 ```pseudocode
 function sendTokens(to_address, amount, denom):
-  effective_denom = denom ?? "usum"
+  effective_denom = denom ?? "uppyeo"
 
   msg = MsgSend {
     from_address: signing_service.getAddress(),

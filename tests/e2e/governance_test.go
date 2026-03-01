@@ -55,7 +55,7 @@ func (s *E2ESuite) TestGovernanceParamChange() {
 		Params:    newParams,
 	}
 
-	deposit := sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(10)))
+	deposit := sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(10)))
 	proposalMsg, err := govv1.NewMsgSubmitProposal(
 		[]sdk.Msg{updateMsg},
 		deposit,

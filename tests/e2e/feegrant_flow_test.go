@@ -21,11 +21,11 @@ func (s *E2ESuite) TestFeegrantFlow() {
 	s.Require().NoError(err)
 
 	// Fund operator (needs tokens for the validator self-delegation from registration pool).
-	err = s.fundAccount(val, opAddr, sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(10_000_000))))
+	err = s.fundAccount(val, opAddr, sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(10_000_000))))
 	s.Require().NoError(err)
 
 	// Do NOT fund agent — agent should rely on feegrant from registration.
-	// But since the test network uses MinGasPrices=0usum, this should work.
+	// But since the test network uses MinGasPrices=0uppyeo, this should work.
 
 	// 2. Register node → triggers automatic feegrant grant.
 	opCtx := s.clientCtxForKey(val, "opFG")
@@ -40,7 +40,7 @@ func (s *E2ESuite) TestFeegrantFlow() {
 
 	// Fund agent with minimal gas to avoid "insufficient funds" for broadcasting.
 	// In real production this would be handled by the feegrant mechanism.
-	err = s.fundAccount(val, agAddr, sdk.NewCoins(sdk.NewCoin("usum", sdkmath.NewInt(100_000))))
+	err = s.fundAccount(val, agAddr, sdk.NewCoins(sdk.NewCoin("uppyeo", sdkmath.NewInt(100_000))))
 	s.Require().NoError(err)
 
 	for i := 0; i < 5; i++ {

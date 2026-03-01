@@ -30,15 +30,15 @@ func TestCalculateActivityFee_Growth(t *testing.T) {
 
 	// N_a = 900, N_d = 150, threshold = 450
 	// S = 900/450 = 2.0, S-1 = 1.0
-	// fee = 1_000_000 * (1.0)^0.5 = 1_000_000
+	// fee = 10_000_000_000 * (1.0)^0.5 = 10_000_000_000
 	fee := calculateActivityFee(900, 150, params)
-	require.Equal(t, uint64(1_000_000), fee)
+	require.Equal(t, uint64(10_000_000_000), fee)
 
 	// N_a = 2250, N_d = 150, threshold = 450
 	// S = 2250/450 = 5.0, S-1 = 4.0
-	// fee = 1_000_000 * (4.0)^0.5 = 1_000_000 * 2 = 2_000_000
+	// fee = 10_000_000_000 * (4.0)^0.5 = 10_000_000_000 * 2 = 20_000_000_000
 	fee = calculateActivityFee(2250, 150, params)
-	require.Equal(t, uint64(2_000_000), fee)
+	require.Equal(t, uint64(20_000_000_000), fee)
 }
 
 func TestCalculateActivityFee_MaxCap(t *testing.T) {

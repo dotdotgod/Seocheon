@@ -21,7 +21,7 @@ func TestDistributeActivityRewards_NoEligibleNodes(t *testing.T) {
 	ctx := f.freshCtx(1)
 
 	// Fund pool but have no eligible nodes.
-	f.bankKeeper.fundModule(types.ActivityRewardPoolName, sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(1000000))))
+	f.bankKeeper.fundModule(types.ActivityRewardPoolName, sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(1000000))))
 
 	err := f.keeper.DistributeActivityRewards(ctx, 0)
 	require.NoError(t, err)
@@ -64,16 +64,16 @@ func TestDistributeActivityRewards_SingleNode_NoAgentShare(t *testing.T) {
 		Eligible:        true,
 	})
 
-	// Fund pool with 1,000,000 usum.
+	// Fund pool with 1,000,000 uppyeo.
 	poolAmount := math.NewInt(1000000)
-	f.bankKeeper.fundModule(types.ActivityRewardPoolName, sdk.NewCoins(sdk.NewCoin("usum", poolAmount)))
+	f.bankKeeper.fundModule(types.ActivityRewardPoolName, sdk.NewCoins(sdk.NewCoin("uppyeo", poolAmount)))
 
 	err := f.keeper.DistributeActivityRewards(ctx, 0)
 	require.NoError(t, err)
 
 	// All goes to operator (agent_share = 0).
 	require.Len(t, f.bankKeeper.moduleToAccSent, 1)
-	require.Equal(t, poolAmount, f.bankKeeper.moduleToAccSent[0].Amount.AmountOf("usum"))
+	require.Equal(t, poolAmount, f.bankKeeper.moduleToAccSent[0].Amount.AmountOf("uppyeo"))
 
 	opAddr, _ := sdk.AccAddressFromBech32(operatorAddr)
 	require.True(t, f.bankKeeper.moduleToAccSent[0].To.Equals(opAddr))
@@ -96,7 +96,7 @@ func TestDistributeActivityRewards_SingleNode_WithAgentShare(t *testing.T) {
 	})
 
 	poolAmount := math.NewInt(1000000)
-	f.bankKeeper.fundModule(types.ActivityRewardPoolName, sdk.NewCoins(sdk.NewCoin("usum", poolAmount)))
+	f.bankKeeper.fundModule(types.ActivityRewardPoolName, sdk.NewCoins(sdk.NewCoin("uppyeo", poolAmount)))
 
 	err := f.keeper.DistributeActivityRewards(ctx, 0)
 	require.NoError(t, err)
@@ -109,11 +109,11 @@ func TestDistributeActivityRewards_SingleNode_WithAgentShare(t *testing.T) {
 
 	// First: operator gets 70%.
 	require.True(t, f.bankKeeper.moduleToAccSent[0].To.Equals(opAddr))
-	require.Equal(t, math.NewInt(700000), f.bankKeeper.moduleToAccSent[0].Amount.AmountOf("usum"))
+	require.Equal(t, math.NewInt(700000), f.bankKeeper.moduleToAccSent[0].Amount.AmountOf("uppyeo"))
 
 	// Second: agent gets 30%.
 	require.True(t, f.bankKeeper.moduleToAccSent[1].To.Equals(agAddr))
-	require.Equal(t, math.NewInt(300000), f.bankKeeper.moduleToAccSent[1].Amount.AmountOf("usum"))
+	require.Equal(t, math.NewInt(300000), f.bankKeeper.moduleToAccSent[1].Amount.AmountOf("uppyeo"))
 }
 
 func TestDistributeActivityRewards_MultipleNodes_EqualSplit(t *testing.T) {
@@ -133,17 +133,17 @@ func TestDistributeActivityRewards_MultipleNodes_EqualSplit(t *testing.T) {
 		})
 	}
 
-	// Fund pool with 1000 usum.
+	// Fund pool with 1000 uppyeo.
 	poolAmount := math.NewInt(1000)
-	f.bankKeeper.fundModule(types.ActivityRewardPoolName, sdk.NewCoins(sdk.NewCoin("usum", poolAmount)))
+	f.bankKeeper.fundModule(types.ActivityRewardPoolName, sdk.NewCoins(sdk.NewCoin("uppyeo", poolAmount)))
 
 	err := f.keeper.DistributeActivityRewards(ctx, 0)
 	require.NoError(t, err)
 
-	// Each gets 333 usum (1000/3 = 333, dust = 1 stays in pool).
+	// Each gets 333 uppyeo (1000/3 = 333, dust = 1 stays in pool).
 	require.Len(t, f.bankKeeper.moduleToAccSent, 3)
 	for _, transfer := range f.bankKeeper.moduleToAccSent {
-		require.Equal(t, math.NewInt(333), transfer.Amount.AmountOf("usum"))
+		require.Equal(t, math.NewInt(333), transfer.Amount.AmountOf("uppyeo"))
 	}
 }
 
@@ -151,7 +151,7 @@ func TestDistributeActivityRewards_Dust(t *testing.T) {
 	f := initFixture(t)
 	ctx := f.freshCtx(1)
 
-	// 3 nodes, 100 usum pool → 33 each, 1 usum dust.
+	// 3 nodes, 100 uppyeo pool → 33 each, 1 uppyeo dust.
 	for i := 1; i <= 3; i++ {
 		nodeID := "node" + string(rune('0'+i))
 		opAddr := makeAddr("op" + string(rune('0'+i)))
@@ -164,7 +164,7 @@ func TestDistributeActivityRewards_Dust(t *testing.T) {
 		})
 	}
 
-	f.bankKeeper.fundModule(types.ActivityRewardPoolName, sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(100))))
+	f.bankKeeper.fundModule(types.ActivityRewardPoolName, sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(100))))
 
 	err := f.keeper.DistributeActivityRewards(ctx, 0)
 	require.NoError(t, err)
@@ -172,7 +172,7 @@ func TestDistributeActivityRewards_Dust(t *testing.T) {
 	// Total distributed = 33 * 3 = 99.
 	totalDistributed := math.ZeroInt()
 	for _, transfer := range f.bankKeeper.moduleToAccSent {
-		totalDistributed = totalDistributed.Add(transfer.Amount.AmountOf("usum"))
+		totalDistributed = totalDistributed.Add(transfer.Amount.AmountOf("uppyeo"))
 	}
 	require.Equal(t, math.NewInt(99), totalDistributed)
 
@@ -200,14 +200,14 @@ func TestDistributeActivityRewards_IneligibleNodesExcluded(t *testing.T) {
 		Eligible:        false,
 	})
 
-	f.bankKeeper.fundModule(types.ActivityRewardPoolName, sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(1000))))
+	f.bankKeeper.fundModule(types.ActivityRewardPoolName, sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(1000))))
 
 	err := f.keeper.DistributeActivityRewards(ctx, 0)
 	require.NoError(t, err)
 
 	// Only 1 transfer (to node1's operator).
 	require.Len(t, f.bankKeeper.moduleToAccSent, 1)
-	require.Equal(t, math.NewInt(1000), f.bankKeeper.moduleToAccSent[0].Amount.AmountOf("usum"))
+	require.Equal(t, math.NewInt(1000), f.bankKeeper.moduleToAccSent[0].Amount.AmountOf("uppyeo"))
 }
 
 func TestDistributeActivityRewards_Event(t *testing.T) {
@@ -221,7 +221,7 @@ func TestDistributeActivityRewards_Event(t *testing.T) {
 		Eligible:        true,
 	})
 
-	f.bankKeeper.fundModule(types.ActivityRewardPoolName, sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(500000))))
+	f.bankKeeper.fundModule(types.ActivityRewardPoolName, sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(500000))))
 
 	err := f.keeper.DistributeActivityRewards(ctx, 0)
 	require.NoError(t, err)
@@ -238,10 +238,10 @@ func TestDistributeCollectedFees_80_20_Split(t *testing.T) {
 	f := initFixture(t)
 	ctx := f.freshCtx(1)
 
-	// Collect 10000 usum in fees for epoch 0.
+	// Collect 10000 uppyeo in fees for epoch 0.
 	f.keeper.EpochCollectedFees.Set(ctx, int64(0), uint64(10000))
 	// Fund activity module account (where fees accumulate).
-	f.bankKeeper.fundModule(types.ModuleName, sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(10000))))
+	f.bankKeeper.fundModule(types.ModuleName, sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(10000))))
 
 	err := f.keeper.DistributeCollectedFees(ctx, 0)
 	require.NoError(t, err)
@@ -250,10 +250,10 @@ func TestDistributeCollectedFees_80_20_Split(t *testing.T) {
 	require.Len(t, f.bankKeeper.moduleToModSent, 1)
 	require.Equal(t, types.ModuleName, f.bankKeeper.moduleToModSent[0].FromModule)
 	require.Equal(t, types.ActivityRewardPoolName, f.bankKeeper.moduleToModSent[0].ToModule)
-	require.Equal(t, math.NewInt(8000), f.bankKeeper.moduleToModSent[0].Amount.AmountOf("usum"))
+	require.Equal(t, math.NewInt(8000), f.bankKeeper.moduleToModSent[0].Amount.AmountOf("uppyeo"))
 
 	// 20% → community pool.
-	require.Equal(t, math.NewInt(2000), f.distributionKeeper.communityPoolFunded.AmountOf("usum"))
+	require.Equal(t, math.NewInt(2000), f.distributionKeeper.communityPoolFunded.AmountOf("uppyeo"))
 
 	// EpochCollectedFees should be cleared.
 	_, err = f.keeper.EpochCollectedFees.Get(ctx, int64(0))
@@ -280,13 +280,13 @@ func TestDistributeCollectedFees_CustomRatio(t *testing.T) {
 	f.keeper.Params.Set(ctx, params)
 
 	f.keeper.EpochCollectedFees.Set(ctx, int64(0), uint64(10000))
-	f.bankKeeper.fundModule(types.ModuleName, sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(10000))))
+	f.bankKeeper.fundModule(types.ModuleName, sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(10000))))
 
 	err := f.keeper.DistributeCollectedFees(ctx, 0)
 	require.NoError(t, err)
 
 	// 50% → activity_reward_pool.
-	require.Equal(t, math.NewInt(5000), f.bankKeeper.moduleToModSent[0].Amount.AmountOf("usum"))
+	require.Equal(t, math.NewInt(5000), f.bankKeeper.moduleToModSent[0].Amount.AmountOf("uppyeo"))
 	// 50% → community pool.
-	require.Equal(t, math.NewInt(5000), f.distributionKeeper.communityPoolFunded.AmountOf("usum"))
+	require.Equal(t, math.NewInt(5000), f.distributionKeeper.communityPoolFunded.AmountOf("uppyeo"))
 }

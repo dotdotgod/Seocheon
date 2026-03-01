@@ -1,7 +1,7 @@
 # 구현 가이드: API, 모듈 구조, 로드맵
 
 > **담당**: 전체 개발팀 / PM
-> **관련 문서**: [개요](01_overview.md) · [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [토큰 이코노믹스](07_tokenomics.md) · [스팸 방어](08_spam_defense.md) · [체인 업그레이드](10_chain_upgrade.md) · [Circuit Breaker](11_circuit_breaker.md) · [IBC 전략](12_ibc_strategy.md) · [인덱서 아키텍처](13_indexer_architecture.md) · [전체 목차](README.md)
+> **관련 문서**: [개요](01_overview.md) · [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [토큰 이코노믹스](05_tokenomics.md) · [스팸 방어](06_spam_defense.md) · [체인 업그레이드](08_chain_upgrade.md) · [Circuit Breaker](09_circuit_breaker.md) · [IBC 전략](10_ibc_strategy.md) · [인덱서 아키텍처](11_indexer_architecture.md) · [전체 목차](README.md)
 
 ## 거버넌스
 
@@ -44,7 +44,7 @@ message MsgRegisterNode {
   string commission_max_rate = 10;   // 최대 커미션율 (Dec, 기본 100%)
   string commission_max_change_rate = 11; // 에포크당 최대 커미션 변경폭 (Dec, 기본 100%)
 }
-// 내부적으로 Registration Pool에서 1 usum 대여 → CreateValidator 실행
+// 내부적으로 Registration Pool에서 1 uppyeo 대여 → CreateValidator 실행
 
 message MsgUpdateNode {
   string operator = 1;               // TX 서명자 (operator만 가능, 1:1 노드 조회)
@@ -71,7 +71,7 @@ message MsgWithdrawNodeCommission {
 message MsgDeactivateNode {
   string operator = 1;               // TX 서명자 (operator만 가능, 1:1 노드 조회)
 }
-// 1 usum 언본딩 → Registration Pool 회수
+// 1 uppyeo 언본딩 → Registration Pool 회수
 
 message MsgUpdateAgentAddress {
   string operator = 1;               // TX 서명자 (operator만 가능)
@@ -219,7 +219,7 @@ x/node
 - MsgUpdateNode, MsgUpdateNodeAgentShare 핸들러 (유예 기간 + 변경 속도 제한)
 - MsgUpdateAgentAddress 핸들러 (키 교체 + feegrant 이전 + 쿨다운)
 - MsgDeactivateNode 핸들러 (언본딩 + Registration Pool 회수)
-- EndBlocker: 언본딩 완료 노드의 1usum 자동 회수
+- EndBlocker: 언본딩 완료 노드의 1uppyeo 자동 회수
 - 통합 테스트: 등록 → 위임 → 자동 졸업 → 비활성화 전체 플로우
 
 **Phase 0-C: 보상 분배** ✅

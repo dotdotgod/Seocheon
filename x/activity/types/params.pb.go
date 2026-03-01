@@ -41,11 +41,11 @@ type Params struct {
 	// fee_threshold_multiplier is the multiplier for fee activation threshold.
 	// Fee activates when N_a > N_d * fee_threshold_multiplier.
 	FeeThresholdMultiplier uint64 `protobuf:"varint,7,opt,name=fee_threshold_multiplier,json=feeThresholdMultiplier,proto3" json:"fee_threshold_multiplier,omitempty"`
-	// base_activity_fee is the base fee in usum when saturation > 1.0.
+	// base_activity_fee is the base fee in uppyeo when saturation > 1.0.
 	BaseActivityFee uint64 `protobuf:"varint,8,opt,name=base_activity_fee,json=baseActivityFee,proto3" json:"base_activity_fee,omitempty"`
 	// fee_exponent is the cost curve exponent in basis points (5000 = 0.5 = sqrt curve).
 	FeeExponent uint64 `protobuf:"varint,9,opt,name=fee_exponent,json=feeExponent,proto3" json:"fee_exponent,omitempty"`
-	// max_activity_fee is the maximum activity fee cap in usum.
+	// max_activity_fee is the maximum activity fee cap in uppyeo.
 	MaxActivityFee uint64 `protobuf:"varint,10,opt,name=max_activity_fee,json=maxActivityFee,proto3" json:"max_activity_fee,omitempty"`
 	// min_feegrant_quota is the minimum feegrant quota even under saturation.
 	MinFeegrantQuota uint64 `protobuf:"varint,11,opt,name=min_feegrant_quota,json=minFeegrantQuota,proto3" json:"min_feegrant_quota,omitempty"`

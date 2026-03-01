@@ -61,7 +61,7 @@ func (k Keeper) BeginBlocker(ctx context.Context) error {
 	if feeCollectorAddr == nil {
 		return nil
 	}
-	feeCollectorBalance := k.bankKeeper.GetBalance(ctx, feeCollectorAddr, "usum")
+	feeCollectorBalance := k.bankKeeper.GetBalance(ctx, feeCollectorAddr, "uppyeo")
 	if feeCollectorBalance.IsZero() {
 		return nil
 	}
@@ -73,7 +73,7 @@ func (k Keeper) BeginBlocker(ctx context.Context) error {
 	}
 
 	// Transfer from fee_collector to activity_reward_pool.
-	activityCoins := sdk.NewCoins(sdk.NewCoin("usum", activityAmount))
+	activityCoins := sdk.NewCoins(sdk.NewCoin("uppyeo", activityAmount))
 	if err := k.bankKeeper.SendCoinsFromModuleToModule(
 		ctx,
 		authtypes.FeeCollectorName,

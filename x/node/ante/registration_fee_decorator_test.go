@@ -41,7 +41,7 @@ func TestRegistrationFeeDecorator(t *testing.T) {
 			},
 		}
 
-		ctx := sdk.Context{}.WithMinGasPrices(sdk.DecCoins{sdk.NewDecCoin("usum", math.NewInt(1))})
+		ctx := sdk.Context{}.WithMinGasPrices(sdk.DecCoins{sdk.NewDecCoin("uppyeo", math.NewInt(1))})
 		_, err := decorator.AnteHandle(ctx, tx, false, nextHandler)
 		require.NoError(t, err)
 		require.Empty(t, capturedCtx.MinGasPrices())
@@ -55,7 +55,7 @@ func TestRegistrationFeeDecorator(t *testing.T) {
 			},
 		}
 
-		originalPrices := sdk.DecCoins{sdk.NewDecCoin("usum", math.NewInt(1))}
+		originalPrices := sdk.DecCoins{sdk.NewDecCoin("uppyeo", math.NewInt(1))}
 		ctx := sdk.Context{}.WithMinGasPrices(originalPrices)
 		_, err := decorator.AnteHandle(ctx, tx, false, nextHandler)
 		require.NoError(t, err)
@@ -67,7 +67,7 @@ func TestRegistrationFeeDecorator(t *testing.T) {
 			msgs: []sdk.Msg{},
 		}
 
-		originalPrices := sdk.DecCoins{sdk.NewDecCoin("usum", math.NewInt(1))}
+		originalPrices := sdk.DecCoins{sdk.NewDecCoin("uppyeo", math.NewInt(1))}
 		ctx := sdk.Context{}.WithMinGasPrices(originalPrices)
 		_, err := decorator.AnteHandle(ctx, tx, false, nextHandler)
 		require.NoError(t, err)

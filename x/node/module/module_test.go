@@ -118,7 +118,7 @@ func (m *mockStakingKeeper) GetValidator(_ context.Context, _ sdk.ValAddress) (s
 }
 
 func (m *mockStakingKeeper) BondDenom(_ context.Context) (string, error) {
-	return "usum", nil
+	return "uppyeo", nil
 }
 
 // mockFeegrantKeeper implements types.FeegrantKeeper for testing.

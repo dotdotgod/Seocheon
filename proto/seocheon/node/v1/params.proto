@@ -17,7 +17,7 @@ message Params {
   // registration_cooldown_blocks is the cooldown period (in blocks) before same operator can re-register.
   uint64 registration_cooldown_blocks = 2;
 
-  // registration_deposit is the optional deposit required for registration (in usum). Initially 0.
+  // registration_deposit is the optional deposit required for registration (in uppyeo). Initially 0.
   string registration_deposit = 3 [
     (gogoproto.customtype) = "cosmossdk.io/math.Int",
     (gogoproto.nullable) = false

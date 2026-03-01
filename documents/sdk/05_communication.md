@@ -70,7 +70,7 @@ function execute_tx(msg):
       sequence: account.sequence
     }],
     fee: Fee {
-      amount: [{ denom: "usum", amount: estimate_fee(msg) }],
+      amount: [{ denom: "uppyeo", amount: estimate_fee(msg) }],
       gas_limit: estimate_gas(msg) * config.chain.gas_adjustment,
       payer: "",
       granter: ""  // feegrant 사용 시 granter 주소 설정

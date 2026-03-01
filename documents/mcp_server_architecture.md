@@ -1,7 +1,7 @@
 # Seocheon Client SDK & MCP 서버 아키텍처
 
 > **담당**: 에이전트 인프라 개발자 (TypeScript)
-> **관련 문서**: [에이전트 아키텍처](agent_architecture.md) · [Activity Protocol](blockchain/04_activity_protocol.md) · [노드 모듈](blockchain/03_node_module.md) · [인덱서](blockchain/13_indexer_architecture.md) · [구현 가이드](blockchain/09_implementation.md)
+> **관련 문서**: [에이전트 아키텍처](agent_architecture.md) · [Activity Protocol](blockchain/04_activity_protocol.md) · [노드 모듈](blockchain/03_node_module.md) · [인덱서](blockchain/11_indexer_architecture.md) · [구현 가이드](blockchain/07_implementation.md)
 
 Seocheon 체인과 상호작용하기 위한 Client SDK와 MCP 서버 설계이다. **Client SDK가 기반 계층**이고, MCP 서버는 SDK를 감싸는 얇은 래퍼이다.
 
@@ -396,11 +396,11 @@ MCP: get_balance
 
 입력:
   address: string? (선택)       — 미지정 시 자기 agent 주소
-  denom: string? (기본 "usum")  — 토큰 단위
+  denom: string? (기본 "uppyeo") — 토큰 단위
 
 출력:
   address: string
-  balance: string               — 잔고 (usum)
+  balance: string               — 잔고 (uppyeo)
   balance_kkot: string          — 잔고 (KKOT, 소수점 변환)
 ```
 
@@ -415,8 +415,8 @@ MCP: send_tokens
 
 입력:
   to_address: string            — 수신자 주소
-  amount: string                — 금액 (usum)
-  denom: string? (기본 "usum")
+  amount: string                — 금액 (uppyeo)
+  denom: string? (기본 "uppyeo")
 
 출력:
   tx_hash: string
@@ -631,7 +631,7 @@ MCP SDK: @modelcontextprotocol/sdk
     "chain_id": "seocheon-1",
     "rpc_endpoint": "http://localhost:26657",
     "grpc_endpoint": "http://localhost:9090",
-    "gas_price": "0.025usum",
+    "gas_price": "250uppyeo",
     "gas_adjustment": 1.3
   },
   "signing": {

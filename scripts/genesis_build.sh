@@ -27,7 +27,7 @@ MONIKER="${MONIKER:-genesis-builder}"
 TEAM_ADDR="${TEAM_ADDR:-}"
 FOUNDATION_ADDR="${FOUNDATION_ADDR:-}"
 GENTX_DIR="${GENTX_DIR:-}"
-DENOM="usum"
+DENOM="uppyeo"
 
 # Parse arguments.
 while [[ $# -gt 0 ]]; do

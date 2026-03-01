@@ -22,7 +22,7 @@ import (
 type AirdropSnapshotEntry struct {
 	NodeID        string `json:"node_id"`
 	ActiveWindows uint64 `json:"active_windows"`
-	Amount        string `json:"amount_usum"`
+	Amount        string `json:"amount_uppyeo"`
 }
 
 // AirdropSnapshot is the full snapshot output.
@@ -30,8 +30,8 @@ type AirdropSnapshot struct {
 	Quarter       string                 `json:"quarter"`
 	Epoch         int64                  `json:"epoch"`
 	EligibleCount int                    `json:"eligible_count"`
-	TotalAmount   string                 `json:"total_amount_usum"`
-	PerNodeAmount string                 `json:"per_node_amount_usum"`
+	TotalAmount   string                 `json:"total_amount_uppyeo"`
+	PerNodeAmount string                 `json:"per_node_amount_uppyeo"`
 	Recipients    []AirdropSnapshotEntry `json:"recipients"`
 }
 
@@ -59,7 +59,7 @@ Output: JSON file with node_id, active_windows, and amount for each recipient.
 	}
 
 	cmd.Flags().Int64("epoch", -1, "Epoch number to snapshot (required)")
-	cmd.Flags().String("total-amount", "", "Total airdrop amount in usum (required)")
+	cmd.Flags().String("total-amount", "", "Total airdrop amount in uppyeo (required)")
 	cmd.Flags().String("quarter", "", "Quarter label for output (e.g., 2026-Q2)")
 	cmd.Flags().String("out-file", "airdrop_snapshot.json", "Output file path")
 	flags.AddQueryFlagsToCmd(cmd)
@@ -168,7 +168,7 @@ func runAirdropSnapshot(_ context.Context, clientCtx client.Context, cmd *cobra.
 	perNode := totalAmount.Quo(math.NewInt(nNodes))
 
 	fmt.Printf("  Eligible nodes: %d\n", nNodes)
-	fmt.Printf("  Per-node amount: %s usum (%s KKOT)\n", perNode, perNode.Quo(math.NewInt(usumPerKKOT)))
+	fmt.Printf("  Per-node amount: %s uppyeo (%s KKOT)\n", perNode, perNode.Quo(math.NewInt(uppyeoPerKKOT)))
 
 	for i := range eligibleEntries {
 		eligibleEntries[i].Amount = perNode.String()

@@ -136,7 +136,7 @@ type mockStakingKeeper struct {
 
 func newMockStakingKeeper() *mockStakingKeeper {
 	return &mockStakingKeeper{
-		bondDenom: "usum",
+		bondDenom: "uppyeo",
 	}
 }
 
@@ -281,9 +281,9 @@ func initFixture(t *testing.T) *fixture {
 	authK.moduleAddresses[types.RegistrationPoolName] = regPoolAddr
 	authK.moduleAddresses[types.FeegrantPoolName] = fgPoolAddr
 
-	// Set up Registration Pool balance: 1000 usum.
-	bankK.balances[regPoolAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(1000)))
-	bankK.balances[fgPoolAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(100)))
+	// Set up Registration Pool balance: 1000 uppyeo.
+	bankK.balances[regPoolAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(1000)))
+	bankK.balances[fgPoolAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(100)))
 
 	k := keeper.NewKeeper(
 		storeService,

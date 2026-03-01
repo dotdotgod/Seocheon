@@ -2,7 +2,7 @@
 
 > **담당**: x/activity 모듈 개발자 (Go)
 > **의존 모듈**: x/node (agent_address 검증)
-> **관련 문서**: [개요](01_overview.md) · [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [토큰 이코노믹스](07_tokenomics.md) · [스팸 방어](08_spam_defense.md) · [구현 가이드](09_implementation.md) · [Circuit Breaker](11_circuit_breaker.md) · [IBC 전략](12_ibc_strategy.md) · [인덱서 아키텍처](13_indexer_architecture.md) · [전체 목차](README.md)
+> **관련 문서**: [개요](01_overview.md) · [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [토큰 이코노믹스](05_tokenomics.md) · [스팸 방어](06_spam_defense.md) · [구현 가이드](07_implementation.md) · [Circuit Breaker](09_circuit_breaker.md) · [IBC 전략](10_ibc_strategy.md) · [인덱서 아키텍처](11_indexer_architecture.md) · [전체 목차](README.md)
 
 > **면책 조항**: 이 문서는 프로토콜 메커니즘에 대한 기술 설계 문서이며 투자 권유가 아니다. 보상 분배는 프로토콜 규칙에 따라 자동 실행되며, 어떠한 형태의 수익도 보장하지 않는다.
 
@@ -199,9 +199,9 @@ feegrant_quota = 기본값 (10/에포크)
 ```
 activity_fee = base_activity_fee × (S - 1)^fee_exponent
 
-base_activity_fee:  기본 활동 수수료 (기본 1,000,000 usum = 1 KKOT)
+base_activity_fee:  기본 활동 수수료 (기본 10,000,000,000 uppyeo = 1 KKOT)
 fee_exponent:       비용 증가 곡선 지수 (기본 0.5, 즉 제곱근 곡선)
-max_activity_fee:   수수료 상한 (기본 100,000,000 usum = 100 KKOT)
+max_activity_fee:   수수료 상한 (기본 1,000,000,000,000 uppyeo = 100 KKOT)
 ```
 
 **feegrant 쿼터 축소** (Phase 2):
@@ -249,9 +249,9 @@ quota_reduction_rate:  쿼터 축소율 (기본 0.5)
 | 파라미터 | 모듈 | 초기값 | 설명 |
 |----------|------|--------|------|
 | `fee_threshold_multiplier` | x/activity | 3 | 수수료 활성화 임계 배수 |
-| `base_activity_fee` | x/activity | 1,000,000 usum | 기본 활동 수수료 |
+| `base_activity_fee` | x/activity | 10,000,000,000 uppyeo | 기본 활동 수수료 |
 | `fee_exponent` | x/activity | 5000 (=0.5, basis points) | 비용 증가 곡선 지수 |
-| `max_activity_fee` | x/activity | 100,000,000 usum | 수수료 상한 |
+| `max_activity_fee` | x/activity | 1,000,000,000,000 uppyeo | 수수료 상한 |
 | `min_feegrant_quota` | x/activity | 8 | 최소 feegrant 쿼터 |
 | `quota_reduction_rate` | x/activity | 5000 (=0.5, basis points) | 쿼터 축소율 |
 | `feegrant_fee_exempt` | x/activity | true | feegrant 노드 수수료 면제 여부 |
@@ -290,4 +290,4 @@ quota_reduction_rate:  쿼터 축소율 (기본 0.5)
 - 노드 운영자는 관할 법률(저작권, 명예훼손, 개인정보보호 등)을 준수하여 콘텐츠를 관리해야 한다
 - 불법 콘텐츠 관련 분쟁은 해당 콘텐츠를 제출한 노드 운영자와 호스팅 인프라 사이의 문제이며, 프로토콜과 무관하다
 
-**긴급 대응**: 사법 당국의 요청이나 커뮤니티 신고가 있는 경우, 거버넌스 절차 또는 Circuit Breaker([긴급 정지 메커니즘](11_circuit_breaker.md))를 통해 해당 노드에 대한 제재를 진행할 수 있다. 이는 콘텐츠 검열이 아닌 **노드 수준의 거버넌스 조치**이다
+**긴급 대응**: 사법 당국의 요청이나 커뮤니티 신고가 있는 경우, 거버넌스 절차 또는 Circuit Breaker([긴급 정지 메커니즘](09_circuit_breaker.md))를 통해 해당 노드에 대한 제재를 진행할 수 있다. 이는 콘텐츠 검열이 아닌 **노드 수준의 거버넌스 조치**이다

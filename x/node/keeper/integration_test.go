@@ -171,8 +171,8 @@ func TestNodeLifecycle(t *testing.T) {
 		require.NoError(t, err)
 		valAddr := sdk.ValAddress(valAddrBytes)
 
-		// Configure mock to return 1000 usum commission.
-		dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("usum", math.NewInt(1000)))
+		// Configure mock to return 1000 uppyeo commission.
+		dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(1000)))
 
 		resp, err := ms.WithdrawNodeCommission(f.ctx, &types.MsgWithdrawNodeCommission{
 			Operator: operatorStr,
@@ -181,13 +181,13 @@ func TestNodeLifecycle(t *testing.T) {
 		require.NotNil(t, resp)
 
 		// Agent share is 35%, so agent gets 350, operator keeps 650.
-		require.Equal(t, "650usum", resp.OperatorAmount)
-		require.Equal(t, "350usum", resp.AgentAmount)
+		require.Equal(t, "650uppyeo", resp.OperatorAmount)
+		require.Equal(t, "350uppyeo", resp.AgentAmount)
 
 		// Verify bank SendCoins was called for agent split.
 		require.Len(t, f.bankKeeper.sentCoinsRecords, 1)
 		sent := f.bankKeeper.sentCoinsRecords[0]
-		require.Equal(t, sdk.NewCoin("usum", math.NewInt(350)), sent.Amount[0])
+		require.Equal(t, sdk.NewCoin("uppyeo", math.NewInt(350)), sent.Amount[0])
 	})
 
 	// ── Step 7: DeactivateNode ──

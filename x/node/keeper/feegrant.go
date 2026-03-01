@@ -33,8 +33,8 @@ const (
 	FeegrantExpiry = time.Duration(FeegrantExpiryBlocks) * BlockTime
 )
 
-// FeegrantPeriodLimit is 1 KKOT = 1,000,000 usum per epoch.
-var FeegrantPeriodLimit = math.NewInt(1_000_000)
+// FeegrantPeriodLimit is 1 KKOT = 10,000,000,000 uppyeo per epoch.
+var FeegrantPeriodLimit = math.NewInt(10_000_000_000)
 
 // grantAgentFeegrant creates a PeriodicAllowance feegrant from the Feegrant Pool
 // to the given agent address. This is best-effort: if feegrantKeeper is not wired

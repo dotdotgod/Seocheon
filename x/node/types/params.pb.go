@@ -31,7 +31,7 @@ type Params struct {
 	MaxRegistrationsPerBlock uint64 `protobuf:"varint,1,opt,name=max_registrations_per_block,json=maxRegistrationsPerBlock,proto3" json:"max_registrations_per_block,omitempty"`
 	// registration_cooldown_blocks is the cooldown period (in blocks) before same operator can re-register.
 	RegistrationCooldownBlocks uint64 `protobuf:"varint,2,opt,name=registration_cooldown_blocks,json=registrationCooldownBlocks,proto3" json:"registration_cooldown_blocks,omitempty"`
-	// registration_deposit is the optional deposit required for registration (in usum). Initially 0.
+	// registration_deposit is the optional deposit required for registration (in uppyeo). Initially 0.
 	RegistrationDeposit cosmossdk_io_math.Int `protobuf:"bytes,3,opt,name=registration_deposit,json=registrationDeposit,proto3,customtype=cosmossdk.io/math.Int" json:"registration_deposit"`
 	// agent_allowed_msg_types is the whitelist of message types that agent_address can execute.
 	AgentAllowedMsgTypes []string `protobuf:"bytes,4,rep,name=agent_allowed_msg_types,json=agentAllowedMsgTypes,proto3" json:"agent_allowed_msg_types,omitempty"`
