@@ -5,6 +5,8 @@ import (
 	activitymoduletypes "seocheon/x/activity/types"
 	_ "seocheon/x/node/module"
 	nodemoduletypes "seocheon/x/node/types"
+	_ "seocheon/x/randomness/module"
+	randomnessmoduletypes "seocheon/x/randomness/types"
 	"time"
 
 	runtimev1alpha1 "cosmossdk.io/api/cosmos/app/runtime/v1alpha1"
@@ -68,6 +70,7 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	_ "github.com/cosmos/cosmos-sdk/x/staking" // import for side-effects
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 	icatypes "github.com/cosmos/ibc-go/v10/modules/apps/27-interchain-accounts/types"
 	ibctransfertypes "github.com/cosmos/ibc-go/v10/modules/apps/transfer/types"
 	ibcexported "github.com/cosmos/ibc-go/v10/modules/core/exported"
@@ -91,6 +94,10 @@ var (
 		// x/activity module accounts for dual reward pool.
 		{Account: activitymoduletypes.ModuleName},
 		{Account: activitymoduletypes.ActivityRewardPoolName},
+		// x/randomness module account for request fee escrow.
+		{Account: randomnessmoduletypes.ModuleName},
+		// CosmWasm module account.
+		{Account: wasmtypes.ModuleName, Permissions: []string{authtypes.Burner}},
 		// Genesis distribution pool accounts.
 		{Account: "airdrop_pool", Permissions: []string{authtypes.Burner}},
 		{Account: "ecosystem_fund"},
@@ -143,6 +150,9 @@ var (
 						ibcexported.ModuleName,
 						// chain modules
 						nodemoduletypes.ModuleName,
+						randomnessmoduletypes.ModuleName,
+						// cosmwasm
+						wasmtypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/beginBlockers
 					},
 					EndBlockers: []string{
@@ -153,6 +163,9 @@ var (
 						// chain modules
 						activitymoduletypes.ModuleName,
 						nodemoduletypes.ModuleName,
+						randomnessmoduletypes.ModuleName,
+						// cosmwasm
+						wasmtypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/endBlockers
 					},
 					// The following is mostly only needed when ModuleName != StoreKey name.
@@ -188,9 +201,12 @@ var (
 						ibcexported.ModuleName,
 						ibctransfertypes.ModuleName,
 						icatypes.ModuleName,
+						// cosmwasm (after IBC, before chain modules)
+						wasmtypes.ModuleName,
 						// chain modules
 						activitymoduletypes.ModuleName,
 						nodemoduletypes.ModuleName,
+						randomnessmoduletypes.ModuleName,
 						// this line is used by starport scaffolding # stargate/app/initGenesis
 					},
 				}),
@@ -294,6 +310,10 @@ var (
 			{
 				Name:   nodemoduletypes.ModuleName,
 				Config: appconfig.WrapAny(&nodemoduletypes.Module{}),
+			},
+			{
+				Name:   randomnessmoduletypes.ModuleName,
+				Config: appconfig.WrapAny(&randomnessmoduletypes.Module{}),
 			},
 			// this line is used by starport scaffolding # stargate/app/moduleConfig
 		},

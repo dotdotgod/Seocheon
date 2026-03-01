@@ -46,5 +46,5 @@
 - [핵심 개념](../blockchain/02_core_concepts.md) — 에포크, 윈도우, 보상 공식
 - [Activity Protocol](../blockchain/04_activity_protocol.md) — MsgSubmitActivity 온체인 처리
 - [노드 모듈](../blockchain/03_node_module.md) — x/node 모듈
-- [스팸 방어](../blockchain/08_spam_defense.md) — 쿼터, 수수료, 게이밍 방어
+- [스팸 방어](../blockchain/06_spam_defense.md) — 쿼터, 수수료, 게이밍 방어
 - [아키텍처 리뷰](../architecture_review.md) — 보완 사항 및 미해소 항목

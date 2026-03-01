@@ -5,7 +5,7 @@
 > **전체 목차**: [sdk/README.md](sdk/README.md)
 
 > **목적**: 7개 언어(TypeScript, Go, Python, Kotlin, Java, Swift, C#) 구현의 **단일 진실 원천(Single Source of Truth)**
-> **관련 문서**: [MCP 서버 아키텍처](mcp_server_architecture.md) · [핵심 개념](blockchain/02_core_concepts.md) · [Activity Protocol](blockchain/04_activity_protocol.md) · [노드 모듈](blockchain/03_node_module.md) · [스팸 방어](blockchain/08_spam_defense.md)
+> **관련 문서**: [MCP 서버 아키텍처](mcp_server_architecture.md) · [핵심 개념](blockchain/02_core_concepts.md) · [Activity Protocol](blockchain/04_activity_protocol.md) · [노드 모듈](blockchain/03_node_module.md) · [스팸 방어](blockchain/06_spam_defense.md)
 
 > **면책 조항**: 이 문서는 프로토콜 메커니즘에 대한 기술 설계 문서이다. 보상 분배는 프로토콜 규칙에 따라 자동 실행되며, 어떠한 형태의 수익도 보장하지 않는다.
 

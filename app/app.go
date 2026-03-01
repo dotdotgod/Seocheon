@@ -46,9 +46,13 @@ import (
 	ibctransferkeeper "github.com/cosmos/ibc-go/v10/modules/apps/transfer/keeper"
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
+
 	"seocheon/docs"
 	activitymodulekeeper "seocheon/x/activity/keeper"
 	nodemodulekeeper "seocheon/x/node/keeper"
+	randomnessmodulekeeper "seocheon/x/randomness/keeper"
 )
 
 const (
@@ -101,10 +105,15 @@ type App struct {
 	ICAHostKeeper       icahostkeeper.Keeper
 	TransferKeeper      ibctransferkeeper.Keeper
 
+	// cosmwasm keeper
+	WasmKeeper     wasmkeeper.Keeper
+	wasmNodeConfig wasmtypes.NodeConfig
+
 	// simulation manager
-	sm             *module.SimulationManager
-	NodeKeeper     *nodemodulekeeper.Keeper
-	ActivityKeeper *activitymodulekeeper.Keeper
+	sm               *module.SimulationManager
+	NodeKeeper       *nodemodulekeeper.Keeper
+	ActivityKeeper   *activitymodulekeeper.Keeper
+	RandomnessKeeper *randomnessmodulekeeper.Keeper
 }
 
 func init() {
@@ -187,6 +196,7 @@ func New(
 		&app.ParamsKeeper,
 		&app.NodeKeeper,
 		&app.ActivityKeeper,
+		&app.RandomnessKeeper,
 	); err != nil {
 		panic(err)
 	}
@@ -216,8 +226,18 @@ func New(
 	// build app
 	app.App = appBuilder.Build(db, traceStore, baseAppOptions...)
 
-	// register legacy modules
-	if err := app.registerIBCModules(appOpts); err != nil {
+	// Phase 1: Create IBC keepers (needed by wasm keeper).
+	if err := app.registerIBCKeepers(appOpts); err != nil {
+		panic(err)
+	}
+
+	// Phase 2: Create CosmWasm keeper (needs IBC keepers, needed by IBC router).
+	if err := app.registerWasmModule(appOpts); err != nil {
+		panic(err)
+	}
+
+	// Phase 3: Create IBC router (with wasm route) and register IBC modules.
+	if err := app.registerIBCRouterAndModules(); err != nil {
 		panic(err)
 	}
 

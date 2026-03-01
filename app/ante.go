@@ -1,8 +1,13 @@
 package app
 
 import (
+	storetypes "cosmossdk.io/store/types"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
+
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
 	nodeante "seocheon/x/node/ante"
 )
@@ -18,10 +23,23 @@ func newAnteHandler(app *App) (sdk.AnteHandler, error) {
 		return nil, err
 	}
 
+	// Convert *uint64 to *storetypes.Gas for wasm simulation gas limit.
+	var simGasLimit *storetypes.Gas
+	if app.wasmNodeConfig.SimulationGasLimit != nil {
+		limit := storetypes.Gas(*app.wasmNodeConfig.SimulationGasLimit)
+		simGasLimit = &limit
+	}
+
 	return chainBeforeHandler(
 		standardHandler,
+		// Seocheon-specific decorators.
 		nodeante.NewRegistrationFeeDecorator(),
 		nodeante.NewAgentPermissionDecorator(app.NodeKeeper),
+		// CosmWasm decorators.
+		wasmkeeper.NewLimitSimulationGasDecorator(simGasLimit),
+		wasmkeeper.NewCountTXDecorator(runtime.NewKVStoreService(app.GetKey(wasmtypes.StoreKey))),
+		wasmkeeper.NewGasRegisterDecorator(app.WasmKeeper.GetGasRegister()),
+		wasmkeeper.NewTxContractsDecorator(),
 	), nil
 }
 

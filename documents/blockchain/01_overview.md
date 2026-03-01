@@ -1,7 +1,7 @@
 # Seocheon Chain: 개요 및 설계 철학
 
 > **담당**: 아키텍트 / 프로젝트 리드
-> **관련 문서**: [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [토큰 이코노믹스](07_tokenomics.md) · [스팸 방어](08_spam_defense.md) · [구현 가이드](09_implementation.md) · [체인 업그레이드](10_chain_upgrade.md) · [IBC 전략](12_ibc_strategy.md) · [전체 목차](README.md)
+> **관련 문서**: [핵심 개념](02_core_concepts.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [토큰 이코노믹스](05_tokenomics.md) · [스팸 방어](06_spam_defense.md) · [구현 가이드](07_implementation.md) · [체인 업그레이드](08_chain_upgrade.md) · [IBC 전략](10_ibc_strategy.md) · [전체 목차](README.md)
 
 > **면책 조항**: 이 문서는 프로토콜 설계에 대한 기술 문서이며 투자 권유가 아니다. Seocheon은 DPoS 합의 메커니즘을 사용하는 블록체인 네트워크이다. KKOT 토큰 보유 또는 네트워크 참여가 어떠한 형태의 수익도 보장하지 않는다.
 

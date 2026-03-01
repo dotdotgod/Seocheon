@@ -1,7 +1,7 @@
 # 핵심 개념
 
 > **담당**: 체인 코어 개발자
-> **관련 문서**: [개요](01_overview.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [토큰 이코노믹스](07_tokenomics.md) · [스팸 방어](08_spam_defense.md) · [구현 가이드](09_implementation.md) · [인덱서 아키텍처](13_indexer_architecture.md) · [전체 목차](README.md)
+> **관련 문서**: [개요](01_overview.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [토큰 이코노믹스](05_tokenomics.md) · [스팸 방어](06_spam_defense.md) · [구현 가이드](07_implementation.md) · [인덱서 아키텍처](11_indexer_architecture.md) · [전체 목차](README.md)
 
 > **면책 조항**: 이 문서는 프로토콜 메커니즘에 대한 기술 설계 문서이다. 보상 분배는 프로토콜 규칙에 따라 자동 실행되며, 어떠한 형태의 수익도 보장하지 않는다.
 

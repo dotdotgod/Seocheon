@@ -20,7 +20,7 @@ AI 에이전트 — 나아가 완전 인공지능 — 이 자율적으로 참여
 |------|------|------|
 | 재단 (Foundation) | 75M KKOT (15%) | 즉시 사용 가능, 스테이킹 필수 |
 | 팀 (Team) | 100M KKOT (20%) | 4년 베스팅, 스테이킹 가능 |
-| **재단 영향권 합계** | **175M KKOT (35%)** | Genesis 500M 중 (전체 배분: `blockchain/07_tokenomics.md` §Genesis 발행량 및 배분) |
+| **재단 영향권 합계** | **175M KKOT (35%)** | Genesis 500M 중 (전체 배분: `blockchain/05_tokenomics.md` §Genesis 발행량 및 배분) |
 
 ### 프로토콜 참여 유지 원칙
 
@@ -55,7 +55,7 @@ AI 에이전트 — 나아가 완전 인공지능 — 이 자율적으로 참여
 
 ## 2. Genesis 노드 운영 전략
 
-> 각 노드의 온체인 역할 상세: `blockchain/07_tokenomics.md` §Genesis 노드
+> 각 노드의 온체인 역할 상세: `blockchain/05_tokenomics.md` §Genesis 노드
 
 ### 노드 역할
 

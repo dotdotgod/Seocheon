@@ -40,11 +40,11 @@ CometBFT의 O(n²) 통신 복잡도를 고려하면 Active Validator Set은 150~
 
 | 항목 | 중요도 | 비고 |
 |------|--------|------|
-| 체인 업그레이드 전략 | 상 | ✅ 문서화 완료 ([10_chain_upgrade.md](blockchain/10_chain_upgrade.md)) |
-| 긴급 정지 메커니즘 (Circuit Breaker) | 상 | ✅ 문서화 완료 ([11_circuit_breaker.md](blockchain/11_circuit_breaker.md)) |
-| IBC 전략 | 중 | ✅ 문서화 완료 ([12_ibc_strategy.md](blockchain/12_ibc_strategy.md)) |
-| API rate limiting | 중 | ✅ 인덱서 아키텍처 문서에 포함 ([13_indexer_architecture.md](blockchain/13_indexer_architecture.md) §Rate Limiting 전략) |
-| 인덱서 상세 아키텍처 | 중 | ✅ 문서화 완료 ([13_indexer_architecture.md](blockchain/13_indexer_architecture.md)) |
+| 체인 업그레이드 전략 | 상 | ✅ 문서화 완료 ([08_chain_upgrade.md](blockchain/08_chain_upgrade.md)) |
+| 긴급 정지 메커니즘 (Circuit Breaker) | 상 | ✅ 문서화 완료 ([09_circuit_breaker.md](blockchain/09_circuit_breaker.md)) |
+| IBC 전략 | 중 | ✅ 문서화 완료 ([10_ibc_strategy.md](blockchain/10_ibc_strategy.md)) |
+| API rate limiting | 중 | ✅ 인덱서 아키텍처 문서에 포함 ([11_indexer_architecture.md](blockchain/11_indexer_architecture.md) §Rate Limiting 전략) |
+| 인덱서 상세 아키텍처 | 중 | ✅ 문서화 완료 ([11_indexer_architecture.md](blockchain/11_indexer_architecture.md)) |
 | Client SDK 구현 | 상 | MCP 서버의 기반 계층. 설계 스펙 완료 ([sdk/](sdk/README.md)), 구현 대기 |
 | 스케일링 전략 (IBC 샤딩, L2) | 중 | 노드 수 10만+ 시 TPS 병목 대응, 장기 과제 |
 | 에이전트 기억 체계 구현 상세 | 하 | off-chain 참고 아키텍처, 운영자 자유 |

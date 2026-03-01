@@ -1,0 +1,155 @@
+import type { ChainClient } from "../infrastructure/chain-client.js";
+import type { SigningService } from "../infrastructure/signing-service.js";
+import type { ResolvedTxConfig } from "../types/config.js";
+import type {
+  SubmitActivityResponse,
+  GetActivitiesResponse,
+  ActivityItem,
+  GetQuotaResponse,
+} from "../types/responses.js";
+import { isValidActivityHash, isValidContentUri } from "../utils/hash.js";
+import { computeEpoch, computeWindow } from "../utils/epoch.js";
+import { ValidationError, TransactionError } from "../errors/errors.js";
+import {
+  ERR_INVALID_ACTIVITY_HASH,
+  ERR_INVALID_CONTENT_URI,
+  ERR_BROADCAST_FAILED,
+} from "../constants/errors.js";
+
+export class ActivityModule {
+  constructor(
+    private readonly chainClient: ChainClient,
+    private readonly signingService: SigningService,
+    private readonly txConfig: ResolvedTxConfig,
+  ) {}
+
+  async submit(
+    activityHash: string,
+    contentUri: string,
+  ): Promise<SubmitActivityResponse> {
+    if (!isValidActivityHash(activityHash)) {
+      throw new ValidationError(
+        "activity hash must be exactly 64 hex characters (32 bytes)",
+        ERR_INVALID_ACTIVITY_HASH,
+      );
+    }
+    if (!isValidContentUri(contentUri)) {
+      throw new ValidationError(
+        "content URI must not be empty",
+        ERR_INVALID_CONTENT_URI,
+      );
+    }
+
+    const submitter = await this.signingService.getAddress();
+
+    // Build MsgSubmitActivity
+    // In full integration, this would use protobuf encoding + CosmJS signing
+    const _msg = {
+      typeUrl: "/seocheon.activity.v1.MsgSubmitActivity",
+      value: { submitter, activity_hash: activityHash, content_uri: contentUri },
+    };
+
+    // Placeholder: actual TX broadcast requires CosmJS integration
+    throw new TransactionError(
+      "activity.submit() requires full CosmJS TX pipeline integration",
+      ERR_BROADCAST_FAILED,
+    );
+  }
+
+  async getActivities(
+    nodeId?: string,
+    epochNumber?: number,
+  ): Promise<GetActivitiesResponse> {
+    const effectiveNodeId = nodeId ?? (await this.resolveOwnNodeId());
+    const effectiveEpoch = epochNumber ?? this.computeCurrentEpoch();
+
+    // Query ActivitiesByNode via REST
+    const response = await this.chainClient.queryRest<{
+      activities: Array<{
+        activity_hash: string;
+        content_uri: string;
+        block_height: string;
+      }>;
+    }>(
+      `/seocheon/activity/v1/nodes/${effectiveNodeId}/activities?epoch=${effectiveEpoch}`,
+    );
+
+    const params = await this.getActivityParams();
+    const activities: ActivityItem[] = (response.activities ?? []).map(
+      (record) => {
+        const blockHeight = parseInt(record.block_height, 10);
+        return {
+          activity_hash: record.activity_hash,
+          content_uri: record.content_uri,
+          block_height: blockHeight,
+          window_number: computeWindow(
+            blockHeight,
+            params.epoch_length,
+            params.windows_per_epoch,
+          ),
+          tx_hash: "", // Would require TX index search
+        };
+      },
+    );
+
+    return {
+      activities,
+      total_count: activities.length,
+    };
+  }
+
+  async getQuota(): Promise<GetQuotaResponse> {
+    const nodeId = await this.resolveOwnNodeId();
+    const epochNumber = this.computeCurrentEpoch();
+
+    const response = await this.chainClient.queryRest<{
+      summary: { active_windows: string; total_activities: string; eligible: boolean };
+      quota_used: string;
+      quota_limit: string;
+    }>(`/seocheon/activity/v1/nodes/${nodeId}/epochs/${epochNumber}`);
+
+    const quotaUsed = parseInt(response.quota_used, 10);
+    const quotaLimit = parseInt(response.quota_limit, 10);
+
+    return {
+      epoch_number: epochNumber,
+      quota_total: quotaLimit,
+      quota_used: quotaUsed,
+      quota_remaining: quotaLimit - quotaUsed,
+      is_feegrant: false, // Would require feegrant query
+      feegrant_expiry: null,
+    };
+  }
+
+  private async resolveOwnNodeId(): Promise<string> {
+    const address = await this.signingService.getAddress();
+    const response = await this.chainClient.queryRest<{
+      node: { id: string };
+    }>(`/seocheon/node/v1/nodes/by-agent/${address}`);
+    return response.node.id;
+  }
+
+  private computeCurrentEpoch(): number {
+    // In practice, would query latest block height first
+    return 0;
+  }
+
+  private async getActivityParams(): Promise<{
+    epoch_length: number;
+    windows_per_epoch: number;
+    min_active_windows: number;
+  }> {
+    const response = await this.chainClient.queryRest<{
+      params: {
+        epoch_length: string;
+        windows_per_epoch: string;
+        min_active_windows: string;
+      };
+    }>("/seocheon/activity/v1/params");
+    return {
+      epoch_length: parseInt(response.params.epoch_length, 10),
+      windows_per_epoch: parseInt(response.params.windows_per_epoch, 10),
+      min_active_windows: parseInt(response.params.min_active_windows, 10),
+    };
+  }
+}

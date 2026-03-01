@@ -30,10 +30,14 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v10/modules/core/keeper"
 	solomachine "github.com/cosmos/ibc-go/v10/modules/light-clients/06-solomachine"
 	ibctm "github.com/cosmos/ibc-go/v10/modules/light-clients/07-tendermint"
+
+	wasm "github.com/CosmWasm/wasmd/x/wasm"
+	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
-// registerIBCModules register IBC keepers and non dependency inject modules.
-func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
+// registerIBCKeepers creates IBC keepers and transfer/ICA keepers.
+// The IBC router is NOT created here — see registerIBCRouterAndModules.
+func (app *App) registerIBCKeepers(appOpts servertypes.AppOptions) error {
 	// set up non depinject support modules store keys
 	if err := app.RegisterStores(
 		storetypes.NewKVStoreKey(ibcexported.StoreKey),
@@ -99,6 +103,13 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 		govModuleAddr,
 	)
 
+	return nil
+}
+
+// registerIBCRouterAndModules creates the IBC v1/v2 routers (including wasm route),
+// sets up light clients, and registers all IBC-related app modules.
+// Must be called AFTER registerWasmModule so WasmKeeper is available.
+func (app *App) registerIBCRouterAndModules() error {
 	// create IBC module from bottom to top of stack
 	var (
 		transferStack      porttypes.IBCModule = ibctransfer.NewIBCModule(app.TransferKeeper)
@@ -107,11 +118,20 @@ func (app *App) registerIBCModules(appOpts servertypes.AppOptions) error {
 		icaHostStack       porttypes.IBCModule = icahost.NewIBCModule(app.ICAHostKeeper)
 	)
 
-	// create IBC v1 router, add transfer route, then set it on the keeper
+	// create wasm IBC handler
+	wasmIBCHandler := wasm.NewIBCHandler(
+		app.WasmKeeper,
+		app.IBCKeeper.ChannelKeeper,
+		app.TransferKeeper,
+		app.IBCKeeper.ChannelKeeper,
+	)
+
+	// create IBC v1 router, add transfer + ICA + wasm routes, then set it on the keeper
 	ibcRouter := porttypes.NewRouter().
 		AddRoute(ibctransfertypes.ModuleName, transferStack).
 		AddRoute(icacontrollertypes.SubModuleName, icaControllerStack).
-		AddRoute(icahosttypes.SubModuleName, icaHostStack)
+		AddRoute(icahosttypes.SubModuleName, icaHostStack).
+		AddRoute(wasmtypes.ModuleName, wasmIBCHandler)
 
 	// create IBC v2 router, add transfer route, then set it on the keeper
 	ibcv2Router := ibcapi.NewRouter().
