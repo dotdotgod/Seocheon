@@ -13,6 +13,7 @@ func RegisterInvariants(ir sdk.InvariantRegistry, k Keeper) {
 	ir.RegisterRoute(types.ModuleName, "module-accounts", ModuleAccountInvariant(k))
 	ir.RegisterRoute(types.ModuleName, "index-consistency", IndexConsistencyInvariant(k))
 	ir.RegisterRoute(types.ModuleName, "node-status", NodeStatusInvariant(k))
+	ir.RegisterRoute(types.ModuleName, "boost-pool", BoostPoolInvariant(k))
 }
 
 // AllInvariants runs all invariants of the node module.
@@ -26,7 +27,11 @@ func AllInvariants(k Keeper) sdk.Invariant {
 		if stop {
 			return res, stop
 		}
-		return NodeStatusInvariant(k)(ctx)
+		res, stop = NodeStatusInvariant(k)(ctx)
+		if stop {
+			return res, stop
+		}
+		return BoostPoolInvariant(k)(ctx)
 	}
 }
 
@@ -54,6 +59,17 @@ func ModuleAccountInvariant(k Keeper) sdk.Invariant {
 		if fgBalance.IsAnyNegative() {
 			return sdk.FormatInvariant(types.ModuleName, "module-accounts",
 				fmt.Sprintf("feegrant pool has negative balance: %s", fgBalance)), true
+		}
+
+		boostPoolAddr := k.authKeeper.GetModuleAddress(types.BoostPoolName)
+		if boostPoolAddr == nil {
+			return sdk.FormatInvariant(types.ModuleName, "module-accounts",
+				"boost pool module account does not exist"), true
+		}
+		boostBalance := k.bankKeeper.GetAllBalances(ctx, boostPoolAddr)
+		if boostBalance.IsAnyNegative() {
+			return sdk.FormatInvariant(types.ModuleName, "module-accounts",
+				fmt.Sprintf("boost pool has negative balance: %s", boostBalance)), true
 		}
 
 		return "", false
@@ -141,6 +157,36 @@ func IndexConsistencyInvariant(k Keeper) sdk.Invariant {
 		if nodeCount != operatorCount {
 			return sdk.FormatInvariant(types.ModuleName, "index-consistency",
 				fmt.Sprintf("node count (%d) != operator index count (%d)", nodeCount, operatorCount)), true
+		}
+
+		return "", false
+	}
+}
+
+// BoostPoolInvariant checks that the boost pool's cumulative distribution
+// does not exceed the total genesis boost pool balance.
+func BoostPoolInvariant(k Keeper) sdk.Invariant {
+	return func(ctx sdk.Context) (string, bool) {
+		distributed, err := k.BoostPoolDistributed.Get(ctx)
+		if err != nil {
+			// Not yet initialized — ok.
+			return "", false
+		}
+
+		boostPoolAddr := k.authKeeper.GetModuleAddress(types.BoostPoolName)
+		if boostPoolAddr == nil {
+			return "", false
+		}
+		currentBalance := k.bankKeeper.GetAllBalances(ctx, boostPoolAddr).AmountOf("uppyeo")
+
+		// Total = distributed + remaining must be consistent (non-negative).
+		if distributed.IsNegative() {
+			return sdk.FormatInvariant(types.ModuleName, "boost-pool",
+				fmt.Sprintf("boost pool distributed amount is negative: %s", distributed)), true
+		}
+		if currentBalance.IsNegative() {
+			return sdk.FormatInvariant(types.ModuleName, "boost-pool",
+				fmt.Sprintf("boost pool balance is negative: %s", currentBalance)), true
 		}
 
 		return "", false

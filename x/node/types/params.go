@@ -18,9 +18,12 @@ var (
 	DefaultAgentFeegrantAllowedMsgTypes = []string{
 		"/seocheon.activity.v1.MsgSubmitActivity",
 	}
-	DefaultAgentAddressChangeCooldown = uint64(17280) // 1 epoch
-	DefaultMaxTags                    = uint32(10)
-	DefaultMaxTagLength               = uint32(32)
+	DefaultAgentAddressChangeCooldown        = uint64(17280) // 1 epoch
+	DefaultMaxTags                           = uint32(10)
+	DefaultMaxTagLength                      = uint32(32)
+	DefaultDelegationConfirmationPeriod      = uint64(90)  // ~90 days
+	DefaultDelegationRenewalWindow           = uint64(7)   // ~7 days
+	DefaultParamEpochLength                  = DefaultEpochLength // 17280 blocks (~1 day)
 )
 
 // NewParams creates a new Params instance with the given values.
@@ -34,18 +37,15 @@ func NewParams() Params {
 		AgentAddressChangeCooldown:       DefaultAgentAddressChangeCooldown,
 		MaxTags:                          DefaultMaxTags,
 		MaxTagLength:                     DefaultMaxTagLength,
+		DelegationConfirmationPeriod:     DefaultDelegationConfirmationPeriod,
+		DelegationRenewalWindow:          DefaultDelegationRenewalWindow,
+		EpochLength:                      DefaultParamEpochLength,
 	}
 }
 
 // DefaultParams returns a default set of parameters.
 func DefaultParams() Params {
 	return NewParams()
-}
-
-// DefaultAgentShareForTest returns a valid agent_share value for testing (35).
-// Used to test agent_share changes that are within the default max change rate.
-func DefaultAgentShareForTest() math.LegacyDec {
-	return math.LegacyNewDec(35)
 }
 
 // Validate validates the set of params.
@@ -61,6 +61,17 @@ func (p Params) Validate() error {
 	}
 	if p.MaxTagLength == 0 {
 		return fmt.Errorf("max_tag_length must be positive")
+	}
+	if p.EpochLength <= 0 {
+		return fmt.Errorf("epoch_length must be positive")
+	}
+	if p.DelegationConfirmationPeriod > 0 {
+		if p.DelegationRenewalWindow == 0 {
+			return fmt.Errorf("delegation_renewal_window must be positive when confirmation period is set")
+		}
+		if p.DelegationRenewalWindow >= p.DelegationConfirmationPeriod {
+			return fmt.Errorf("delegation_renewal_window must be less than delegation_confirmation_period")
+		}
 	}
 	return nil
 }

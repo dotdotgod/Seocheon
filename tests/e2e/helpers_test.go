@@ -128,15 +128,13 @@ func (s *E2ESuite) fundAccount(val *network.Validator, addr sdk.AccAddress, coin
 }
 
 // registerNode sends a MsgRegisterNode from the operator, using agentAddr for the agent.
-// Returns the node ID.
-// Note: pubKey param is ignored; a fresh ed25519 key is generated for the validator consensus key
+// Returns the node ID. A fresh ed25519 key is generated for the validator consensus key
 // because Cosmos SDK staking requires ed25519, while keyring generates secp256k1.
 func (s *E2ESuite) registerNode(
 	val *network.Validator,
 	operatorClientCtx client.Context,
 	operatorAddr sdk.AccAddress,
 	agentAddr string,
-	pubKey cryptotypes.PubKey,
 	description string,
 	agentShare sdkmath.LegacyDec,
 ) (string, error) {

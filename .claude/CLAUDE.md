@@ -43,7 +43,7 @@ documents/
 │   └── 08_events.md              ← 온체인 이벤트 타입 (체인 코어/SDK)
 ├── agent_architecture.md         ← 오프체인 에이전트 참고 아키텍처
 ├── mcp_server_architecture.md    ← MCP 서버 아키텍처 (seocheon-server, vault-server)
-├── foundation_strategy.md        ← 재단 운영 전략
+├── foundation_strategy.md        ← 빌더 운영 전략
 └── architecture_review.md        ← 아키텍처 리뷰 및 보완 사항
 docs/
 ├── docs.go                       ← Cosmos SDK API 문서 서비스
@@ -98,6 +98,7 @@ scripts/                                 ← genesis_build.sh
 - **Cosmos SDK v0.53+** / CometBFT
 - **Go**: 1.24.1
 - **토큰**: KKOT (꽃, 단일 토큰) — 6단계 denomination: `uppyeo`(뼈, 10^0) → `sal`(살, 10^2) → `pi`(피, 10^4) → `sum`(숨, 10^6) → `hon`(혼, 10^8) → `kkot`(꽃, 10^10)
+- **Genesis 배분**: 빌더 33% (16,500) + 밸리데이터 부스팅 27% (13,500) + 커뮤니티 풀 40% (20,000) = 50,000 KKOT
 - **합의**: DPoS, Active Validator Set 150~200
 - **해시 알고리즘**: SHA-256
 
@@ -128,8 +129,8 @@ scripts/                                 ← genesis_build.sh
 - 프론트엔드 코드: TypeScript strict mode, 함수형 컴포넌트
 - **금지 용어**: 시장, 증권, 거래소, 주식, 배당, 투자, 수익률, 원금, DEX, 유동성 풀, 거래 가능, 수입원, 경제적 이득 등 금융/증권/투자 표현 사용 금지
 - **가치 판단 표현**: "생태계가 판단한다", "생태계(위임)가 처리한다" 사용 ("시장이 판단한다" 사용 금지)
-- **재단 토큰 운용**: "생태 순환", "생태계 유통" 사용 ("시장 매각", "유동성 공급" 사용 금지)
-- **재단 자원 표현**: "기여 자원", "기여 분배" 사용 ("수입원", "원금", "보상 증가" 사용 금지)
+- **빌더 토큰 운용**: "생태 순환", "생태계 유통" 사용 ("시장 매각", "유동성 공급" 사용 금지)
+- **빌더 자원 표현**: "기여 자원", "기여 분배" 사용 ("수입원", "원금", "보상 증가" 사용 금지)
 
 ### Go (Cosmos SDK)
 - **모듈 디렉토리 구조**: `keeper/`, `types/`, `module/`, `ante/`, `client/cli/` 패턴
@@ -156,6 +157,9 @@ scripts/                                 ← genesis_build.sh
 | Activity Report | content_uri가 가리키는 오프체인 활동 상세 데이터 |
 | agent_address | 노드의 AI 에이전트 전용 지갑 주소 |
 | feegrant | 신규 노드에 자동 부여되는 가스비 지원 (쿼터 10/에포크) |
+| MsgConfirmDelegation | 능동 위임 확인 TX. 갱신 윈도우(마지막 7 에포크) 내에서만 수락. 가스비 필요 |
+| delegation_confirmation_period | 위임 확인 주기 (기본 90 에포크 ~3개월). 마지막 N 에포크가 갱신 윈도우. 거버넌스 파라미터 |
+| delegation_renewal_window | 갱신 윈도우 크기 (기본 7 에포크 ~7일). 주기 마지막 N 에포크 동안 MsgConfirmDelegation 수락. 거버넌스 파라미터 |
 | 에포크 | 17,280 블록 (~1일). 쿼터 리셋, 활동 자격 집계의 기본 단위 |
 | 윈도우 | 1,440 블록 (~2시간). 에포크당 12윈도우. 활동 보상 자격 판정의 기본 단위 |
 | 활동 자격 | 에포크 내 12윈도우 중 8윈도우 이상에서 각 1건 이상 MsgSubmitActivity 제출 |

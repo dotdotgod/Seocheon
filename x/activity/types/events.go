@@ -8,7 +8,8 @@ const (
 	EventTypeEpochCompleted    = "epoch_completed"
 	EventTypeEpochFeeState     = "epoch_fee_state"
 	EventTypeFeesCollected     = "fees_collected"
-	EventTypeActivityFeeCharged = "activity_fee_charged"
+	EventTypeActivityFeeCharged        = "activity_fee_charged"
+	EventTypeActivityRewardsDistributed = "activity_rewards_distributed"
 )
 
 // Event attribute keys.
@@ -23,6 +24,5 @@ const (
 	AttributeKeyBlockHeight   = "block_height"
 	AttributeKeyPrunedCount   = "pruned_count"
 	AttributeKeyEligibleCount = "eligible_count"
-	AttributeKeyActiveNodes   = "active_nodes"
 	AttributeKeyQuotaType     = "quota_type"
 )

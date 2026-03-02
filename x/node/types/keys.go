@@ -18,10 +18,15 @@ const (
 	// FeegrantPoolName is the module account name for the Feegrant Pool.
 	FeegrantPoolName = "node_feegrant_pool"
 
-	// EpochLength is the number of blocks per epoch (~1 day).
-	// This is used for agent_share change scheduling and will be
-	// promoted to a governance parameter in Phase 1 (x/activity).
-	EpochLength = int64(17280)
+	// BoostPoolName is the module account name for the Validator Boost Pool.
+	BoostPoolName = "node_boost_pool"
+
+	// DefaultEpochLength is the default number of blocks per epoch (~1 day).
+	// Now a governance parameter (Params.EpochLength). Use Keeper.getEpochLength(ctx) at runtime.
+	DefaultEpochLength = int64(17280)
+
+	// Bech32PrefixValAddr is the Bech32 prefix for validator operator addresses.
+	Bech32PrefixValAddr = "seocheonvaloper"
 )
 
 // Store key prefixes.
@@ -51,4 +56,13 @@ var (
 
 	// LastAgentChangeBlockKey: node_id -> block_height (agent address change cooldown)
 	LastAgentChangeBlockKey = collections.NewPrefix(8)
+
+	// BoostPoolDistributedKey: stores cumulative distributed amount from boost pool
+	BoostPoolDistributedKey = collections.NewPrefix(9)
+
+	// DelegationConfirmationsKey: (delegator, validator) → expiry_epoch
+	DelegationConfirmationsKey = collections.NewPrefix(10)
+
+	// PendingExpirationsKey: (expiry_epoch, delegator, validator) → empty (KeySet)
+	PendingExpirationsKey = collections.NewPrefix(11)
 )

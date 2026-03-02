@@ -105,7 +105,7 @@ func (k msgServer) RegisterNode(ctx context.Context, msg *types.MsgRegisterNode)
 
 	// [5] Create validator via x/staking (self-delegation of 1 uppyeo).
 	valAddr := sdk.ValAddress(operatorAddr)
-	valAddrStr, err := sdk.Bech32ifyAddressBytes("seocheonvaloper", valAddr)
+	valAddrStr, err := sdk.Bech32ifyAddressBytes(types.Bech32PrefixValAddr, valAddr)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "failed to create validator address")
 	}

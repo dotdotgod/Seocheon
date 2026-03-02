@@ -13,6 +13,7 @@ import (
 	"github.com/seocheon/sdk-go/internal/chain"
 	"github.com/seocheon/sdk-go/internal/signing"
 	"github.com/seocheon/sdk-go/types"
+	"github.com/seocheon/sdk-go/utility"
 )
 
 // Module provides node-related operations.
@@ -149,7 +150,7 @@ func (m *Module) Search(ctx context.Context, tag, status string, limit uint32, o
 				NodeID:          n.ID,
 				Status:          string(types.NodeStatusFromInt(n.Status)),
 				Tags:            n.Tags,
-				TotalDelegation: formatKkot(delegation),
+				TotalDelegation: utility.FormatKkot(delegation),
 				Description:     n.Description,
 			},
 			delegation: delegation,
@@ -259,13 +260,4 @@ type nodeProto struct {
 	AgentShare       string   `json:"agent_share"`
 	ValidatorAddress string   `json:"validator_address"`
 	RegisteredAt     string   `json:"registered_at"`
-}
-
-func formatKkot(uppyeo int64) string {
-	intPart := uppyeo / 10000000000
-	decPart := uppyeo % 10000000000
-	if decPart < 0 {
-		decPart = -decPart
-	}
-	return fmt.Sprintf("%d.%010d", intPart, decPart)
 }

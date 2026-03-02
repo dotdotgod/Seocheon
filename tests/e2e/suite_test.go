@@ -110,7 +110,12 @@ func (s *E2ESuite) patchActivityGenesis(cfg *network.Config) {
 	cfg.GenesisState[activitytypes.ModuleName] = bz
 }
 
-// patchNodeGenesis funds the registration pool so that MsgRegisterNode can succeed.
+// patchNodeGenesis sets fast delegation confirmation params for E2E testing.
+// EpochLength=10 blocks per epoch (vs 17280 default) for fast epoch progression.
+// DelegationConfirmationPeriod=5 and DelegationRenewalWindow=1 so that:
+//   - Delegation at epoch N gets expiry at epoch N+5
+//   - Renewal window starts at epoch N+4 (gives 4 epochs margin for confirm-fail test)
+//   - Force unbond at epoch N+5 (= block (N+5)*10 with EpochLength=10)
 func (s *E2ESuite) patchNodeGenesis(cfg *network.Config) {
 	raw := cfg.GenesisState[nodetypes.ModuleName]
 	var gen map[string]json.RawMessage
@@ -120,7 +125,16 @@ func (s *E2ESuite) patchNodeGenesis(cfg *network.Config) {
 		gen = make(map[string]json.RawMessage)
 	}
 
-	// Patch params if needed (defaults are fine for E2E).
+	// Set fast params for testability.
+	params := nodetypes.DefaultParams()
+	params.EpochLength = 10 // 10 blocks per epoch for fast E2E
+	params.DelegationConfirmationPeriod = 5
+	params.DelegationRenewalWindow = 1
+
+	paramsBz, err := cfg.Codec.MarshalJSON(&params)
+	s.Require().NoError(err)
+	gen["params"] = paramsBz
+
 	bz, err := json.Marshal(gen)
 	s.Require().NoError(err)
 	cfg.GenesisState[nodetypes.ModuleName] = bz

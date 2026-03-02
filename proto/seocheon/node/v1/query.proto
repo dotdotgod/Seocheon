@@ -42,6 +42,11 @@ service Query {
   rpc AllNodes(QueryAllNodesRequest) returns (QueryAllNodesResponse) {
     option (google.api.http).get = "/seocheon/node/v1/nodes";
   }
+
+  // DelegationConfirmation queries the confirmation status for a delegator-validator pair.
+  rpc DelegationConfirmation(QueryDelegationConfirmationRequest) returns (QueryDelegationConfirmationResponse) {
+    option (google.api.http).get = "/seocheon/node/v1/delegation-confirmation/{delegator_address}/{validator_address}";
+  }
 }
 
 // QueryParamsRequest is the request type for the Query/Params RPC method.
@@ -106,4 +111,22 @@ message QueryAllNodesRequest {
 message QueryAllNodesResponse {
   repeated Node nodes = 1 [(gogoproto.nullable) = false];
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryDelegationConfirmationRequest is the request type for the Query/DelegationConfirmation RPC method.
+message QueryDelegationConfirmationRequest {
+  string delegator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  string validator_address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// QueryDelegationConfirmationResponse is the response type for the Query/DelegationConfirmation RPC method.
+message QueryDelegationConfirmationResponse {
+  // expiry_epoch is the epoch at which the delegation expires if not confirmed.
+  uint64 expiry_epoch = 1;
+  // current_epoch is the current epoch number.
+  uint64 current_epoch = 2;
+  // in_renewal_window indicates whether the delegation is currently within the renewal window.
+  bool in_renewal_window = 3;
+  // renewal_window_start is the epoch at which the renewal window begins.
+  uint64 renewal_window_start = 4;
 }

@@ -46,7 +46,7 @@ func (k msgServer) UpdateNodeAgentShare(ctx context.Context, msg *types.MsgUpdat
 
 	// Calculate apply_at_block: next epoch boundary.
 	currentBlock := sdkCtx.BlockHeight()
-	epochLength := types.EpochLength
+	epochLength := k.getEpochLength(ctx)
 	nextEpochBoundary := ((currentBlock / epochLength) + 1) * epochLength
 
 	pending := types.PendingAgentShareChange{

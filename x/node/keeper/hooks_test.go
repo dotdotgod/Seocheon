@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"testing"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
@@ -20,7 +21,7 @@ func setupNodeWithValidator(t *testing.T, f *fixture, operatorName string, statu
 	nodeID := expectedNodeID(operatorStr)
 
 	valAddr := sdk.ValAddress(operator)
-	valAddrStr, err := sdk.Bech32ifyAddressBytes("seocheonvaloper", valAddr)
+	valAddrStr, err := sdk.Bech32ifyAddressBytes(types.Bech32PrefixValAddr, valAddr)
 	require.NoError(t, err)
 
 	node := types.Node{
@@ -157,4 +158,102 @@ func TestAfterValidatorBeginUnbonding(t *testing.T) {
 		err := hooks.AfterValidatorBeginUnbonding(f.ctx, consAddr, valAddr)
 		require.NoError(t, err) // no error, silently skipped
 	})
+}
+
+// ---------------------------------------------------------------------------
+// Delegation Hooks: BeforeDelegationCreated / BeforeDelegationRemoved
+// ---------------------------------------------------------------------------
+
+func TestBeforeDelegationCreated_AutoConfirm(t *testing.T) {
+	f := initFixture(t)
+	hooks := f.keeper.Hooks()
+
+	delegator := sdk.AccAddress([]byte("delegator1__________"))
+	validator := sdk.ValAddress([]byte("validator1__________"))
+
+	// Set block height so current epoch is 5.
+	ctx := sdk.UnwrapSDKContext(f.ctx)
+	ctx = ctx.WithBlockHeight(5 * types.DefaultEpochLength)
+	f.ctx = ctx
+
+	// Call BeforeDelegationCreated — should auto-set initial confirmation.
+	err := hooks.BeforeDelegationCreated(f.ctx, delegator, validator)
+	require.NoError(t, err)
+
+	params, _ := f.keeper.Params.Get(f.ctx)
+
+	// Verify confirmation record was created.
+	pairKey := collections.Join(delegator.String(), validator.String())
+	expiryEpoch, err := f.keeper.DelegationConfirmations.Get(f.ctx, pairKey)
+	require.NoError(t, err)
+
+	expectedExpiry := uint64(5) + params.DelegationConfirmationPeriod
+	require.Equal(t, expectedExpiry, expiryEpoch)
+
+	// Verify pending expiration entry exists.
+	tripleKey := collections.Join3(expectedExpiry, delegator.String(), validator.String())
+	has, err := f.keeper.PendingExpirations.Has(f.ctx, tripleKey)
+	require.NoError(t, err)
+	require.True(t, has)
+}
+
+func TestBeforeDelegationCreated_DisabledWhenPeriodZero(t *testing.T) {
+	f := initFixture(t)
+	hooks := f.keeper.Hooks()
+
+	// Disable active delegation.
+	params, _ := f.keeper.Params.Get(f.ctx)
+	params.DelegationConfirmationPeriod = 0
+	params.DelegationRenewalWindow = 0
+	_ = f.keeper.Params.Set(f.ctx, params)
+
+	delegator := sdk.AccAddress([]byte("delegator1__________"))
+	validator := sdk.ValAddress([]byte("validator1__________"))
+
+	err := hooks.BeforeDelegationCreated(f.ctx, delegator, validator)
+	require.NoError(t, err)
+
+	// No confirmation record should be created.
+	pairKey := collections.Join(delegator.String(), validator.String())
+	has, _ := f.keeper.DelegationConfirmations.Has(f.ctx, pairKey)
+	require.False(t, has)
+}
+
+func TestBeforeDelegationRemoved_Cleanup(t *testing.T) {
+	f := initFixture(t)
+	hooks := f.keeper.Hooks()
+
+	delegator := sdk.AccAddress([]byte("delegator1__________"))
+	validator := sdk.ValAddress([]byte("validator1__________"))
+
+	// Set up confirmation record.
+	expiryEpoch := uint64(90)
+	pairKey := collections.Join(delegator.String(), validator.String())
+	_ = f.keeper.DelegationConfirmations.Set(f.ctx, pairKey, expiryEpoch)
+	tripleKey := collections.Join3(expiryEpoch, delegator.String(), validator.String())
+	_ = f.keeper.PendingExpirations.Set(f.ctx, tripleKey)
+
+	// Call BeforeDelegationRemoved — should clean up records.
+	err := hooks.BeforeDelegationRemoved(f.ctx, delegator, validator)
+	require.NoError(t, err)
+
+	// Verify confirmation record was removed.
+	has, _ := f.keeper.DelegationConfirmations.Has(f.ctx, pairKey)
+	require.False(t, has)
+
+	// Verify pending expiration was removed.
+	has, _ = f.keeper.PendingExpirations.Has(f.ctx, tripleKey)
+	require.False(t, has)
+}
+
+func TestBeforeDelegationRemoved_NoRecord(t *testing.T) {
+	f := initFixture(t)
+	hooks := f.keeper.Hooks()
+
+	delegator := sdk.AccAddress([]byte("delegator1__________"))
+	validator := sdk.ValAddress([]byte("validator1__________"))
+
+	// No confirmation record exists — should silently succeed.
+	err := hooks.BeforeDelegationRemoved(f.ctx, delegator, validator)
+	require.NoError(t, err)
 }

@@ -38,7 +38,7 @@ func (k msgServer) WithdrawNodeCommission(ctx context.Context, msg *types.MsgWit
 	}
 
 	// Withdraw validator commission via distribution module.
-	valAddrBytes, err := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
+	valAddrBytes, err := sdk.GetFromBech32(node.ValidatorAddress, types.Bech32PrefixValAddr)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "invalid validator address")
 	}

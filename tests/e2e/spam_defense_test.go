@@ -16,7 +16,7 @@ func (s *E2ESuite) TestSpamDefense() {
 	val := s.network.Validators[0]
 
 	// Create operator and agent.
-	opAddr, opPub, err := s.addKeyToKeyring(val, "opSpam")
+	opAddr, _, err := s.addKeyToKeyring(val, "opSpam")
 	s.Require().NoError(err)
 	agAddr, _, err := s.addKeyToKeyring(val, "agSpam")
 	s.Require().NoError(err)
@@ -29,7 +29,7 @@ func (s *E2ESuite) TestSpamDefense() {
 
 	// Register node (auto-grants feegrant → feegrant_quota=10 applies).
 	opCtx := s.clientCtxForKey(val, "opSpam")
-	nodeID, err := s.registerNode(val, opCtx, opAddr, agAddr.String(), opPub, "spam-test-node", sdkmath.LegacyZeroDec())
+	nodeID, err := s.registerNode(val, opCtx, opAddr, agAddr.String(), "spam-test-node", sdkmath.LegacyZeroDec())
 	s.Require().NoError(err)
 	s.T().Logf("registered node for spam test: %s", nodeID)
 

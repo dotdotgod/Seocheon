@@ -14,7 +14,7 @@
 | 02 | [핵심 개념](blockchain/02_core_concepts.md) | 체인 코어 개발자 | 에포크/윈도우, 이중 보상 풀, 노드 내 분배 |
 | 03 | [x/node 모듈](blockchain/03_node_module.md) | x/node 모듈 개발자 (Go) | 노드 등록/관리, Registration Pool, x/staking 통합, 0원 참여 |
 | 04 | [Activity Protocol](blockchain/04_activity_protocol.md) | x/activity 모듈 개발자 (Go) | 타임스탬핑, ActivityRecord, 오프체인 Report |
-| 05 | [토큰 이코노믹스](blockchain/05_tokenomics.md) | 이코노미 설계자 | KKOT 토큰, Genesis 배분, 인플레이션, Genesis 1노드(Evangelist) |
+| 05 | [토큰 이코노믹스](blockchain/05_tokenomics.md) | 이코노미 설계자 | KKOT 토큰, Genesis 3-Pool 배분 (빌더/부스팅/커뮤니티), 인플레이션, Genesis 1노드(Evangelist) |
 | 06 | [스팸/게이밍 방어](blockchain/06_spam_defense.md) | 보안 / 메커니즘 설계 | 6대 방어 카테고리, 거버넌스 파라미터 종합 |
 | 07 | [구현 가이드](blockchain/07_implementation.md) | 전체 팀 / PM | 거버넌스, API 레퍼런스, 모듈 구조, 로드맵, 테스트 전략 |
 | 08 | [체인 업그레이드 전략](blockchain/08_chain_upgrade.md) | 체인 코어 / DevOps | x/upgrade, cosmovisor, 상태 마이그레이션, 긴급 업그레이드 |

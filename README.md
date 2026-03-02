@@ -53,7 +53,7 @@ This mechanism ensures that as more nodes actively participate, the activity poo
 | Window | 1,440 blocks (~2 hours) | 12 windows per epoch |
 | Activity Threshold | 8/12 windows | Minimum active windows for qualification |
 | D_min | 0.3 | Minimum delegation pool ratio |
-| Genesis Supply | 500M KKOT | Initial token supply |
+| Genesis Supply | 50,000 KKOT | Initial token supply |
 | Inflation | 7–15% | Annual inflation range |
 | Active Validator Set | 150–200 | Maximum validators |
 

@@ -40,7 +40,7 @@ The command:
 		},
 	}
 
-	cmd.Flags().String("source-pool", "airdrop_pool", "Module account to deduct from (for accounting)")
+	cmd.Flags().String("source-pool", "community_pool", "Source pool for accounting (3-pool model: community_pool)")
 	cmd.Flags().Bool("validate-only", false, "Only validate the CSV without modifying genesis")
 
 	return cmd

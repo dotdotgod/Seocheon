@@ -98,10 +98,8 @@ var (
 		{Account: randomnessmoduletypes.ModuleName},
 		// CosmWasm module account.
 		{Account: wasmtypes.ModuleName, Permissions: []string{authtypes.Burner}},
-		// Genesis distribution pool accounts.
-		{Account: "airdrop_pool", Permissions: []string{authtypes.Burner}},
-		{Account: "ecosystem_fund"},
-		{Account: "ecosystem_reserve"},
+		// Validator Boost Pool account.
+		{Account: nodemoduletypes.BoostPoolName},
 	}
 
 	// blocked account addresses

@@ -12,6 +12,7 @@ import (
 	"github.com/seocheon/sdk-go/internal/chain"
 	"github.com/seocheon/sdk-go/internal/signing"
 	"github.com/seocheon/sdk-go/types"
+	"github.com/seocheon/sdk-go/utility"
 )
 
 // Module provides reward-related operations.
@@ -69,12 +70,12 @@ func (m *Module) GetPending(ctx context.Context, nodeID string) (*types.PendingR
 	agentShare := commissionTotal - operatorShare
 
 	return &types.PendingRewardsResponse{
-		DelegationReward: formatKkot(delegationReward),
-		ActivityReward:   formatKkot(activityReward),
-		TotalReward:      formatKkot(totalReward),
-		CommissionTotal:  formatKkot(commissionTotal),
-		OperatorShare:    formatKkot(operatorShare),
-		AgentShare:       formatKkot(agentShare),
+		DelegationReward: utility.FormatKkot(delegationReward),
+		ActivityReward:   utility.FormatKkot(activityReward),
+		TotalReward:      utility.FormatKkot(totalReward),
+		CommissionTotal:  utility.FormatKkot(commissionTotal),
+		OperatorShare:    utility.FormatKkot(operatorShare),
+		AgentShare:       utility.FormatKkot(agentShare),
 	}, nil
 }
 
@@ -195,13 +196,4 @@ func parseAgentShare(s string) float64 {
 		return val / 100.0
 	}
 	return val
-}
-
-func formatKkot(uppyeo int64) string {
-	intPart := uppyeo / 10000000000
-	decPart := uppyeo % 10000000000
-	if decPart < 0 {
-		decPart = -decPart
-	}
-	return fmt.Sprintf("%d.%010d", intPart, decPart)
 }

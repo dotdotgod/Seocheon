@@ -25,8 +25,8 @@ func TestGrantAgentFeegrant_NilFeegrantKeeper(t *testing.T) {
 	resp, err := ms.RegisterNode(f.ctx, &types.MsgRegisterNode{
 		Operator:                operator,
 		AgentAddress:            sdk.AccAddress([]byte("ag_fg_nil___________")).String(),
-		AgentShare:              types.DefaultAgentShareForTest(),
-		MaxAgentShareChangeRate: types.DefaultAgentShareForTest(),
+		AgentShare:              defaultAgentShareForTest(),
+		MaxAgentShareChangeRate: defaultAgentShareForTest(),
 		Description:             "no feegrant keeper",
 		Tags:                    []string{},
 		ConsensusPubkey:         testPubKey(seed),
@@ -49,8 +49,8 @@ func TestGrantAgentFeegrant_EmptyAgentAddress(t *testing.T) {
 	resp, err := ms.RegisterNode(f.ctx, &types.MsgRegisterNode{
 		Operator:                operator,
 		AgentAddress:            "",
-		AgentShare:              types.DefaultAgentShareForTest(),
-		MaxAgentShareChangeRate: types.DefaultAgentShareForTest(),
+		AgentShare:              defaultAgentShareForTest(),
+		MaxAgentShareChangeRate: defaultAgentShareForTest(),
 		Description:             "empty agent",
 		Tags:                    []string{},
 		ConsensusPubkey:         testPubKey(seed),
@@ -76,8 +76,8 @@ func TestGrantAgentFeegrant_NilModuleAddress(t *testing.T) {
 	resp, err := ms.RegisterNode(f.ctx, &types.MsgRegisterNode{
 		Operator:                operator,
 		AgentAddress:            agent,
-		AgentShare:              types.DefaultAgentShareForTest(),
-		MaxAgentShareChangeRate: types.DefaultAgentShareForTest(),
+		AgentShare:              defaultAgentShareForTest(),
+		MaxAgentShareChangeRate: defaultAgentShareForTest(),
 		Description:             "no module addr",
 		Tags:                    []string{},
 		ConsensusPubkey:         testPubKey(seed),
@@ -103,8 +103,8 @@ func TestGrantAgentFeegrant_GrantFails_EmitsEvent(t *testing.T) {
 	resp, err := ms.RegisterNode(f.ctx, &types.MsgRegisterNode{
 		Operator:                operator,
 		AgentAddress:            agent,
-		AgentShare:              types.DefaultAgentShareForTest(),
-		MaxAgentShareChangeRate: types.DefaultAgentShareForTest(),
+		AgentShare:              defaultAgentShareForTest(),
+		MaxAgentShareChangeRate: defaultAgentShareForTest(),
 		Description:             "feegrant failure",
 		Tags:                    []string{},
 		ConsensusPubkey:         testPubKey(seed),

@@ -156,7 +156,7 @@ func TestDeactivateNode_ClearsPendingAgentShareChange(t *testing.T) {
 	// Schedule an agent share change first.
 	_, err := msgServer.UpdateNodeAgentShare(ctx, &types.MsgUpdateNodeAgentShare{
 		Operator:      operator,
-		NewAgentShare: types.DefaultAgentShareForTest(),
+		NewAgentShare: defaultAgentShareForTest(),
 	})
 	require.NoError(t, err)
 

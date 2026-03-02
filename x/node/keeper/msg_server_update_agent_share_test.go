@@ -32,7 +32,7 @@ func TestUpdateNodeAgentShare_Success(t *testing.T) {
 	pending, err := f.keeper.PendingAgentShareChanges.Get(ctx, nodeID)
 	require.NoError(t, err)
 	require.Equal(t, math.LegacyNewDec(35), pending.NewAgentShare)
-	require.Equal(t, types.EpochLength, pending.ApplyAtBlock) // block 0 → next epoch = EpochLength
+	require.Equal(t, types.DefaultEpochLength, pending.ApplyAtBlock) // block 0 → next epoch = EpochLength
 
 	// Event should be emitted.
 	evt := requireEvent(t, ctx, types.EventTypeAgentShareScheduled)

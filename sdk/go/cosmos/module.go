@@ -12,6 +12,7 @@ import (
 	"github.com/seocheon/sdk-go/internal/chain"
 	"github.com/seocheon/sdk-go/internal/signing"
 	"github.com/seocheon/sdk-go/types"
+	"github.com/seocheon/sdk-go/utility"
 )
 
 // Module provides standard Cosmos operations.
@@ -62,7 +63,7 @@ func (m *Module) GetBalance(ctx context.Context, address, denom string) (*types.
 	return &types.BalanceResponse{
 		Address:     effectiveAddr,
 		Balance:     result.Balance.Amount,
-		BalanceKkot: formatKkot(balanceUppyeo),
+		BalanceKkot: utility.FormatKkot(balanceUppyeo),
 	}, nil
 }
 
@@ -143,13 +144,4 @@ func parseIntSafe(s string) int64 {
 		}
 	}
 	return result
-}
-
-func formatKkot(uppyeo int64) string {
-	intPart := uppyeo / 10000000000
-	decPart := uppyeo % 10000000000
-	if decPart < 0 {
-		decPart = -decPart
-	}
-	return fmt.Sprintf("%d.%010d", intPart, decPart)
 }

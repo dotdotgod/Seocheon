@@ -12,9 +12,11 @@ import (
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
+	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
@@ -25,46 +27,38 @@ import (
 )
 
 const (
-	// Total supply: 500M KKOT = 500,000,000 * 10^10 uppyeo.
-	totalSupplyKKOT   = 500_000_000
+	// Total supply: 50,000 KKOT = 50,000 * 10^10 uppyeo = 5×10^14 uppyeo.
+	totalSupplyKKOT   = 50_000
 	uppyeoPerKKOT     = 10_000_000_000
-	totalSupplyUppyeo = totalSupplyKKOT * uppyeoPerKKOT // 5,000,000,000,000,000,000
+	totalSupplyUppyeo = totalSupplyKKOT * uppyeoPerKKOT // 500,000,000,000,000
 
-	// Allocation percentages.
-	teamPercent             = 20 // 100M KKOT
-	foundationPercent       = 15 // 75M KKOT
-	airdropPercent          = 15 // 75M KKOT
-	ecosystemFundPercent    = 15 // 75M KKOT
-	initialValidatorPercent = 10 // 50M KKOT
-	ecosystemReservePercent = 10 // 50M KKOT
-	communityPoolPercent    = 15 // 75M KKOT
+	// 3-Pool allocation percentages.
+	builderPercent       = 33 // 16,500 KKOT — 4년 베스팅, 1년 클리프
+	boostPoolPercent     = 27 // 13,500 KKOT — 에포크마다 점진 분배, ~2년 소진
+	communityPoolPercent = 40 // 20,000 KKOT — 거버넌스로 사용처 결정
+
+	// Builder vesting schedule.
+	builderCliffDuration  = 365 * 24 * time.Hour // 1년 클리프
+	builderVestingMonths  = 36                    // 클리프 후 36개월 균등 해제
+	builderVestingPeriod  = 30 * 24 * time.Hour   // ~1개월
 )
 
-// GenesisAllocation holds the computed token allocations.
+// GenesisAllocation holds the computed token allocations for the 3-pool model.
 type GenesisAllocation struct {
-	Team             math.Int `json:"team"`
-	Foundation       math.Int `json:"foundation"`
-	Airdrop          math.Int `json:"airdrop"`
-	EcosystemFund    math.Int `json:"ecosystem_fund"`
-	InitialValidator math.Int `json:"initial_validator"`
-	EcosystemReserve math.Int `json:"ecosystem_reserve"`
-	CommunityPool    math.Int `json:"community_pool"`
-	Total            math.Int `json:"total"`
+	Builder       math.Int `json:"builder"`
+	BoostPool     math.Int `json:"boost_pool"`
+	CommunityPool math.Int `json:"community_pool"`
+	Total         math.Int `json:"total"`
 }
 
 func computeAllocations() GenesisAllocation {
 	total := math.NewInt(totalSupplyUppyeo)
-	alloc := GenesisAllocation{
-		Team:             total.Mul(math.NewInt(teamPercent)).Quo(math.NewInt(100)),
-		Foundation:       total.Mul(math.NewInt(foundationPercent)).Quo(math.NewInt(100)),
-		Airdrop:          total.Mul(math.NewInt(airdropPercent)).Quo(math.NewInt(100)),
-		EcosystemFund:    total.Mul(math.NewInt(ecosystemFundPercent)).Quo(math.NewInt(100)),
-		InitialValidator: total.Mul(math.NewInt(initialValidatorPercent)).Quo(math.NewInt(100)),
-		EcosystemReserve: total.Mul(math.NewInt(ecosystemReservePercent)).Quo(math.NewInt(100)),
-		CommunityPool:    total.Mul(math.NewInt(communityPoolPercent)).Quo(math.NewInt(100)),
-		Total:            total,
+	return GenesisAllocation{
+		Builder:       total.Mul(math.NewInt(builderPercent)).Quo(math.NewInt(100)),
+		BoostPool:     total.Mul(math.NewInt(boostPoolPercent)).Quo(math.NewInt(100)),
+		CommunityPool: total.Mul(math.NewInt(communityPoolPercent)).Quo(math.NewInt(100)),
+		Total:         total,
 	}
-	return alloc
 }
 
 // NewGenesisBuildCmd returns a command that configures a production genesis file.
@@ -75,60 +69,57 @@ func NewGenesisBuildCmd(mbm module.BasicManager) *cobra.Command {
 		Long: `Configure module parameters and token allocations for a production genesis file.
 
 This command reads an existing genesis.json (created by 'seocheon init' and gentx collection),
-applies Seocheon-specific module parameters, sets up pool accounts, and validates the result.
+applies Seocheon-specific module parameters, sets up the 3-pool allocation, and validates the result.
+
+3-Pool Genesis Allocation (50,000 KKOT total):
+  Builder (33%):               16,500 KKOT — 4년 베스팅 (1년 클리프 + 36개월 균등 해제)
+  Validator Boost Pool (27%):  13,500 KKOT — 에포크마다 active validator에게 균등 분배 (~2년 소진)
+  Community Pool (40%):        20,000 KKOT — 거버넌스로 사용처 결정
 
 Parameters configured:
   x/staking:  max_validators=150, unbonding_time=21d, bond_denom=uppyeo
   x/mint:     inflation 7-15%, goal_bonded=67%, blocks_per_year=6,307,200
   x/activity: epoch=17280, windows=12, min_active=8, d_min=3000
-
-Pool accounts funded:
-  airdrop_pool:      75,000,000 KKOT (15%)
-  ecosystem_fund:    75,000,000 KKOT (15%)
-  ecosystem_reserve: 50,000,000 KKOT (10%)
-  community_pool:    75,000,000 KKOT (15%)
+  x/node:     registration_pool=0.1 KKOT, feegrant_pool=1 KKOT, boost_pool=13,500 KKOT
 `,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx := client.GetClientContextFromCmd(cmd)
-			return runGenesisBuild(clientCtx, args[0], mbm)
+			return runGenesisBuild(clientCtx, args[0], cmd, mbm)
 		},
 	}
 
-	cmd.Flags().String("team-address", "", "Team vesting account address (bech32)")
-	cmd.Flags().String("foundation-address", "", "Foundation multisig address (bech32)")
+	cmd.Flags().String("builder-address", "", "Builder vesting account address (bech32)")
 	cmd.Flags().Bool("dry-run", false, "Print allocations without modifying the file")
 
 	return cmd
 }
 
-func runGenesisBuild(clientCtx client.Context, genesisFile string, mbm module.BasicManager) error {
+func runGenesisBuild(clientCtx client.Context, genesisFile string, cmd *cobra.Command, mbm module.BasicManager) error {
 	cdc := clientCtx.Codec
 
 	alloc := computeAllocations()
 
-	// Check dry-run.
-	cmd := clientCtx.CmdContext
-	_ = cmd
+	dryRun, _ := cmd.Flags().GetBool("dry-run")
 
 	// Print allocation summary.
-	fmt.Println("=== Seocheon Genesis Allocation ===")
-	fmt.Printf("  Team (20%%):              %s uppyeo (%s KKOT)\n", alloc.Team, alloc.Team.Quo(math.NewInt(uppyeoPerKKOT)))
-	fmt.Printf("  Foundation (15%%):        %s uppyeo (%s KKOT)\n", alloc.Foundation, alloc.Foundation.Quo(math.NewInt(uppyeoPerKKOT)))
-	fmt.Printf("  Airdrop Pool (15%%):      %s uppyeo (%s KKOT)\n", alloc.Airdrop, alloc.Airdrop.Quo(math.NewInt(uppyeoPerKKOT)))
-	fmt.Printf("  Ecosystem Fund (15%%):    %s uppyeo (%s KKOT)\n", alloc.EcosystemFund, alloc.EcosystemFund.Quo(math.NewInt(uppyeoPerKKOT)))
-	fmt.Printf("  Initial Validators (10%%): %s uppyeo (%s KKOT)\n", alloc.InitialValidator, alloc.InitialValidator.Quo(math.NewInt(uppyeoPerKKOT)))
-	fmt.Printf("  Ecosystem Reserve (10%%): %s uppyeo (%s KKOT)\n", alloc.EcosystemReserve, alloc.EcosystemReserve.Quo(math.NewInt(uppyeoPerKKOT)))
-	fmt.Printf("  Community Pool (15%%):    %s uppyeo (%s KKOT)\n", alloc.CommunityPool, alloc.CommunityPool.Quo(math.NewInt(uppyeoPerKKOT)))
-	fmt.Printf("  TOTAL:                   %s uppyeo (%s KKOT)\n", alloc.Total, alloc.Total.Quo(math.NewInt(uppyeoPerKKOT)))
+	fmt.Println("=== Seocheon Genesis Allocation (3-Pool Model) ===")
+	fmt.Printf("  Builder (33%%):             %s uppyeo (%s KKOT)\n", alloc.Builder, alloc.Builder.Quo(math.NewInt(uppyeoPerKKOT)))
+	fmt.Printf("  Boost Pool (27%%):          %s uppyeo (%s KKOT)\n", alloc.BoostPool, alloc.BoostPool.Quo(math.NewInt(uppyeoPerKKOT)))
+	fmt.Printf("  Community Pool (40%%):      %s uppyeo (%s KKOT)\n", alloc.CommunityPool, alloc.CommunityPool.Quo(math.NewInt(uppyeoPerKKOT)))
+	fmt.Printf("  TOTAL:                     %s uppyeo (%s KKOT)\n", alloc.Total, alloc.Total.Quo(math.NewInt(uppyeoPerKKOT)))
 
 	// Verify sum.
-	sum := alloc.Team.Add(alloc.Foundation).Add(alloc.Airdrop).Add(alloc.EcosystemFund).
-		Add(alloc.InitialValidator).Add(alloc.EcosystemReserve).Add(alloc.CommunityPool)
+	sum := alloc.Builder.Add(alloc.BoostPool).Add(alloc.CommunityPool)
 	if !sum.Equal(alloc.Total) {
 		return fmt.Errorf("allocation sum mismatch: %s != %s", sum, alloc.Total)
 	}
 	fmt.Println("  Allocation sum verified OK")
+
+	if dryRun {
+		fmt.Println("\n  [dry-run] No changes written.")
+		return nil
+	}
 
 	// Read genesis file.
 	genesisBytes, err := os.ReadFile(genesisFile)
@@ -156,13 +147,18 @@ func runGenesisBuild(clientCtx client.Context, genesisFile string, mbm module.Ba
 	if err := applyActivityParams(cdc, appState); err != nil {
 		return fmt.Errorf("activity params: %w", err)
 	}
-	if err := applyNodeParams(cdc, appState); err != nil {
+	if err := applyNodeParams(cdc, appState, alloc); err != nil {
 		return fmt.Errorf("node params: %w", err)
 	}
 
-	// Fund pool module accounts.
-	if err := fundPoolAccounts(cdc, appState, alloc); err != nil {
-		return fmt.Errorf("fund pools: %w", err)
+	// Create builder vesting account.
+	builderAddr, _ := cmd.Flags().GetString("builder-address")
+	if builderAddr != "" {
+		if err := createBuilderVestingAccount(cdc, appState, alloc, builderAddr); err != nil {
+			return fmt.Errorf("builder vesting: %w", err)
+		}
+	} else {
+		fmt.Println("  [WARN] --builder-address not set, skipping builder vesting account")
 	}
 
 	// Fund community pool.
@@ -282,7 +278,7 @@ func applyActivityParams(cdc codec.Codec, appState map[string]json.RawMessage) e
 	return nil
 }
 
-func applyNodeParams(cdc codec.Codec, appState map[string]json.RawMessage) error {
+func applyNodeParams(cdc codec.Codec, appState map[string]json.RawMessage, alloc GenesisAllocation) error {
 	var nodeGenesis nodetypes.GenesisState
 	if raw, ok := appState[nodetypes.ModuleName]; ok {
 		if err := cdc.UnmarshalJSON(raw, &nodeGenesis); err != nil {
@@ -290,60 +286,108 @@ func applyNodeParams(cdc codec.Codec, appState map[string]json.RawMessage) error
 		}
 	}
 
-	// Ensure pool balances are set.
-	if len(nodeGenesis.RegistrationPoolBalance) == 0 {
-		nodeGenesis.RegistrationPoolBalance = sdk.NewCoins(
-			sdk.NewCoin("uppyeo", math.NewInt(10_000_000_000_000_000)), // 1,000 KKOT
-		)
-	}
-	if len(nodeGenesis.FeegrantPoolBalance) == 0 {
-		nodeGenesis.FeegrantPoolBalance = sdk.NewCoins(
-			sdk.NewCoin("uppyeo", math.NewInt(100_000_000_000_000_000)), // 10,000 KKOT
-		)
-	}
+	// Set pool balances.
+	nodeGenesis.RegistrationPoolBalance = nodetypes.DefaultRegistrationPoolBalance // 0.1 KKOT
+	nodeGenesis.FeegrantPoolBalance = nodetypes.DefaultFeegrantPoolBalance         // 1 KKOT
+	nodeGenesis.BoostPoolBalance = sdk.NewCoins(
+		sdk.NewCoin("uppyeo", alloc.BoostPool), // 13,500 KKOT
+	)
+	nodeGenesis.BoostTargetEpochs = nodetypes.DefaultBoostTargetEpochs // 730
 
 	bz, err := cdc.MarshalJSON(&nodeGenesis)
 	if err != nil {
 		return err
 	}
 	appState[nodetypes.ModuleName] = bz
-	fmt.Println("  Applied x/node params: registration_pool=1000 KKOT, feegrant_pool=10000 KKOT")
+	fmt.Printf("  Applied x/node params: reg_pool=0.1 KKOT, feegrant_pool=1 KKOT, boost_pool=%s KKOT, target_epochs=%d\n",
+		alloc.BoostPool.Quo(math.NewInt(uppyeoPerKKOT)), nodetypes.DefaultBoostTargetEpochs)
 	return nil
 }
 
-func fundPoolAccounts(cdc codec.Codec, appState map[string]json.RawMessage, alloc GenesisAllocation) error {
+func createBuilderVestingAccount(cdc codec.Codec, appState map[string]json.RawMessage, alloc GenesisAllocation, builderAddr string) error {
+	// Validate address.
+	_, err := sdk.AccAddressFromBech32(builderAddr)
+	if err != nil {
+		return fmt.Errorf("invalid builder address: %w", err)
+	}
+
+	// Create PeriodicVestingAccount: 1-year cliff + 36 months of equal unlocks.
+	builderCoins := sdk.NewCoins(sdk.NewCoin("uppyeo", alloc.Builder))
+
+	// Monthly unlock amount after cliff.
+	monthlyUnlock := alloc.Builder.Quo(math.NewInt(builderVestingMonths))
+	// Last period gets the remainder to ensure exact total.
+	lastMonthUnlock := alloc.Builder.Sub(monthlyUnlock.Mul(math.NewInt(builderVestingMonths - 1)))
+
+	periods := make([]vestingtypes.Period, 0, builderVestingMonths+1)
+
+	// First period: 1-year cliff (0 unlock).
+	periods = append(periods, vestingtypes.Period{
+		Length: int64(builderCliffDuration.Seconds()),
+		Amount: sdk.NewCoins(), // Nothing unlocks at cliff itself.
+	})
+
+	// 36 monthly periods after cliff.
+	for i := 0; i < builderVestingMonths; i++ {
+		amount := monthlyUnlock
+		if i == builderVestingMonths-1 {
+			amount = lastMonthUnlock
+		}
+		periods = append(periods, vestingtypes.Period{
+			Length: int64(builderVestingPeriod.Seconds()),
+			Amount: sdk.NewCoins(sdk.NewCoin("uppyeo", amount)),
+		})
+	}
+
+	// Add builder account to auth genesis.
+	var authGenesis authtypes.GenesisState
+	if err := cdc.UnmarshalJSON(appState[authtypes.ModuleName], &authGenesis); err != nil {
+		return err
+	}
+
+	genesisTime := time.Now() // Will be overridden by genesis_time in the doc.
+	baseAccount := authtypes.NewBaseAccount(sdk.MustAccAddressFromBech32(builderAddr), nil, 0, 0)
+	vestingAccount, err := vestingtypes.NewPeriodicVestingAccount(
+		baseAccount,
+		builderCoins,
+		genesisTime.Unix(),
+		periods,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create vesting account: %w", err)
+	}
+
+	any, err := codectypes.NewAnyWithValue(vestingAccount)
+	if err != nil {
+		return fmt.Errorf("failed to pack vesting account: %w", err)
+	}
+	authGenesis.Accounts = append(authGenesis.Accounts, any)
+
+	bz, err := cdc.MarshalJSON(&authGenesis)
+	if err != nil {
+		return err
+	}
+	appState[authtypes.ModuleName] = bz
+
+	// Add builder balance to bank genesis.
 	var bankGenesis banktypes.GenesisState
 	if err := cdc.UnmarshalJSON(appState[banktypes.ModuleName], &bankGenesis); err != nil {
 		return err
 	}
 
-	// Fund module pool accounts.
-	pools := []struct {
-		name   string
-		amount math.Int
-	}{
-		{"airdrop_pool", alloc.Airdrop},
-		{"ecosystem_fund", alloc.EcosystemFund},
-		{"ecosystem_reserve", alloc.EcosystemReserve},
-	}
+	bankGenesis.Balances = append(bankGenesis.Balances, banktypes.Balance{
+		Address: builderAddr,
+		Coins:   builderCoins,
+	})
 
-	for _, pool := range pools {
-		addr := authtypes.NewModuleAddress(pool.name)
-		coins := sdk.NewCoins(sdk.NewCoin("uppyeo", pool.amount))
-
-		// Add balance.
-		bankGenesis.Balances = append(bankGenesis.Balances, banktypes.Balance{
-			Address: addr.String(),
-			Coins:   coins,
-		})
-		fmt.Printf("  Funded %s: %s KKOT\n", pool.name, pool.amount.Quo(math.NewInt(uppyeoPerKKOT)))
-	}
-
-	bz, err := cdc.MarshalJSON(&bankGenesis)
+	bz, err = cdc.MarshalJSON(&bankGenesis)
 	if err != nil {
 		return err
 	}
 	appState[banktypes.ModuleName] = bz
+
+	fmt.Printf("  Created builder vesting account: %s (%s KKOT, 1yr cliff + 36mo unlock)\n",
+		builderAddr, alloc.Builder.Quo(math.NewInt(uppyeoPerKKOT)))
 	return nil
 }
 

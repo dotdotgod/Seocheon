@@ -38,4 +38,17 @@ message Params {
 
   // max_tag_length is the maximum character length of each tag.
   uint32 max_tag_length = 7;
+
+  // delegation_confirmation_period is the number of epochs between required delegation confirmations.
+  // Default: 90 (~3 months). 0 disables active delegation.
+  uint64 delegation_confirmation_period = 9;
+
+  // delegation_renewal_window is the number of epochs at the end of a confirmation period
+  // during which MsgConfirmDelegation is accepted. Must be less than delegation_confirmation_period.
+  // Default: 7 (~7 days).
+  uint64 delegation_renewal_window = 10;
+
+  // epoch_length is the number of blocks per epoch. Default: 17280 (~1 day).
+  // Governs agent_share scheduling, delegation confirmation epochs, and boost distribution.
+  int64 epoch_length = 11;
 }

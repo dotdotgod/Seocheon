@@ -28,6 +28,50 @@
 - 무가치한 노드 → 위임자 이탈 → 자연 도태
 - **언본딩 기간**: 362,880 블록 (~21일, Cosmos SDK 기본값)
 
+### 능동 위임 (Active Delegation)
+
+위임은 단순한 토큰 잠금이 아니라 **에이전트 선별에 대한 능동적 참여**이다. Seocheon은 위임자가 90 에포크(~3개월)마다 자신의 위임을 확인(`MsgConfirmDelegation`)하도록 요구한다. 확인은 주기 마지막 7 에포크 **갱신 윈도우** 내에서만 가능하며, 미확인 위임은 **강제 언본딩**된다.
+
+```
+능동 위임 타임라인 (90 에포크 주기):
+
+  ┌─── 정상 기간 (83 에포크) ───┐┌─ 갱신 윈도우 (7 에포크) ─┐
+  │                              ││                          │
+  0 ·····························83··························90
+  │  위임 유지, 보상 수령          │  위임 유지, 보상 수령       │
+  │  MsgConfirmDelegation 불가    │  MsgConfirmDelegation 가능 │
+  │                              │  확인 시 → 다음 90 에포크   │
+  │                              │  미확인 시 → 강제 언본딩     │
+
+위임 생성 (에포크 0):
+  → 자동 설정: expiry = current_epoch + confirmation_period
+  → 위임자는 갱신 윈도우까지 별도 행동 불필요
+
+갱신 윈도우 (에포크 83~90):
+  → 경고 이벤트 발생 (delegation_expiry_approaching)
+  → MsgConfirmDelegation TX 제출 (가스비 필요)
+  → 확인 시: new_expiry = current_epoch + confirmation_period (전체 리셋)
+  → 보상 끊김 없이 다음 주기 시작
+
+만료 (에포크 90, 미확인 시):
+  → EndBlocker에서 강제 Undelegate (21일 unbonding period)
+  → 위임 보상 자연 중단 (x/distribution 수정 불필요)
+  → 언본딩 완료 후 토큰은 위임자에게 반환
+```
+
+**설계 의도**: Cosmos SDK 표준 위임은 한 번 위임하면 영구적으로 보상을 수령하는 구조이다. 패시브 토큰 홀더가 노드의 활동 품질을 검증하지 않고도 보상만 수령하는 문제를 해결한다. 갱신 윈도우를 만료 직전에 배치하여, 위임자가 확인하면 보상이 끊기지 않고 다음 주기로 연속되는 구조이다. MsgConfirmDelegation은 TX이므로 가스비가 필요하며, 이 자체가 능동적 참여의 증명이다.
+
+| 파라미터 | 값 | 설명 |
+|---------|-----|------|
+| `delegation_confirmation_period` | 90 에포크 (~90일) | 거버넌스 파라미터. 전체 확인 주기 |
+| `delegation_renewal_window` | 7 에포크 (~7일) | 거버넌스 파라미터. 갱신 윈도우 크기 (주기 마지막 N 에포크) |
+| 갱신 윈도우 시작 | expiry - renewal_window | 만료 7 에포크 전부터 확인 가능 |
+| 확인 방법 | `MsgConfirmDelegation` TX | 전용 TX만 인정. 가스비 필요 (갱신 윈도우 내에서만 수락) |
+| 미확인 조치 | 강제 언본딩 | `StakingMsgServer.Undelegate()` 호출 |
+| 자동 설정 | 신규 위임 시 | `BeforeDelegationCreated` hook으로 초기 expiry 설정 |
+
+상세 구현: [x/node 모듈](03_node_module.md) §능동 위임 참조.
+
 ### 에포크 (Epoch)와 윈도우 (Window)
 
 에포크는 활동 보상 분배와 수수료 상태 갱신의 기본 단위이다. 에포크는 12개의 **윈도우**로 나뉘며, 윈도우는 활동 보상 자격 판정의 기본 단위이다.
@@ -66,6 +110,8 @@
 | 1일 (1 에포크 = 12 윈도우) | 17,280 | 활동 보상 분배, 수수료 상태 갱신, feegrant period |
 | 21일 | 362,880 | 언본딩 기간 |
 | 180일 (6개월) | 3,110,400 | feegrant 만료 |
+| 7일 (갱신 윈도우) | 120,960 | 위임 확인 갱신 윈도우 (MsgConfirmDelegation 수락 기간) |
+| 90일 (1 확인 주기) | 1,555,200 | 위임 확인 주기 (능동 위임). 마지막 7일 = 갱신 윈도우 |
 | 1년 (365일) | 6,307,200 | 활동 기록 + HashIndex 프루닝 보존, blocks_per_year (인플레이션 계산) |
 
 **윈도우 경계 이벤트** (매 1,440 블록):
@@ -81,7 +127,9 @@
 4. 활동 기록 프루닝: `activity_pruning_keep_blocks` 이전 기록 삭제 (에포크당 최대 1,000건)
 
 `x/node` EndBlocker:
-5. agent_share 변경 적용: 유예 기간(1에포크) 만료된 변경사항 반영
+5. 만료 위임 강제 언본딩: `PendingExpirations`에서 현재 에포크 이하 항목 조회, 강제 `Undelegate` 호출
+6. 밸리데이터 부스팅 분배: Boost Pool에서 active validator에게 균등 분배
+7. agent_share 변경 적용: 유예 기간(1에포크) 만료된 변경사항 반영
 
 ### 보상 공식: 동적 이중 보상 풀
 

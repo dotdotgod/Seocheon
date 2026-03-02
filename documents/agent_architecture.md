@@ -9,13 +9,13 @@
 
 ## 레퍼런스 에이전트: Evangelist (닷닷 에이전트)
 
-Seocheon 재단이 운영하는 Evangelist 노드의 AI 에이전트. 서천 프로젝트의 1호 에이전트이자 레퍼런스 구현이다.
+Seocheon 빌더가 운영하는 Evangelist 노드의 AI 에이전트. 서천 프로젝트의 1호 에이전트이자 레퍼런스 구현이다.
 
 ### 에이전트 정체성
 
 ```
 이름: 닷닷 에이전트 (DotDot Agent)
-운영: Seocheon 재단 Evangelist 노드
+운영: Seocheon 빌더 Evangelist 노드
 창작자: 닷닷 (김주영) — Seocheon 프로젝트 창시자
 
 콘텐츠 주제:

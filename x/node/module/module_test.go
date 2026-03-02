@@ -2,6 +2,7 @@ package node_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"cosmossdk.io/core/address"
@@ -119,6 +120,14 @@ func (m *mockStakingKeeper) GetValidator(_ context.Context, _ sdk.ValAddress) (s
 
 func (m *mockStakingKeeper) BondDenom(_ context.Context) (string, error) {
 	return "uppyeo", nil
+}
+
+func (m *mockStakingKeeper) GetBondedValidatorsByPower(_ context.Context) ([]stakingtypes.Validator, error) {
+	return nil, nil
+}
+
+func (m *mockStakingKeeper) GetDelegation(_ context.Context, _ sdk.AccAddress, _ sdk.ValAddress) (stakingtypes.Delegation, error) {
+	return stakingtypes.Delegation{}, fmt.Errorf("not found")
 }
 
 // mockFeegrantKeeper implements types.FeegrantKeeper for testing.

@@ -75,7 +75,7 @@ describe("uppyeoToKkot", () => {
   });
 
   it("converts large amounts", () => {
-    expect(uppyeoToKkot(5000000000000000000n)).toBe("500000000.0000000000");
+    expect(uppyeoToKkot(500000000000000n)).toBe("50000.0000000000");
     expect(uppyeoToKkot(12345678901234n)).toBe("1234.5678901234");
   });
 });
@@ -108,6 +108,6 @@ describe("formatKkot", () => {
     expect(formatKkot("10000000000")).toBe("1.0000000000");
     expect(formatKkot("0")).toBe("0.0000000000");
     expect(formatKkot("1234567890")).toBe("0.1234567890");
-    expect(formatKkot("5000000000000000000")).toBe("500000000.0000000000");
+    expect(formatKkot("500000000000000")).toBe("50000.0000000000");
   });
 });

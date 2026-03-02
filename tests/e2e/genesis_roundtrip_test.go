@@ -16,7 +16,7 @@ func (s *E2ESuite) TestGenesisRoundtrip() {
 	val := s.network.Validators[0]
 
 	// 1. Register a node and submit some activities to create state.
-	opAddr, opPub, err := s.addKeyToKeyring(val, "opGenesis")
+	opAddr, _, err := s.addKeyToKeyring(val, "opGenesis")
 	s.Require().NoError(err)
 	agAddr, _, err := s.addKeyToKeyring(val, "agGenesis")
 	s.Require().NoError(err)
@@ -27,7 +27,7 @@ func (s *E2ESuite) TestGenesisRoundtrip() {
 	s.Require().NoError(err)
 
 	opCtx := s.clientCtxForKey(val, "opGenesis")
-	nodeID, err := s.registerNode(val, opCtx, opAddr, agAddr.String(), opPub, "genesis-test-node", sdkmath.LegacyNewDec(20))
+	nodeID, err := s.registerNode(val, opCtx, opAddr, agAddr.String(), "genesis-test-node", sdkmath.LegacyNewDec(20))
 	s.Require().NoError(err)
 	s.T().Logf("registered node for genesis test: %s", nodeID)
 

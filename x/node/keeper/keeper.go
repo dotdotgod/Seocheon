@@ -9,6 +9,7 @@ import (
 	corestore "cosmossdk.io/core/store"
 	"cosmossdk.io/math"
 	"github.com/cosmos/cosmos-sdk/codec"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"seocheon/x/node/types"
 )
@@ -46,6 +47,15 @@ type Keeper struct {
 
 	// LastAgentChangeBlock stores last agent address change block per node.
 	LastAgentChangeBlock collections.Map[string, int64]
+
+	// BoostPoolDistributed stores cumulative distributed amount from the boost pool.
+	BoostPoolDistributed collections.Item[math.Int]
+
+	// DelegationConfirmations maps (delegator, validator) → expiry_epoch.
+	DelegationConfirmations collections.Map[collections.Pair[string, string], uint64]
+
+	// PendingExpirations is a KeySet of (expiry_epoch, delegator, validator) for efficient EndBlocker lookup.
+	PendingExpirations collections.KeySet[collections.Triple[uint64, string, string]]
 
 	// Keeper dependencies.
 	authKeeper         types.AuthKeeper
@@ -95,6 +105,18 @@ func NewKeeper(
 		PendingAgentShareChanges: collections.NewMap(sb, types.PendingAgentShareChangeKey, "pending_agent_share", collections.StringKey, codec.CollValue[types.PendingAgentShareChange](cdc)),
 
 		LastAgentChangeBlock: collections.NewMap(sb, types.LastAgentChangeBlockKey, "last_agent_change", collections.StringKey, collections.Int64Value),
+
+		BoostPoolDistributed: collections.NewItem(sb, types.BoostPoolDistributedKey, "boost_distributed", sdk.IntValue),
+
+		DelegationConfirmations: collections.NewMap(sb, types.DelegationConfirmationsKey,
+			"delegation_confirmations",
+			collections.PairKeyCodec(collections.StringKey, collections.StringKey),
+			collections.Uint64Value,
+		),
+		PendingExpirations: collections.NewKeySet(sb, types.PendingExpirationsKey,
+			"pending_expirations",
+			collections.TripleKeyCodec(collections.Uint64Key, collections.StringKey, collections.StringKey),
+		),
 	}
 
 	schema, err := sb.Build()
@@ -176,6 +198,23 @@ func (k Keeper) GetNodeAgentAddress(ctx context.Context, nodeID string) (string,
 		return "", fmt.Errorf("node %s not found: %w", nodeID, err)
 	}
 	return node.AgentAddress, nil
+}
+
+// getEpochLength returns the epoch length from params.
+// Falls back to DefaultEpochLength if params are not yet set.
+func (k Keeper) getEpochLength(ctx context.Context) int64 {
+	params, err := k.Params.Get(ctx)
+	if err != nil || params.EpochLength <= 0 {
+		return types.DefaultEpochLength
+	}
+	return params.EpochLength
+}
+
+// currentEpoch returns the current epoch number based on block height and epoch length.
+func (k Keeper) currentEpoch(ctx context.Context) uint64 {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	epochLen := k.getEpochLength(ctx)
+	return uint64(sdkCtx.BlockHeight()) / uint64(epochLen)
 }
 
 // GetNodeAgentShare returns the agent_share percentage for the given node_id.

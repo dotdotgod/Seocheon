@@ -103,13 +103,13 @@ func TestConvertDenom_InvalidDenom(t *testing.T) {
 }
 
 func TestConvertDenom_LargeAmount(t *testing.T) {
-	// 500M KKOT = 5,000,000,000,000,000,000 uppyeo
-	amount := math.NewInt(500000000)
+	// 50,000 KKOT = 500,000,000,000,000 uppyeo (5×10^14)
+	amount := math.NewInt(50000)
 	result, err := ConvertDenom(amount, "kkot", "uppyeo")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	expected := math.NewInt(5000000000000000000)
+	expected := math.NewInt(500_000_000_000_000)
 	if !result.Equal(expected) {
 		t.Errorf("expected %s uppyeo, got %s", expected.String(), result.String())
 	}
@@ -124,7 +124,7 @@ func TestFormatKkot(t *testing.T) {
 		{1, "0.0000000001"},
 		{10000000000, "1.0000000000"},
 		{15000000000, "1.5000000000"},
-		{5000000000000000000, "500000000.0000000000"},
+		{500_000_000_000_000, "50000.0000000000"},
 		{1234567890, "0.1234567890"},
 	}
 
@@ -147,7 +147,7 @@ func TestParseKkot(t *testing.T) {
 		{"1.5", 15000000000, false},
 		{"0.1234567890", 1234567890, false},
 		{"0.0000000001", 1, false},
-		{"500000000.0000000000", 5000000000000000000, false},
+		{"50000.0000000000", 500_000_000_000_000, false},
 		{"invalid", 0, true},
 		{"1.2.3", 0, true},
 	}

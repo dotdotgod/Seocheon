@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"cosmossdk.io/collections"
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"seocheon/x/node/types"
@@ -60,6 +61,28 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) er
 		}
 	}
 
+	// Fund Boost Pool module account by minting to node module and sending to pool.
+	if genState.BoostPoolBalance.IsAllPositive() {
+		if err := k.bankKeeper.MintCoins(ctx, types.ModuleName, genState.BoostPoolBalance); err != nil {
+			return err
+		}
+		if err := k.bankKeeper.SendCoinsFromModuleToModule(ctx, types.ModuleName, types.BoostPoolName, genState.BoostPoolBalance); err != nil {
+			return err
+		}
+	}
+
+	// Initialize cumulative boost distribution counter.
+	if err := k.BoostPoolDistributed.Set(ctx, math.ZeroInt()); err != nil {
+		return err
+	}
+
+	// Initialize delegation confirmations.
+	for _, dc := range genState.DelegationConfirmations {
+		if err := k.setDelegationConfirmation(ctx, dc.DelegatorAddress, dc.ValidatorAddress, dc.ExpiryEpoch); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -80,7 +103,7 @@ func (k Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error) 
 	}
 
 	// Export pool balances.
-	var regPoolBalance, fgPoolBalance sdk.Coins
+	var regPoolBalance, fgPoolBalance, boostPoolBalance sdk.Coins
 	regPoolAddr := k.authKeeper.GetModuleAddress(types.RegistrationPoolName)
 	if regPoolAddr != nil {
 		regPoolBalance = k.bankKeeper.GetAllBalances(ctx, regPoolAddr)
@@ -89,11 +112,32 @@ func (k Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error) 
 	if fgPoolAddr != nil {
 		fgPoolBalance = k.bankKeeper.GetAllBalances(ctx, fgPoolAddr)
 	}
+	boostPoolAddr := k.authKeeper.GetModuleAddress(types.BoostPoolName)
+	if boostPoolAddr != nil {
+		boostPoolBalance = k.bankKeeper.GetAllBalances(ctx, boostPoolAddr)
+	}
+
+	// Export delegation confirmations.
+	var delConfirmations []types.DelegationConfirmation
+	err = k.DelegationConfirmations.Walk(ctx, nil, func(key collections.Pair[string, string], expiryEpoch uint64) (bool, error) {
+		delConfirmations = append(delConfirmations, types.DelegationConfirmation{
+			DelegatorAddress: key.K1(),
+			ValidatorAddress: key.K2(),
+			ExpiryEpoch:      expiryEpoch,
+		})
+		return false, nil
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	return &types.GenesisState{
-		Params:                  params,
-		Nodes:                   nodes,
-		RegistrationPoolBalance: regPoolBalance,
-		FeegrantPoolBalance:     fgPoolBalance,
+		Params:                    params,
+		Nodes:                     nodes,
+		RegistrationPoolBalance:   regPoolBalance,
+		FeegrantPoolBalance:       fgPoolBalance,
+		BoostPoolBalance:          boostPoolBalance,
+		BoostTargetEpochs:         types.DefaultBoostTargetEpochs,
+		DelegationConfirmations:   delConfirmations,
 	}, nil
 }

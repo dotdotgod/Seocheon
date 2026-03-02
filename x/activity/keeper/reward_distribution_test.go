@@ -177,7 +177,7 @@ func TestDistributeActivityRewards_Dust(t *testing.T) {
 	require.Equal(t, math.NewInt(99), totalDistributed)
 
 	// Event should report pool_remaining = 1.
-	event := requireEvent(t, ctx, "activity_rewards_distributed")
+	event := requireEvent(t, ctx, types.EventTypeActivityRewardsDistributed)
 	require.Equal(t, "1", eventAttribute(event, "pool_remaining"))
 }
 
@@ -226,7 +226,7 @@ func TestDistributeActivityRewards_Event(t *testing.T) {
 	err := f.keeper.DistributeActivityRewards(ctx, 0)
 	require.NoError(t, err)
 
-	event := requireEvent(t, ctx, "activity_rewards_distributed")
+	event := requireEvent(t, ctx, types.EventTypeActivityRewardsDistributed)
 	require.Equal(t, "0", eventAttribute(event, types.AttributeKeyEpoch))
 	require.Equal(t, "1", eventAttribute(event, types.AttributeKeyEligibleCount))
 	require.Equal(t, "500000", eventAttribute(event, "per_node_reward"))

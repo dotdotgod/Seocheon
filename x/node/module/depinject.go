@@ -8,6 +8,7 @@ import (
 	"cosmossdk.io/depinject/appconfig"
 	"github.com/cosmos/cosmos-sdk/codec"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	"seocheon/x/node/keeper"
 	"seocheon/x/node/types"
@@ -41,8 +42,9 @@ type ModuleInputs struct {
 type ModuleOutputs struct {
 	depinject.Out
 
-	NodeKeeper *keeper.Keeper
-	Module     appmodule.AppModule
+	NodeKeeper   *keeper.Keeper
+	Module       appmodule.AppModule
+	StakingHooks stakingtypes.StakingHooksWrapper
 }
 
 func ProvideModule(in ModuleInputs) ModuleOutputs {
@@ -65,5 +67,5 @@ func ProvideModule(in ModuleInputs) ModuleOutputs {
 
 	m := NewAppModule(in.Cdc, &k, in.AuthKeeper, in.BankKeeper)
 
-	return ModuleOutputs{NodeKeeper: &k, Module: m}
+	return ModuleOutputs{NodeKeeper: &k, Module: m, StakingHooks: k.StakingHooksWrapper()}
 }

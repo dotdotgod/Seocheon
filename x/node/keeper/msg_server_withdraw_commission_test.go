@@ -59,7 +59,7 @@ func TestWithdrawNodeCommission_Split30Percent(t *testing.T) {
 	// Get the validator address for this node.
 	node, err := f.keeper.Nodes.Get(ctx, nodeID)
 	require.NoError(t, err)
-	valAddrBytes, err := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
+	valAddrBytes, err := sdk.GetFromBech32(node.ValidatorAddress, types.Bech32PrefixValAddr)
 	require.NoError(t, err)
 	valAddr := sdk.ValAddress(valAddrBytes)
 
@@ -104,7 +104,7 @@ func TestWithdrawNodeCommission_ZeroAgentShare(t *testing.T) {
 
 	// Set commission.
 	node, _ := f.keeper.Nodes.Get(ctx, resp.NodeId)
-	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
+	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, types.Bech32PrefixValAddr)
 	valAddr := sdk.ValAddress(valAddrBytes)
 	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(500)))
 
@@ -143,7 +143,7 @@ func TestWithdrawNodeCommission_100PercentAgent(t *testing.T) {
 	require.NoError(t, err)
 
 	node, _ := f.keeper.Nodes.Get(ctx, resp.NodeId)
-	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
+	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, types.Bech32PrefixValAddr)
 	valAddr := sdk.ValAddress(valAddrBytes)
 	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(1000)))
 
@@ -244,7 +244,7 @@ func TestWithdrawNodeCommission_TruncateSmallAmount(t *testing.T) {
 	require.NoError(t, err)
 
 	node, _ := f.keeper.Nodes.Get(ctx, resp.NodeId)
-	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
+	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, types.Bech32PrefixValAddr)
 	valAddr := sdk.ValAddress(valAddrBytes)
 
 	// 1 uppyeo at 33% → agent = TruncateInt(0.33) = 0, operator = 1.
@@ -284,7 +284,7 @@ func TestWithdrawNodeCommission_TruncateAt10(t *testing.T) {
 	require.NoError(t, err)
 
 	node, _ := f.keeper.Nodes.Get(ctx, resp.NodeId)
-	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
+	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, types.Bech32PrefixValAddr)
 	valAddr := sdk.ValAddress(valAddrBytes)
 
 	// 10 uppyeo at 33% → agent = TruncateInt(3.3) = 3, operator = 7.
@@ -319,7 +319,7 @@ func TestWithdrawNodeCommission_1PercentShare(t *testing.T) {
 	require.NoError(t, err)
 
 	node, _ := f.keeper.Nodes.Get(ctx, resp.NodeId)
-	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
+	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, types.Bech32PrefixValAddr)
 	valAddr := sdk.ValAddress(valAddrBytes)
 
 	// 100 uppyeo at 1% → agent = 1, operator = 99.
@@ -343,7 +343,7 @@ func TestWithdrawNodeCommission_EmitsEvent(t *testing.T) {
 	registerTestNode(t, f, operator, agent)
 
 	node, _ := f.keeper.Nodes.Get(ctx, expectedNodeID(operator))
-	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
+	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, types.Bech32PrefixValAddr)
 	valAddr := sdk.ValAddress(valAddrBytes)
 	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(100)))
 
@@ -378,7 +378,7 @@ func TestWithdrawNodeCommission_NoAgent(t *testing.T) {
 	require.NoError(t, err)
 
 	node, _ := f.keeper.Nodes.Get(ctx, resp.NodeId)
-	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
+	valAddrBytes, _ := sdk.GetFromBech32(node.ValidatorAddress, types.Bech32PrefixValAddr)
 	valAddr := sdk.ValAddress(valAddrBytes)
 	dk.commissions[valAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(1000)))
 

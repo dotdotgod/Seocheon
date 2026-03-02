@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 
-	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -17,8 +16,18 @@ func (k Keeper) EndBlocker(ctx context.Context) error {
 	blockHeight := sdkCtx.BlockHeight()
 
 	// Only process at epoch boundaries.
-	if blockHeight%types.EpochLength != 0 {
+	if blockHeight%k.getEpochLength(ctx) != 0 {
 		return nil
+	}
+
+	// Process expired delegation confirmations (force unbond + renewal window alerts).
+	if err := k.processExpiredDelegations(ctx); err != nil {
+		return err
+	}
+
+	// Distribute boost pool to active validators.
+	if err := k.distributeBoostPool(ctx); err != nil {
+		return err
 	}
 
 	return k.applyPendingAgentShareChanges(ctx, blockHeight)
@@ -99,16 +108,10 @@ func (k Keeper) applyPendingAgentShareChanges(ctx context.Context, blockHeight i
 			_ = k.PendingAgentShareChanges.Remove(ctx, nodeID)
 		} else {
 			// Not yet at target — schedule next step at next epoch boundary.
-			pending.ApplyAtBlock = blockHeight + types.EpochLength
+			pending.ApplyAtBlock = blockHeight + k.getEpochLength(ctx)
 			_ = k.PendingAgentShareChanges.Set(ctx, nodeID, pending)
 		}
 	}
 
 	return nil
-}
-
-// NodesByTagIterator returns an iterator over all node IDs with the given tag.
-func (k Keeper) NodesByTagIterator(ctx context.Context, tag string) (collections.KeySetIterator[collections.Pair[string, string]], error) {
-	rng := collections.NewPrefixedPairRange[string, string](tag)
-	return k.TagIndex.Iterate(ctx, rng)
 }

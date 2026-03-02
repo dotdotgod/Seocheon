@@ -1,7 +1,7 @@
 # 긴급 정지 메커니즘 (Circuit Breaker)
 
 > **담당**: 체인 코어 개발자 / 보안
-> **관련 문서**: [개요](01_overview.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [스팸 방어](06_spam_defense.md) · [구현 가이드](07_implementation.md) · [체인 업그레이드](08_chain_upgrade.md) · [재단 전략](../foundation_strategy.md) · [전체 목차](README.md)
+> **관련 문서**: [개요](01_overview.md) · [노드 모듈](03_node_module.md) · [Activity Protocol](04_activity_protocol.md) · [스팸 방어](06_spam_defense.md) · [구현 가이드](07_implementation.md) · [체인 업그레이드](08_chain_upgrade.md) · [빌더 전략](../foundation_strategy.md) · [전체 목차](README.md)
 
 > **구현 상태**: 현재 Cosmos SDK 표준 `x/circuit` 모듈이 적용되어 있다. Phase 2에서 Guardian 권한 설정과 모듈별 선택적 정지 기능을 추가한다.
 
@@ -21,7 +21,7 @@
 ① 최소 범위 정지: 문제가 발생한 모듈/기능만 선택적으로 정지
 ② 거버넌스 통제: 정지와 해제 모두 거버넌스 투표로 승인
 ③ 투명성: 정지 상태, 트리거 사유, 복구 조건을 온체인에 기록
-④ 탈중앙화 호환: 재단 주도에서 커뮤니티 주도로 자연스럽게 전환
+④ 탈중앙화 호환: 빌더 주도에서 커뮤니티 주도로 자연스럽게 전환
 ```
 
 ---
@@ -30,7 +30,7 @@
 
 ### 수동 트리거 (유일한 트리거)
 
-재단 또는 커뮤니티가 거버넌스 제안을 통해 Circuit Breaker를 활성화한다.
+빌더 또는 커뮤니티가 거버넌스 제안을 통해 Circuit Breaker를 활성화한다.
 
 ```
 수동 트리거 절차:
@@ -48,8 +48,8 @@
   [3] 투표 통과 → Circuit Breaker 즉시 활성화
       └── 온체인 이벤트 발행: EventCircuitBreakerActivated
 
-재단의 긴급 제안 시나리오:
-  → 보안 취약점 발견 → 재단이 ExpeditedCircuitBreakerProposal 제출
+빌더의 긴급 제안 시나리오:
+  → 보안 취약점 발견 → 빌더가 ExpeditedCircuitBreakerProposal 제출
   → 단축된 투표 기간(~1일) + 높은 통과 기준(quorum 67%, threshold 67%)
   → 통과 시 즉시 해당 모듈 정지
 ```
@@ -61,7 +61,7 @@ Cosmos SDK 표준 `x/circuit` 모듈의 권한 체계를 활용하여, 거버넌
 ```
 Guardian 권한 설계:
 
-  Guardian 주소: 재단 멀티시그 (Phase A/B), Security Council (Phase C)
+  Guardian 주소: 빌더 키 (Phase A/B), Security Council (Phase C)
 
   권한 수준:
     ├── LEVEL_SUPER_ADMIN: 모든 Msg 타입 비활성화 가능
@@ -209,7 +209,7 @@ Cosmos SDK 표준 `x/circuit` 모듈을 기반으로 구현한다. 커스텀 모
 구현 범위 (Phase 2):
 
   표준 x/circuit 활용:
-    ├── Guardian 권한 설정 (재단 멀티시그)
+    ├── Guardian 권한 설정 (빌더 키)
     ├── Msg 타입별 비활성화/재활성화
     └── 권한 변경 거버넌스 연동
 
@@ -278,25 +278,25 @@ EndBlocker 동작:
 
 ---
 
-## 6. 재단 연계 및 탈중앙화 전환
+## 6. 빌더 연계 및 탈중앙화 전환
 
 ### Phase A/B/C 연계
 
-재단 전략(foundation_strategy.md)의 탈중앙화 단계에 따라 Circuit Breaker 운영 주체가 전환된다.
+빌더 전략(foundation_strategy.md)의 탈중앙화 단계에 따라 Circuit Breaker 운영 주체가 전환된다.
 
 ```
-Phase A: 재단 주도 (Genesis ~ Active Validator Set ≥ 15)
-  ├── Guardian 권한: 재단 단일 주소
-  ├── 체인 레벨 pause 실행: 재단이 Guardian으로서 직접 실행
-  └── 의사결정 속도: 빠름 (재단 투표력 + Guardian 즉각 대응)
+Phase A: 빌더 주도 (Genesis ~ Active Validator Set ≥ 15)
+  ├── Guardian 권한: 빌더 단일 주소
+  ├── 체인 레벨 pause 실행: 빌더가 Guardian으로서 직접 실행
+  └── 의사결정 속도: 빠름 (빌더 투표력 + Guardian 즉각 대응)
 
 Phase B: 혼합 (Active Validator Set ≥ 15 ~ ≥ 30 AND 12개월)
-  ├── Guardian 권한: 멀티시그 (재단 + 커뮤니티 대표 2-3인)
+  ├── Guardian 권한: 멀티시그 (빌더 + 커뮤니티 대표 2-3인)
   └── 커뮤니티 밸리데이터에게 긴급 대응 역할 인수
 
 Phase C: 커뮤니티 주도 (Active Validator Set ≥ 30 AND 12개월 이후)
   ├── Guardian 권한: Security Council (커뮤니티 선출)
-  └── 재단 역할: 긴급 상황 시 거버넌스 제안만 (투표권은 다른 참여자와 동일)
+  └── 빌더 역할: 긴급 상황 시 거버넌스 제안만 (투표권은 다른 참여자와 동일)
 ```
 
 ---
@@ -328,7 +328,7 @@ Circuit Breaker 모니터링 항목:
 
 | 파라미터 | 모듈 | 초기값 | 조정 |
 |----------|------|--------|------|
-| Guardian 주소 | x/circuit | 재단 멀티시그 | 거버넌스 |
+| Guardian 주소 | x/circuit | 빌더 키 | 거버넌스 |
 | Guardian 권한 수준 | x/circuit | LEVEL_SUPER_ADMIN | 거버넌스 |
 | 긴급 투표 기간 | x/gov | 17,280 블록 (~1일) | 거버넌스 |
 | 긴급 투표 quorum | x/gov | 67% | 거버넌스 |

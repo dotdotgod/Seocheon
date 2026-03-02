@@ -2,6 +2,8 @@ package keeper_test
 
 import (
 	"context"
+	"fmt"
+	"sync/atomic"
 	"testing"
 
 	"cosmossdk.io/core/address"
@@ -15,6 +17,7 @@ import (
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	"github.com/stretchr/testify/require"
 
 	"seocheon/x/node/keeper"
 	module "seocheon/x/node/module"
@@ -131,12 +134,17 @@ func (m *mockBankKeeper) GetAllBalances(_ context.Context, addr sdk.AccAddress) 
 
 // mockStakingKeeper implements types.StakingKeeper.
 type mockStakingKeeper struct {
-	bondDenom string
+	bondDenom    string
+	validators   []stakingtypes.Validator
+	validatorMap map[string]stakingtypes.Validator  // key: valAddr bech32
+	delegations  map[string]stakingtypes.Delegation // key: "delAddr/valAddr"
 }
 
 func newMockStakingKeeper() *mockStakingKeeper {
 	return &mockStakingKeeper{
-		bondDenom: "uppyeo",
+		bondDenom:    "uppyeo",
+		validatorMap: make(map[string]stakingtypes.Validator),
+		delegations:  make(map[string]stakingtypes.Delegation),
 	}
 }
 
@@ -148,12 +156,31 @@ func (m *mockStakingKeeper) ValidatorByConsAddr(_ context.Context, _ sdk.ConsAdd
 	return nil, nil
 }
 
-func (m *mockStakingKeeper) GetValidator(_ context.Context, _ sdk.ValAddress) (stakingtypes.Validator, error) {
-	return stakingtypes.Validator{}, nil
+func (m *mockStakingKeeper) GetValidator(_ context.Context, addr sdk.ValAddress) (stakingtypes.Validator, error) {
+	if m.validatorMap != nil {
+		v, ok := m.validatorMap[addr.String()]
+		if ok {
+			return v, nil
+		}
+	}
+	return stakingtypes.Validator{}, fmt.Errorf("validator not found")
 }
 
 func (m *mockStakingKeeper) BondDenom(_ context.Context) (string, error) {
 	return m.bondDenom, nil
+}
+
+func (m *mockStakingKeeper) GetBondedValidatorsByPower(_ context.Context) ([]stakingtypes.Validator, error) {
+	return m.validators, nil
+}
+
+func (m *mockStakingKeeper) GetDelegation(_ context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) (stakingtypes.Delegation, error) {
+	key := delAddr.String() + "/" + valAddr.String()
+	d, ok := m.delegations[key]
+	if !ok {
+		return stakingtypes.Delegation{}, fmt.Errorf("delegation not found")
+	}
+	return d, nil
 }
 
 // mockFeegrantKeeper implements types.FeegrantKeeper.
@@ -275,15 +302,18 @@ func initFixture(t *testing.T) *fixture {
 	feegrantK := newMockFeegrantKeeper()
 	stakingMsgSrv := newMockStakingMsgServer()
 
-	// Set up module account addresses for Registration Pool and Feegrant Pool.
+	// Set up module account addresses for Registration Pool, Feegrant Pool, and Boost Pool.
 	regPoolAddr := authtypes.NewModuleAddress(types.RegistrationPoolName)
 	fgPoolAddr := authtypes.NewModuleAddress(types.FeegrantPoolName)
+	boostPoolAddr := authtypes.NewModuleAddress(types.BoostPoolName)
 	authK.moduleAddresses[types.RegistrationPoolName] = regPoolAddr
 	authK.moduleAddresses[types.FeegrantPoolName] = fgPoolAddr
+	authK.moduleAddresses[types.BoostPoolName] = boostPoolAddr
 
-	// Set up Registration Pool balance: 1000 uppyeo.
+	// Set up pool balances.
 	bankK.balances[regPoolAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(1000)))
 	bankK.balances[fgPoolAddr.String()] = sdk.NewCoins(sdk.NewCoin("uppyeo", math.NewInt(100)))
+	bankK.balances[boostPoolAddr.String()] = sdk.NewCoins()
 
 	k := keeper.NewKeeper(
 		storeService,
@@ -314,4 +344,42 @@ func initFixture(t *testing.T) *fixture {
 		feegrantKeeper:   feegrantK,
 		stakingMsgServer: stakingMsgSrv,
 	}
+}
+
+// ---------------------------------------------------------------------------
+// Shared Test Helpers
+// ---------------------------------------------------------------------------
+
+// pubkeySeed provides unique seeds for test pubkeys across all tests.
+var pubkeySeed atomic.Uint64
+
+func init() {
+	pubkeySeed.Store(200) // start above the seeds used in register_node_test.go
+}
+
+// defaultAgentShareForTest returns a valid agent_share value for testing (35).
+func defaultAgentShareForTest() math.LegacyDec {
+	return math.LegacyNewDec(35)
+}
+
+// registerTestNode is a convenience helper that registers a node and returns
+// the assigned node ID. It is used across multiple test files.
+func registerTestNode(t *testing.T, f *fixture, operator, agentAddr string) string {
+	t.Helper()
+	ctx := f.ctx
+	msgServer := keeper.NewMsgServerImpl(f.keeper)
+
+	seed := byte(pubkeySeed.Add(1))
+	resp, err := msgServer.RegisterNode(ctx, &types.MsgRegisterNode{
+		Operator:                operator,
+		AgentAddress:            agentAddr,
+		AgentShare:              math.LegacyNewDec(30),
+		MaxAgentShareChangeRate: math.LegacyNewDec(10),
+		Description:             "test node",
+		Website:                 "https://example.com",
+		Tags:                    []string{"ai", "test"},
+		ConsensusPubkey:         testPubKey(seed),
+	})
+	require.NoError(t, err)
+	return resp.NodeId
 }

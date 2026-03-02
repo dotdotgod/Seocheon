@@ -16,6 +16,8 @@ type StakingKeeper interface {
 	ValidatorByConsAddr(context.Context, sdk.ConsAddress) (stakingtypes.ValidatorI, error)
 	GetValidator(ctx context.Context, addr sdk.ValAddress) (stakingtypes.Validator, error)
 	BondDenom(ctx context.Context) (string, error)
+	GetBondedValidatorsByPower(ctx context.Context) ([]stakingtypes.Validator, error)
+	GetDelegation(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) (stakingtypes.Delegation, error)
 }
 
 // AuthKeeper defines the expected interface for the Auth module.

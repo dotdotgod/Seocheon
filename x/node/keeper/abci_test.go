@@ -34,7 +34,7 @@ func TestEndBlocker_AppliesPendingAgentShareChange(t *testing.T) {
 
 	// EndBlocker at non-epoch boundary: nothing happens.
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	midCtx := sdkCtx.WithBlockHeight(types.EpochLength / 2)
+	midCtx := sdkCtx.WithBlockHeight(types.DefaultEpochLength / 2)
 	err = f.keeper.EndBlocker(midCtx)
 	require.NoError(t, err)
 
@@ -49,7 +49,7 @@ func TestEndBlocker_AppliesPendingAgentShareChange(t *testing.T) {
 	require.Equal(t, math.LegacyNewDec(30), node.AgentShare)
 
 	// EndBlocker at epoch boundary: change within max rate → applied in one step.
-	epochCtx := sdkCtx.WithBlockHeight(types.EpochLength)
+	epochCtx := sdkCtx.WithBlockHeight(types.DefaultEpochLength)
 	err = f.keeper.EndBlocker(epochCtx)
 	require.NoError(t, err)
 
@@ -84,7 +84,7 @@ func TestEndBlocker_GradualAgentShareChange(t *testing.T) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	// Epoch 1: 30 → 20 (step by max rate 10).
-	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.EpochLength))
+	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.DefaultEpochLength))
 	require.NoError(t, err)
 	node, _ := f.keeper.Nodes.Get(ctx, nodeID)
 	require.Equal(t, math.LegacyNewDec(20), node.AgentShare)
@@ -93,7 +93,7 @@ func TestEndBlocker_GradualAgentShareChange(t *testing.T) {
 	require.True(t, has)
 
 	// Epoch 2: 20 → 10 (step by max rate 10).
-	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.EpochLength * 2))
+	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.DefaultEpochLength * 2))
 	require.NoError(t, err)
 	node, _ = f.keeper.Nodes.Get(ctx, nodeID)
 	require.Equal(t, math.LegacyNewDec(10), node.AgentShare)
@@ -101,7 +101,7 @@ func TestEndBlocker_GradualAgentShareChange(t *testing.T) {
 	require.True(t, has)
 
 	// Epoch 3: 10 → 5 (remaining diff=5, within max rate → target reached).
-	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.EpochLength * 3))
+	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.DefaultEpochLength * 3))
 	require.NoError(t, err)
 	node, _ = f.keeper.Nodes.Get(ctx, nodeID)
 	require.Equal(t, math.LegacyNewDec(5), node.AgentShare)
@@ -130,19 +130,19 @@ func TestEndBlocker_GradualAgentShareChange_Increase(t *testing.T) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	// Epoch 1: 30 → 40.
-	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.EpochLength))
+	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.DefaultEpochLength))
 	require.NoError(t, err)
 	node, _ := f.keeper.Nodes.Get(ctx, nodeID)
 	require.Equal(t, math.LegacyNewDec(40), node.AgentShare)
 
 	// Epoch 2: 40 → 50.
-	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.EpochLength * 2))
+	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.DefaultEpochLength * 2))
 	require.NoError(t, err)
 	node, _ = f.keeper.Nodes.Get(ctx, nodeID)
 	require.Equal(t, math.LegacyNewDec(50), node.AgentShare)
 
 	// Epoch 3: 50 → 55 (target reached).
-	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.EpochLength * 3))
+	err = f.keeper.EndBlocker(sdkCtx.WithBlockHeight(types.DefaultEpochLength * 3))
 	require.NoError(t, err)
 	node, _ = f.keeper.Nodes.Get(ctx, nodeID)
 	require.Equal(t, math.LegacyNewDec(55), node.AgentShare)
@@ -179,13 +179,13 @@ func TestEndBlocker_SkipsFutureChanges(t *testing.T) {
 
 	// Manually set the apply_at_block to a future epoch.
 	pending, _ := f.keeper.PendingAgentShareChanges.Get(ctx, nodeID)
-	pending.ApplyAtBlock = types.EpochLength * 3 // far future
+	pending.ApplyAtBlock = types.DefaultEpochLength * 3 // far future
 	err = f.keeper.PendingAgentShareChanges.Set(ctx, nodeID, pending)
 	require.NoError(t, err)
 
 	// EndBlocker at first epoch: change should NOT be applied.
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	epochCtx := sdkCtx.WithBlockHeight(types.EpochLength)
+	epochCtx := sdkCtx.WithBlockHeight(types.DefaultEpochLength)
 	err = f.keeper.EndBlocker(epochCtx)
 	require.NoError(t, err)
 
@@ -227,7 +227,7 @@ func TestEndBlocker_MultipleChanges(t *testing.T) {
 
 	// EndBlocker at epoch boundary.
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	epochCtx := sdkCtx.WithBlockHeight(types.EpochLength)
+	epochCtx := sdkCtx.WithBlockHeight(types.DefaultEpochLength)
 	err = f.keeper.EndBlocker(epochCtx)
 	require.NoError(t, err)
 
@@ -271,7 +271,7 @@ func TestEndBlocker_DeletedNodePendingChange(t *testing.T) {
 	err = f.keeper.PendingAgentShareChanges.Set(ctx, nodeID, types.PendingAgentShareChange{
 		NodeId:        nodeID,
 		NewAgentShare: math.LegacyNewDec(99),
-		ApplyAtBlock:  types.EpochLength,
+		ApplyAtBlock:  types.DefaultEpochLength,
 	})
 	require.NoError(t, err)
 
@@ -281,7 +281,7 @@ func TestEndBlocker_DeletedNodePendingChange(t *testing.T) {
 
 	// EndBlocker at epoch: should handle the missing node gracefully.
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	epochCtx := sdkCtx.WithBlockHeight(types.EpochLength)
+	epochCtx := sdkCtx.WithBlockHeight(types.DefaultEpochLength)
 	err = f.keeper.EndBlocker(epochCtx)
 	require.NoError(t, err)
 

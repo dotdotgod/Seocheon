@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
@@ -31,7 +32,7 @@ func (k Keeper) StakingHooksWrapper() stakingtypes.StakingHooksWrapper {
 // This indicates the validator has entered the Active Validator Set.
 // We set the corresponding node status to ACTIVE.
 func (h Hooks) AfterValidatorBonded(ctx context.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) error {
-	valAddrStr, err := sdk.Bech32ifyAddressBytes("seocheonvaloper", valAddr)
+	valAddrStr, err := sdk.Bech32ifyAddressBytes(types.Bech32PrefixValAddr, valAddr)
 	if err != nil {
 		return nil // silently skip if address conversion fails
 	}
@@ -68,7 +69,7 @@ func (h Hooks) AfterValidatorBonded(ctx context.Context, consAddr sdk.ConsAddres
 // This indicates the validator has left the Active Validator Set.
 // We set the corresponding node status back to REGISTERED (unless it's INACTIVE).
 func (h Hooks) AfterValidatorBeginUnbonding(ctx context.Context, consAddr sdk.ConsAddress, valAddr sdk.ValAddress) error {
-	valAddrStr, err := sdk.Bech32ifyAddressBytes("seocheonvaloper", valAddr)
+	valAddrStr, err := sdk.Bech32ifyAddressBytes(types.Bech32PrefixValAddr, valAddr)
 	if err != nil {
 		return nil
 	}
@@ -112,19 +113,42 @@ func (h Hooks) AfterValidatorRemoved(ctx context.Context, consAddr sdk.ConsAddre
 	return nil
 }
 func (h Hooks) BeforeDelegationCreated(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
-	return nil
+	// Auto-set initial delegation confirmation (grace period).
+	params, err := h.k.Params.Get(ctx)
+	if err != nil || params.DelegationConfirmationPeriod == 0 {
+		return nil // Active delegation disabled or error — skip.
+	}
+
+	currentEpoch := h.k.currentEpoch(ctx)
+	expiryEpoch := currentEpoch + params.DelegationConfirmationPeriod
+
+	delegator := delAddr.String()
+	validator := sdk.ValAddress(valAddr).String()
+
+	return h.k.setDelegationConfirmation(ctx, delegator, validator, expiryEpoch)
 }
 func (h Hooks) BeforeDelegationSharesModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
 	return nil
 }
 func (h Hooks) BeforeDelegationRemoved(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
+	// Clean up delegation confirmation records when delegation is removed.
+	delegator := delAddr.String()
+	validator := sdk.ValAddress(valAddr).String()
+
+	pairKey := collections.Join(delegator, validator)
+	expiryEpoch, err := h.k.DelegationConfirmations.Get(ctx, pairKey)
+	if err != nil {
+		return nil // No confirmation record — skip.
+	}
+
+	h.k.cleanupConfirmation(ctx, delegator, validator, expiryEpoch)
 	return nil
 }
 func (h Hooks) AfterDelegationModified(ctx context.Context, delAddr sdk.AccAddress, valAddr sdk.ValAddress) error {
 	return nil
 }
 func (h Hooks) BeforeValidatorSlashed(ctx context.Context, valAddr sdk.ValAddress, fraction math.LegacyDec) error {
-	valAddrStr, err := sdk.Bech32ifyAddressBytes("seocheonvaloper", valAddr)
+	valAddrStr, err := sdk.Bech32ifyAddressBytes(types.Bech32PrefixValAddr, valAddr)
 	if err != nil {
 		return nil // silently skip if address conversion fails
 	}

@@ -15,7 +15,7 @@ func (s *E2ESuite) TestFeegrantFlow() {
 	val := s.network.Validators[0]
 
 	// 1. Create operator and agent.
-	opAddr, opPub, err := s.addKeyToKeyring(val, "opFG")
+	opAddr, _, err := s.addKeyToKeyring(val, "opFG")
 	s.Require().NoError(err)
 	agAddr, _, err := s.addKeyToKeyring(val, "agFG")
 	s.Require().NoError(err)
@@ -29,7 +29,7 @@ func (s *E2ESuite) TestFeegrantFlow() {
 
 	// 2. Register node → triggers automatic feegrant grant.
 	opCtx := s.clientCtxForKey(val, "opFG")
-	nodeID, err := s.registerNode(val, opCtx, opAddr, agAddr.String(), opPub, "feegrant-test-node", sdkmath.LegacyNewDec(50))
+	nodeID, err := s.registerNode(val, opCtx, opAddr, agAddr.String(), "feegrant-test-node", sdkmath.LegacyNewDec(50))
 	s.Require().NoError(err)
 	s.T().Logf("registered node for feegrant test: %s", nodeID)
 

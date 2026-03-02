@@ -54,6 +54,15 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					Use:       "all-nodes",
 					Short:     "List all registered nodes",
 				},
+				{
+					RpcMethod: "DelegationConfirmation",
+					Use:       "delegation-confirmation [delegator] [validator]",
+					Short:     "Query delegation confirmation status",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "delegator_address"},
+						{ProtoField: "validator_address"},
+					},
+				},
 			},
 		},
 		Tx: &autocliv1.ServiceCommandDescriptor{
@@ -92,6 +101,14 @@ func (am AppModule) AutoCLIOptions() *autocliv1.ModuleOptions {
 					RpcMethod: "WithdrawNodeCommission",
 					Use:       "withdraw-commission",
 					Short:     "Withdraw node commission",
+				},
+				{
+					RpcMethod: "ConfirmDelegation",
+					Use:       "confirm-delegation [validator-address]",
+					Short:     "Confirm active delegation to a validator",
+					PositionalArgs: []*autocliv1.PositionalArgDescriptor{
+						{ProtoField: "validator_address"},
+					},
 				},
 			},
 		},

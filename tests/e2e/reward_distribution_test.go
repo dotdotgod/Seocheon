@@ -16,7 +16,7 @@ func (s *E2ESuite) TestRewardDistribution() {
 	val := s.network.Validators[0]
 
 	// --- Create Node A (will be eligible) ---
-	opAddrA, opPubA, err := s.addKeyToKeyring(val, "opA")
+	opAddrA, _, err := s.addKeyToKeyring(val, "opA")
 	s.Require().NoError(err)
 	agAddrA, _, err := s.addKeyToKeyring(val, "agA")
 	s.Require().NoError(err)
@@ -27,12 +27,12 @@ func (s *E2ESuite) TestRewardDistribution() {
 	s.Require().NoError(err)
 
 	opCtxA := s.clientCtxForKey(val, "opA")
-	nodeIDA, err := s.registerNode(val, opCtxA, opAddrA, agAddrA.String(), opPubA, "node-A", sdkmath.LegacyNewDec(30))
+	nodeIDA, err := s.registerNode(val, opCtxA, opAddrA, agAddrA.String(), "node-A", sdkmath.LegacyNewDec(30))
 	s.Require().NoError(err)
 	s.T().Logf("registered node A: %s (agent_share=30%%)", nodeIDA)
 
 	// --- Create Node B (will be ineligible) ---
-	opAddrB, opPubB, err := s.addKeyToKeyring(val, "opB")
+	opAddrB, _, err := s.addKeyToKeyring(val, "opB")
 	s.Require().NoError(err)
 	agAddrB, _, err := s.addKeyToKeyring(val, "agB")
 	s.Require().NoError(err)
@@ -43,7 +43,7 @@ func (s *E2ESuite) TestRewardDistribution() {
 	s.Require().NoError(err)
 
 	opCtxB := s.clientCtxForKey(val, "opB")
-	nodeIDB, err := s.registerNode(val, opCtxB, opAddrB, agAddrB.String(), opPubB, "node-B", sdkmath.LegacyZeroDec())
+	nodeIDB, err := s.registerNode(val, opCtxB, opAddrB, agAddrB.String(), "node-B", sdkmath.LegacyZeroDec())
 	s.Require().NoError(err)
 	s.T().Logf("registered node B: %s (agent_share=0%%)", nodeIDB)
 

@@ -105,7 +105,7 @@ func TestNodeLifecycle(t *testing.T) {
 		pending, err := f.keeper.PendingAgentShareChanges.Get(f.ctx, nodeID)
 		require.NoError(t, err)
 		require.Equal(t, newShare, pending.NewAgentShare)
-		require.Equal(t, types.EpochLength, pending.ApplyAtBlock)
+		require.Equal(t, types.DefaultEpochLength, pending.ApplyAtBlock)
 
 		// Agent share NOT yet changed.
 		node, err := f.keeper.Nodes.Get(f.ctx, nodeID)
@@ -116,7 +116,7 @@ func TestNodeLifecycle(t *testing.T) {
 	// ── Step 4: EndBlocker at epoch boundary → apply change ──
 	t.Run("4_epoch_applies_change", func(t *testing.T) {
 		sdkCtx := sdk.UnwrapSDKContext(f.ctx)
-		epochCtx := sdkCtx.WithBlockHeight(types.EpochLength)
+		epochCtx := sdkCtx.WithBlockHeight(types.DefaultEpochLength)
 
 		err := f.keeper.EndBlocker(epochCtx)
 		require.NoError(t, err)
@@ -135,7 +135,7 @@ func TestNodeLifecycle(t *testing.T) {
 	// ── Step 5: UpdateAgentAddress ──
 	t.Run("5_swap_agent_address", func(t *testing.T) {
 		sdkCtx := sdk.UnwrapSDKContext(f.ctx)
-		f.ctx = sdkCtx.WithBlockHeight(types.EpochLength + 1)
+		f.ctx = sdkCtx.WithBlockHeight(types.DefaultEpochLength + 1)
 
 		_, err := ms.UpdateAgentAddress(f.ctx, &types.MsgUpdateAgentAddress{
 			Operator:        operatorStr,
@@ -167,7 +167,7 @@ func TestNodeLifecycle(t *testing.T) {
 		// Get the validator address to configure mock.
 		node, err := f.keeper.Nodes.Get(f.ctx, nodeID)
 		require.NoError(t, err)
-		valAddrBytes, err := sdk.GetFromBech32(node.ValidatorAddress, "seocheonvaloper")
+		valAddrBytes, err := sdk.GetFromBech32(node.ValidatorAddress, types.Bech32PrefixValAddr)
 		require.NoError(t, err)
 		valAddr := sdk.ValAddress(valAddrBytes)
 

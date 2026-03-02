@@ -5,7 +5,6 @@ package activity
 
 import (
 	"context"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 
@@ -14,6 +13,7 @@ import (
 	"github.com/seocheon/sdk-go/internal/chain"
 	"github.com/seocheon/sdk-go/internal/signing"
 	"github.com/seocheon/sdk-go/types"
+	"github.com/seocheon/sdk-go/utility"
 )
 
 // Module provides activity-related operations.
@@ -36,8 +36,8 @@ func NewModule(client chain.Client, signer signing.Service, chainID string) *Mod
 // activityHash must be a 64-character hex string (SHA-256).
 // contentURI is the off-chain location of the Activity Report.
 func (m *Module) Submit(ctx context.Context, activityHash, contentURI string) (*types.SubmitActivityResponse, error) {
-	if err := validateActivityHash(activityHash); err != nil {
-		return nil, err
+	if !utility.VerifyActivityHash(activityHash) {
+		return nil, sdkerrors.ErrInvalidActivityHash
 	}
 	if contentURI == "" {
 		return nil, sdkerrors.ErrInvalidContentURI
@@ -104,7 +104,7 @@ func (m *Module) GetActivities(ctx context.Context, nodeID string, epochNumber i
 	items := make([]types.ActivityItem, 0, len(result.Activities))
 	for _, a := range result.Activities {
 		height, _ := a.BlockHeight.Int64()
-		windowNum := computeWindow(height, params.epochLength, params.windowsPerEpoch)
+		windowNum := utility.ComputeWindow(height, params.epochLength, params.windowsPerEpoch)
 		items = append(items, types.ActivityItem{
 			ActivityHash: a.ActivityHash,
 			ContentURI:   a.ContentURI,
@@ -233,7 +233,7 @@ func (m *Module) computeCurrentEpoch(ctx context.Context) (int64, error) {
 		return 0, err
 	}
 
-	return computeEpoch(block.Height, params.epochLength), nil
+	return utility.ComputeEpoch(block.Height, params.epochLength), nil
 }
 
 func (m *Module) checkFeegrant(ctx context.Context, agentAddr string) (bool, *int64) {
@@ -254,27 +254,3 @@ func (m *Module) checkFeegrant(ctx context.Context, agentAddr string) (bool, *in
 	return true, nil
 }
 
-func computeEpoch(blockHeight, epochLength int64) int64 {
-	if blockHeight <= 0 || epochLength <= 0 {
-		return 0
-	}
-	return (blockHeight - 1) / epochLength
-}
-
-func computeWindow(blockHeight, epochLength, windowsPerEpoch int64) int64 {
-	if epochLength <= 0 || windowsPerEpoch <= 0 {
-		return 0
-	}
-	windowLength := epochLength / windowsPerEpoch
-	return ((blockHeight - 1) % epochLength) / windowLength
-}
-
-func validateActivityHash(hash string) error {
-	if len(hash) != 64 {
-		return sdkerrors.ErrInvalidActivityHash
-	}
-	if _, err := hex.DecodeString(hash); err != nil {
-		return sdkerrors.ErrInvalidActivityHash
-	}
-	return nil
-}

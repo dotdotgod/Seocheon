@@ -13,7 +13,7 @@ func (s *E2ESuite) TestNodeActivityFlow() {
 	val := s.network.Validators[0]
 
 	// 1. Create operator and agent keys.
-	operatorAddr, operatorPubKey, err := s.addKeyToKeyring(val, "operator1")
+	operatorAddr, _, err := s.addKeyToKeyring(val, "operator1")
 	s.Require().NoError(err)
 	agentAddr, _, err := s.addKeyToKeyring(val, "agent1")
 	s.Require().NoError(err)
@@ -30,7 +30,7 @@ func (s *E2ESuite) TestNodeActivityFlow() {
 	operatorCtx := s.clientCtxForKey(val, "operator1")
 	nodeID, err := s.registerNode(
 		val, operatorCtx, operatorAddr, agentAddr.String(),
-		operatorPubKey, "test-node-1", sdkmath.LegacyNewDec(30),
+		"test-node-1", sdkmath.LegacyNewDec(30),
 	)
 	s.Require().NoError(err)
 	s.T().Logf("registered node: %s", nodeID)

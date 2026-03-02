@@ -108,7 +108,7 @@ func (k Keeper) DistributeActivityRewards(ctx context.Context, epoch int64) erro
 
 	// Emit distribution event.
 	sdkCtx.EventManager().EmitEvent(sdk.NewEvent(
-		"activity_rewards_distributed",
+		types.EventTypeActivityRewardsDistributed,
 		sdk.NewAttribute(types.AttributeKeyEpoch, fmt.Sprintf("%d", epoch)),
 		sdk.NewAttribute(types.AttributeKeyEligibleCount, fmt.Sprintf("%d", nA)),
 		sdk.NewAttribute("per_node_reward", perNodeReward.String()),

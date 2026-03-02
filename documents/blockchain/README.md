@@ -11,7 +11,7 @@
 |---|------|------|------|
 | 01 | [개요 및 설계 철학](01_overview.md) | 아키텍트 / 프로젝트 리드 | 개요, 설계 철학 4원칙, 설계 결정 근거 |
 | 02 | [핵심 개념](02_core_concepts.md) | 체인 코어 개발자 | 에포크/윈도우, 이중 보상 풀, 노드 내 분배 |
-| 03 | [x/node 모듈](03_node_module.md) | x/node 모듈 개발자 (Go) | 노드 등록/관리, Registration Pool, x/staking 통합, 0원 참여 |
+| 03 | [x/node 모듈](03_node_module.md) | x/node 모듈 개발자 (Go) | 노드 등록/관리, Registration Pool, x/staking 통합, 0원 참여, 능동 위임 |
 | 04 | [Activity Protocol](04_activity_protocol.md) | x/activity 모듈 개발자 (Go) | 타임스탬핑, ActivityRecord, 오프체인 Report |
 | 05 | [토큰 이코노믹스](05_tokenomics.md) | 이코노미 설계자 | KKOT 토큰, Genesis 배분, 인플레이션, Genesis 1노드(Evangelist) |
 | 06 | [스팸/게이밍 방어](06_spam_defense.md) | 보안 / 메커니즘 설계 | 6대 방어 카테고리, 거버넌스 파라미터 종합 |
@@ -59,7 +59,7 @@
 ## 관련 문서
 
 - [에이전트 아키텍처](../agent_architecture.md) — 오프체인 에이전트 참고 아키텍처
-- [재단 전략](../foundation_strategy.md) — 재단 운영, 탈중앙화 전환
+- [빌더 전략](../foundation_strategy.md) — 빌더 운영, 탈중앙화 전환
 - [아키텍처 리뷰](../architecture_review.md) — 보완 사항 및 미해소 항목
 
 ---

@@ -1,44 +1,15 @@
 package keeper_test
 
 import (
-	"sync/atomic"
 	"testing"
 
 	"cosmossdk.io/collections"
-	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
 	"seocheon/x/node/keeper"
 	"seocheon/x/node/types"
 )
-
-// pubkeySeed provides unique seeds for test pubkeys across all tests.
-var pubkeySeed atomic.Uint64
-
-func init() {
-	pubkeySeed.Store(200) // start above the seeds used in register_node_test.go
-}
-
-func registerTestNode(t *testing.T, f *fixture, operator, agentAddr string) string {
-	t.Helper()
-	ctx := f.ctx
-	msgServer := keeper.NewMsgServerImpl(f.keeper)
-
-	seed := byte(pubkeySeed.Add(1))
-	resp, err := msgServer.RegisterNode(ctx, &types.MsgRegisterNode{
-		Operator:                operator,
-		AgentAddress:            agentAddr,
-		AgentShare:              math.LegacyNewDec(30),
-		MaxAgentShareChangeRate: math.LegacyNewDec(10),
-		Description:             "test node",
-		Website:                 "https://example.com",
-		Tags:                    []string{"ai", "test"},
-		ConsensusPubkey:         testPubKey(seed),
-	})
-	require.NoError(t, err)
-	return resp.NodeId
-}
 
 func TestUpdateNode_Success(t *testing.T) {
 	f := initFixture(t)

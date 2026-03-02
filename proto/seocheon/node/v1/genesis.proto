@@ -33,4 +33,27 @@ message GenesisState {
     (gogoproto.nullable) = false,
     (amino.dont_omitempty) = true
   ];
+
+  // boost_pool_balance is the initial balance for the Validator Boost Pool.
+  repeated cosmos.base.v1beta1.Coin boost_pool_balance = 5 [
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins",
+    (gogoproto.nullable) = false,
+    (amino.dont_omitempty) = true
+  ];
+
+  // boost_target_epochs is the target number of epochs over which the boost pool is distributed.
+  uint64 boost_target_epochs = 6;
+
+  // delegation_confirmations stores all active delegation confirmation records.
+  repeated DelegationConfirmation delegation_confirmations = 7 [(gogoproto.nullable) = false];
+}
+
+// DelegationConfirmation stores the expiry epoch for a delegator-validator pair.
+message DelegationConfirmation {
+  // delegator_address is the delegator's account address.
+  string delegator_address = 1;
+  // validator_address is the validator's operator address.
+  string validator_address = 2;
+  // expiry_epoch is the epoch at which the delegation expires if not confirmed.
+  uint64 expiry_epoch = 3;
 }
