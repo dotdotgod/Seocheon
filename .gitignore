@@ -46,6 +46,16 @@ Thumbs.db
 # Node modules (for frontend apps)
 node_modules/
 
+# SDK build artifacts
+sdk/kotlin/.gradle/
+sdk/kotlin/build/
+sdk/swift/.build/
+sdk/python/.pytest_cache/
+sdk/python/**/*.pyc
+sdk/python/**/__pycache__/
+sdk/python/*.egg-info/
+sdk/python/**/*.egg-info/
+
 # Ignite CLI
 release/
 .claude/system-prompt-extraction/
