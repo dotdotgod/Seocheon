@@ -136,6 +136,24 @@ func TestFormatKkot(t *testing.T) {
 	}
 }
 
+func TestParseKkotRoundtrip(t *testing.T) {
+	// Cat 06.10: Parse then format, verify round-trip
+	tests := []int64{0, 1, 100, 10000000000, 15000000000, 500_000_000_000_000, 1234567890}
+
+	for _, uppyeo := range tests {
+		formatted := FormatKkot(uppyeo)
+		parsed, err := ParseKkot(formatted)
+		if err != nil {
+			t.Errorf("ParseKkot(FormatKkot(%d)) error = %v", uppyeo, err)
+			continue
+		}
+		if parsed != uppyeo {
+			t.Errorf("round-trip failed: FormatKkot(%d) = %q, ParseKkot() = %d",
+				uppyeo, formatted, parsed)
+		}
+	}
+}
+
 func TestParseKkot(t *testing.T) {
 	tests := []struct {
 		kkot     string

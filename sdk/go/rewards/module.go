@@ -11,21 +11,26 @@ import (
 	sdkerrors "github.com/seocheon/sdk-go/errors"
 	"github.com/seocheon/sdk-go/internal/chain"
 	"github.com/seocheon/sdk-go/internal/signing"
+	"github.com/seocheon/sdk-go/internal/tx"
 	"github.com/seocheon/sdk-go/types"
 	"github.com/seocheon/sdk-go/utility"
 )
 
 // Module provides reward-related operations.
 type Module struct {
-	client chain.Client
-	signer signing.Service
+	client    chain.Client
+	signer    signing.Service
+	txQuerier tx.ChainQuerier
+	txConfig  tx.PipelineConfig
 }
 
 // NewModule creates a new Rewards module.
-func NewModule(client chain.Client, signer signing.Service) *Module {
+func NewModule(client chain.Client, signer signing.Service, chainID string) *Module {
 	return &Module{
-		client: client,
-		signer: signer,
+		client:    client,
+		signer:    signer,
+		txQuerier: tx.NewChainClientAdapter(client),
+		txConfig:  tx.DefaultPipelineConfig(chainID),
 	}
 }
 
@@ -81,12 +86,67 @@ func (m *Module) GetPending(ctx context.Context, nodeID string) (*types.PendingR
 
 // Withdraw withdraws all pending rewards. Requires operator signing key.
 func (m *Module) Withdraw(ctx context.Context) (*types.WithdrawRewardsResponse, error) {
-	// Build MsgWithdrawNodeCommission
-	// This requires the full TX building/signing/broadcasting flow
-	_ = m.signer.GetAddress() // operator
+	operator := m.signer.GetAddress()
 
-	// TODO: Implement full TX flow when proto message builders are available
-	return nil, fmt.Errorf("rewards.Withdraw: TX flow requires proto message builders (not yet implemented)")
+	msg := &tx.MsgWithdrawNodeCommission{
+		Operator: operator,
+	}
+
+	result, err := tx.ExecuteTx(ctx, m.txQuerier, m.signer, m.txConfig, tx.TxRequest{
+		Message: msg,
+	})
+	if err != nil {
+		if result != nil && result.Code != 0 {
+			return nil, sdkerrors.ABCICodeToError(result.Code)
+		}
+		return nil, fmt.Errorf("withdrawing rewards: %w", err)
+	}
+
+	// Parse withdrawn amounts from TX events
+	withdrawnTotal := int64(0)
+	toOperator := int64(0)
+	toAgent := int64(0)
+
+	for _, evt := range result.Events {
+		if evt.Type == "withdraw_commission" || evt.Type == "withdraw_node_commission" {
+			for _, attr := range evt.Attributes {
+				switch attr.Key {
+				case "amount":
+					withdrawnTotal = parseAmount(attr.Value)
+				case "operator_share":
+					toOperator = parseAmount(attr.Value)
+				case "agent_share":
+					toAgent = parseAmount(attr.Value)
+				}
+			}
+		}
+	}
+
+	// If event parsing didn't yield operator/agent split, estimate
+	if withdrawnTotal > 0 && toOperator == 0 && toAgent == 0 {
+		toOperator = withdrawnTotal * 80 / 100
+		toAgent = withdrawnTotal - toOperator
+	}
+
+	return &types.WithdrawRewardsResponse{
+		TxHash:         result.TxHash,
+		WithdrawnTotal: utility.FormatKkot(withdrawnTotal),
+		ToOperator:     utility.FormatKkot(toOperator),
+		ToAgent:        utility.FormatKkot(toAgent),
+	}, nil
+}
+
+func parseAmount(s string) int64 {
+	// Parse amount string like "1000uppyeo" or "1000"
+	var result int64
+	for _, c := range s {
+		if c >= '0' && c <= '9' {
+			result = result*10 + int64(c-'0')
+		} else {
+			break
+		}
+	}
+	return result
 }
 
 type nodeInfo struct {

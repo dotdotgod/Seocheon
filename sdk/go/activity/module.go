@@ -12,23 +12,28 @@ import (
 	sdkerrors "github.com/seocheon/sdk-go/errors"
 	"github.com/seocheon/sdk-go/internal/chain"
 	"github.com/seocheon/sdk-go/internal/signing"
+	"github.com/seocheon/sdk-go/internal/tx"
 	"github.com/seocheon/sdk-go/types"
 	"github.com/seocheon/sdk-go/utility"
 )
 
 // Module provides activity-related operations.
 type Module struct {
-	client  chain.Client
-	signer  signing.Service
-	chainID string
+	client     chain.Client
+	signer     signing.Service
+	chainID    string
+	txQuerier  tx.ChainQuerier
+	txConfig   tx.PipelineConfig
 }
 
 // NewModule creates a new Activity module.
 func NewModule(client chain.Client, signer signing.Service, chainID string) *Module {
 	return &Module{
-		client:  client,
-		signer:  signer,
-		chainID: chainID,
+		client:    client,
+		signer:    signer,
+		chainID:   chainID,
+		txQuerier: tx.NewChainClientAdapter(client),
+		txConfig:  tx.DefaultPipelineConfig(chainID),
 	}
 }
 
@@ -43,18 +48,48 @@ func (m *Module) Submit(ctx context.Context, activityHash, contentURI string) (*
 		return nil, sdkerrors.ErrInvalidContentURI
 	}
 
-	// Build and broadcast MsgSubmitActivity
-	// The actual TX building/signing/broadcasting is delegated to the chain client
-	// In a full implementation, this would:
-	// 1. Create MsgSubmitActivity proto message
-	// 2. Build TX with proper account info
-	// 3. Sign via signing service
-	// 4. Broadcast and wait for confirmation
-	// 5. Compute derived fields
-	_ = m.signer.GetAddress() // submitter
+	msg := &tx.MsgSubmitActivity{
+		Submitter:    m.signer.GetAddress(),
+		ActivityHash: activityHash,
+		ContentURI:   contentURI,
+	}
 
-	// TODO: Implement full TX flow when proto dependencies are available
-	return nil, fmt.Errorf("activity.Submit: TX flow requires proto message builders (not yet implemented)")
+	result, err := tx.ExecuteTx(ctx, m.txQuerier, m.signer, m.txConfig, tx.TxRequest{
+		Message: msg,
+	})
+	if err != nil {
+		if result != nil && result.Code != 0 {
+			return nil, sdkerrors.ABCICodeToError(result.Code)
+		}
+		return nil, fmt.Errorf("submitting activity: %w", err)
+	}
+
+	// Compute derived fields from block height
+	params, err := m.getActivityParams(ctx)
+	if err != nil {
+		params = &activityParams{
+			epochLength:     constants.EpochLength,
+			windowsPerEpoch: constants.WindowsPerEpoch,
+		}
+	}
+
+	epochNumber := utility.ComputeEpoch(result.Height, params.epochLength)
+	windowNumber := utility.ComputeWindow(result.Height, params.epochLength, params.windowsPerEpoch)
+
+	// Query remaining quota
+	var quotaRemaining uint64
+	quota, qErr := m.GetQuota(ctx)
+	if qErr == nil {
+		quotaRemaining = quota.QuotaRemaining
+	}
+
+	return &types.SubmitActivityResponse{
+		TxHash:         result.TxHash,
+		BlockHeight:    result.Height,
+		EpochNumber:    epochNumber,
+		WindowNumber:   windowNumber,
+		QuotaRemaining: quotaRemaining,
+	}, nil
 }
 
 // GetActivities returns activity submission history for a node.

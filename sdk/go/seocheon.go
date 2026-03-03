@@ -57,8 +57,8 @@ func New(config SDKConfig, opts ...Option) (*SeocheonSDK, error) {
 	sdk.Activity = activity.NewModule(client, signer, config.Chain.ChainID)
 	sdk.Epoch = epoch.NewModule(client)
 	sdk.Node = node.NewModule(client, signer)
-	sdk.Rewards = rewards.NewModule(client, signer)
-	sdk.Cosmos = cosmos.NewModule(client, signer)
+	sdk.Rewards = rewards.NewModule(client, signer, config.Chain.ChainID)
+	sdk.Cosmos = cosmos.NewModule(client, signer, config.Chain.ChainID)
 	sdk.Subscription = subscription.NewManager(config.Chain.RPCEndpoint)
 
 	return sdk, nil

@@ -11,21 +11,26 @@ import (
 	sdkerrors "github.com/seocheon/sdk-go/errors"
 	"github.com/seocheon/sdk-go/internal/chain"
 	"github.com/seocheon/sdk-go/internal/signing"
+	"github.com/seocheon/sdk-go/internal/tx"
 	"github.com/seocheon/sdk-go/types"
 	"github.com/seocheon/sdk-go/utility"
 )
 
 // Module provides standard Cosmos operations.
 type Module struct {
-	client chain.Client
-	signer signing.Service
+	client    chain.Client
+	signer    signing.Service
+	txQuerier tx.ChainQuerier
+	txConfig  tx.PipelineConfig
 }
 
 // NewModule creates a new Cosmos module.
-func NewModule(client chain.Client, signer signing.Service) *Module {
+func NewModule(client chain.Client, signer signing.Service, chainID string) *Module {
 	return &Module{
-		client: client,
-		signer: signer,
+		client:    client,
+		signer:    signer,
+		txQuerier: tx.NewChainClientAdapter(client),
+		txConfig:  tx.DefaultPipelineConfig(chainID),
 	}
 }
 
@@ -74,14 +79,34 @@ func (m *Module) SendTokens(ctx context.Context, toAddress, amount, denom string
 	if toAddress == "" {
 		return nil, sdkerrors.ErrInvalidAddress
 	}
+	if amount == "" {
+		return nil, fmt.Errorf("amount is required")
+	}
 
-	_ = m.signer.GetAddress() // from_address
 	if denom == "" {
 		denom = "uppyeo"
 	}
 
-	// TODO: Implement full TX flow (MsgSend) when proto dependencies are available
-	return nil, fmt.Errorf("cosmos.SendTokens: TX flow requires proto message builders (not yet implemented)")
+	msg := &tx.MsgSend{
+		FromAddress: m.signer.GetAddress(),
+		ToAddress:   toAddress,
+		Amount:      []tx.Coin{{Denom: denom, Amount: amount}},
+	}
+
+	result, err := tx.ExecuteTx(ctx, m.txQuerier, m.signer, m.txConfig, tx.TxRequest{
+		Message: msg,
+	})
+	if err != nil {
+		if result != nil && result.Code != 0 {
+			return nil, sdkerrors.ABCICodeToError(result.Code)
+		}
+		return nil, fmt.Errorf("sending tokens: %w", err)
+	}
+
+	return &types.SendTokensResponse{
+		TxHash:      result.TxHash,
+		BlockHeight: result.Height,
+	}, nil
 }
 
 // GetBlockInfo returns the latest block information.

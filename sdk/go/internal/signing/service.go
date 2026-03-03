@@ -4,6 +4,9 @@ package signing
 
 import (
 	"fmt"
+	"net/http"
+
+	"github.com/seocheon/sdk-go/internal/crypto"
 )
 
 // Service defines the interface for transaction signing.
@@ -21,22 +24,21 @@ type VaultService struct {
 	endpoint string
 	keyName  string
 	address  string
+	pubKey   []byte
+	client   *http.Client
 }
 
 // NewVaultService creates a new VaultService.
+// It connects to the vault server to fetch the address and public key.
 func NewVaultService(endpoint, keyName string) (*VaultService, error) {
 	if endpoint == "" || keyName == "" {
 		return nil, fmt.Errorf("vault endpoint and key name are required")
 	}
-	return &VaultService{
-		endpoint: endpoint,
-		keyName:  keyName,
-	}, nil
+	return initVaultService(endpoint, keyName)
 }
 
 func (v *VaultService) Sign(txBytes []byte) ([]byte, error) {
-	// TODO: Implement vault signing via HTTP call to vault server
-	return nil, fmt.Errorf("vault signing not yet implemented")
+	return vaultSign(v.client, v.endpoint, v.keyName, txBytes)
 }
 
 func (v *VaultService) GetAddress() string {
@@ -44,31 +46,43 @@ func (v *VaultService) GetAddress() string {
 }
 
 func (v *VaultService) GetPubKey() ([]byte, error) {
-	// TODO: Implement vault pubkey retrieval
-	return nil, fmt.Errorf("vault pubkey retrieval not yet implemented")
+	return v.pubKey, nil
 }
 
-// KeystoreService signs transactions using a local keystore file.
+// KeystoreService signs transactions using a local encrypted keystore file.
 type KeystoreService struct {
-	keystorePath string
-	passphrase   string
-	address      string
+	privKey *crypto.PrivateKey
+	address string
+	pubKey  []byte
 }
 
-// NewKeystoreService creates a new KeystoreService.
+// NewKeystoreService creates a new KeystoreService by decrypting the keystore.
+// passphrase is the passphrase or environment variable name containing it.
 func NewKeystoreService(keystorePath, passphrase string) (*KeystoreService, error) {
 	if keystorePath == "" || passphrase == "" {
 		return nil, fmt.Errorf("keystore path and passphrase are required")
 	}
+
+	key, err := loadAndDecryptKeystore(keystorePath, passphrase)
+	if err != nil {
+		return nil, fmt.Errorf("loading keystore: %w", err)
+	}
+
+	pubKey := key.PubKey()
+	addr, err := crypto.AddressFromPubKey(pubKey)
+	if err != nil {
+		return nil, fmt.Errorf("deriving address from keystore: %w", err)
+	}
+
 	return &KeystoreService{
-		keystorePath: keystorePath,
-		passphrase:   passphrase,
+		privKey: key,
+		address: addr,
+		pubKey:  pubKey,
 	}, nil
 }
 
 func (k *KeystoreService) Sign(txBytes []byte) ([]byte, error) {
-	// TODO: Implement keystore signing
-	return nil, fmt.Errorf("keystore signing not yet implemented")
+	return k.privKey.Sign(txBytes)
 }
 
 func (k *KeystoreService) GetAddress() string {
@@ -76,15 +90,14 @@ func (k *KeystoreService) GetAddress() string {
 }
 
 func (k *KeystoreService) GetPubKey() ([]byte, error) {
-	// TODO: Implement keystore pubkey retrieval
-	return nil, fmt.Errorf("keystore pubkey retrieval not yet implemented")
+	return k.pubKey, nil
 }
 
 // DirectService signs transactions using a mnemonic directly (test only).
 type DirectService struct {
-	mnemonic string
-	address  string
-	pubKey   []byte
+	privKey *crypto.PrivateKey
+	address string
+	pubKey  []byte
 }
 
 // NewDirectService creates a new DirectService from a mnemonic.
@@ -92,15 +105,27 @@ func NewDirectService(mnemonic string) (*DirectService, error) {
 	if mnemonic == "" {
 		return nil, fmt.Errorf("mnemonic is required")
 	}
-	// TODO: Derive key pair from mnemonic using BIP44 path
+
+	key, err := crypto.DeriveKeyFromMnemonic(mnemonic)
+	if err != nil {
+		return nil, fmt.Errorf("deriving key from mnemonic: %w", err)
+	}
+
+	pubKey := key.PubKey()
+	addr, err := crypto.AddressFromPubKey(pubKey)
+	if err != nil {
+		return nil, fmt.Errorf("deriving address: %w", err)
+	}
+
 	return &DirectService{
-		mnemonic: mnemonic,
+		privKey: key,
+		address: addr,
+		pubKey:  pubKey,
 	}, nil
 }
 
 func (d *DirectService) Sign(txBytes []byte) ([]byte, error) {
-	// TODO: Implement direct signing with derived key
-	return nil, fmt.Errorf("direct signing not yet implemented")
+	return d.privKey.Sign(txBytes)
 }
 
 func (d *DirectService) GetAddress() string {
