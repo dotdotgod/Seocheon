@@ -1,4 +1,5 @@
 using Seocheon.Sdk.Internal.Tx;
+using Seocheon.Sdk.Infrastructure;
 using Seocheon.Sdk.Tests.TestHelpers;
 using Xunit;
 
@@ -127,17 +128,17 @@ public class PipelineTests
 
     // Helper test clients
 
-    private class FailBroadcastClient : MockChainClient
+    private class FailBroadcastClient : MockChainClient, IChainClient
     {
-        public new Task<BroadcastResponse> BroadcastTx(byte[] txBytes, string mode, CancellationToken ct = default)
+        Task<BroadcastResponse> IChainClient.BroadcastTx(byte[] txBytes, string mode, CancellationToken ct)
         {
             return Task.FromResult(new BroadcastResponse { TxHash = "", Code = 5, RawLog = "broadcast error" });
         }
     }
 
-    private class NeverConfirmClient : MockChainClient
+    private class NeverConfirmClient : MockChainClient, IChainClient
     {
-        public new Task<TxResponse?> GetTx(string txHash, CancellationToken ct = default)
+        Task<TxResponse?> IChainClient.GetTx(string txHash, CancellationToken ct)
         {
             return Task.FromResult<TxResponse?>(null);
         }

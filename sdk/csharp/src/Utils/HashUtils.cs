@@ -32,7 +32,7 @@ public static partial class HashUtils
     public static string ComputeActivityHash(byte[] data)
     {
         var hashBytes = SHA256.HashData(data);
-        return Convert.ToHexStringLower(hashBytes);
+        return Convert.ToHexString(hashBytes).ToLowerInvariant();
     }
 
     /// <summary>

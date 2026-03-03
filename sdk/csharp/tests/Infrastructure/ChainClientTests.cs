@@ -54,9 +54,9 @@ public class ChainClientTests
     }
 
     [Fact]
-    public void HttpChainClient_NotConnected_Throws()
+    public async Task HttpChainClient_NotConnected_Throws()
     {
         var client = new HttpChainClient("http://localhost:26657", "http://localhost:1317");
-        Assert.ThrowsAsync<SdkException>(() => client.QueryRest("/test"));
+        await Assert.ThrowsAsync<SdkException>(() => client.QueryRest("/test"));
     }
 }

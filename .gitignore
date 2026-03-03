@@ -55,6 +55,8 @@ sdk/python/**/*.pyc
 sdk/python/**/__pycache__/
 sdk/python/*.egg-info/
 sdk/python/**/*.egg-info/
+sdk/csharp/**/bin/
+sdk/csharp/**/obj/
 
 # Ignite CLI
 release/
