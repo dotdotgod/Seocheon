@@ -82,31 +82,173 @@ export class HttpChainClient implements ChainClient {
   }
 
   async broadcastTx(
-    _txBytes: Uint8Array,
-    _mode: string,
+    txBytes: Uint8Array,
+    mode: string,
   ): Promise<BroadcastResponse> {
     this.ensureConnected();
-    throw new Error("broadcastTx requires CosmJS integration");
+    const txBytesBase64 = uint8ArrayToBase64(txBytes);
+    const broadcastMode =
+      mode === "async" ? "BROADCAST_MODE_ASYNC" : "BROADCAST_MODE_SYNC";
+
+    const url = `${this.rpcEndpoint}/cosmos/tx/v1beta1/txs`;
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        tx_bytes: txBytesBase64,
+        mode: broadcastMode,
+      }),
+    });
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`broadcast failed: HTTP ${response.status}: ${body}`);
+    }
+
+    const result = (await response.json()) as {
+      tx_response: {
+        txhash: string;
+        code: number;
+        raw_log: string;
+      };
+    };
+
+    return {
+      tx_hash: result.tx_response.txhash,
+      code: result.tx_response.code,
+      raw_log: result.tx_response.raw_log,
+    };
   }
 
-  async getAccountInfo(_address: string): Promise<AccountInfo> {
+  async getAccountInfo(address: string): Promise<AccountInfo> {
     this.ensureConnected();
-    throw new Error("getAccountInfo requires CosmJS integration");
+    const url = `${this.rpcEndpoint}/cosmos/auth/v1beta1/accounts/${address}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `account info query failed: HTTP ${response.status}: ${response.statusText}`,
+      );
+    }
+
+    const result = (await response.json()) as {
+      account: {
+        account_number?: string;
+        sequence?: string;
+        base_account?: {
+          account_number: string;
+          sequence: string;
+        };
+      };
+    };
+
+    // Handle both direct accounts and nested base_account (e.g. vesting accounts)
+    const acct = result.account.base_account ?? result.account;
+    return {
+      account_number: parseInt(acct.account_number ?? "0", 10),
+      sequence: parseInt(acct.sequence ?? "0", 10),
+    };
   }
 
   async getLatestBlock(): Promise<BlockResponse> {
     this.ensureConnected();
-    throw new Error("getLatestBlock requires CosmJS integration");
+    const url = `${this.rpcEndpoint}/cosmos/base/tendermint/v1beta1/blocks/latest`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `latest block query failed: HTTP ${response.status}: ${response.statusText}`,
+      );
+    }
+
+    const result = (await response.json()) as {
+      block: {
+        header: { height: string; time: string; chain_id: string };
+        data: { txs: string[] | null };
+      };
+    };
+
+    return {
+      header: {
+        height: parseInt(result.block.header.height, 10),
+        time: result.block.header.time,
+        chain_id: result.block.header.chain_id,
+      },
+      data: {
+        txs: (result.block.data.txs ?? []).map(base64ToUint8Array),
+      },
+    };
   }
 
-  async getBlockByHeight(_height: number): Promise<BlockResponse> {
+  async getBlockByHeight(height: number): Promise<BlockResponse> {
     this.ensureConnected();
-    throw new Error("getBlockByHeight requires CosmJS integration");
+    const url = `${this.rpcEndpoint}/cosmos/base/tendermint/v1beta1/blocks/${height}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(
+        `block query failed: HTTP ${response.status}: ${response.statusText}`,
+      );
+    }
+
+    const result = (await response.json()) as {
+      block: {
+        header: { height: string; time: string; chain_id: string };
+        data: { txs: string[] | null };
+      };
+    };
+
+    return {
+      header: {
+        height: parseInt(result.block.header.height, 10),
+        time: result.block.header.time,
+        chain_id: result.block.header.chain_id,
+      },
+      data: {
+        txs: (result.block.data.txs ?? []).map(base64ToUint8Array),
+      },
+    };
   }
 
-  async getTx(_txHash: string): Promise<TxResponse | null> {
+  async getTx(txHash: string): Promise<TxResponse | null> {
     this.ensureConnected();
-    throw new Error("getTx requires CosmJS integration");
+    const url = `${this.rpcEndpoint}/cosmos/tx/v1beta1/txs/${txHash}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      if (response.status === 404) return null;
+      const body = await response.text();
+      if (body.includes("not found") || body.includes("not exist")) {
+        return null;
+      }
+      throw new Error(
+        `tx query failed: HTTP ${response.status}: ${response.statusText}`,
+      );
+    }
+
+    const result = (await response.json()) as {
+      tx_response: {
+        txhash: string;
+        height: string;
+        code: number;
+        gas_used: string;
+        gas_wanted: string;
+        raw_log: string;
+        events: Array<{
+          type: string;
+          attributes: Array<{ key: string; value: string }>;
+        }>;
+      };
+    };
+
+    return {
+      tx_hash: result.tx_response.txhash,
+      height: parseInt(result.tx_response.height, 10),
+      tx_result: {
+        code: result.tx_response.code,
+        gas_used: parseInt(result.tx_response.gas_used, 10),
+        gas_wanted: parseInt(result.tx_response.gas_wanted, 10),
+        log: result.tx_response.raw_log,
+        events: result.tx_response.events ?? [],
+      },
+    };
   }
 
   getRpcEndpoint(): string {
@@ -122,4 +264,27 @@ export class HttpChainClient implements ChainClient {
       throw new Error("ChainClient is not connected");
     }
   }
+}
+
+function uint8ArrayToBase64(bytes: Uint8Array): string {
+  if (typeof Buffer !== "undefined") {
+    return Buffer.from(bytes).toString("base64");
+  }
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+function base64ToUint8Array(b64: string): Uint8Array {
+  if (typeof Buffer !== "undefined") {
+    return new Uint8Array(Buffer.from(b64, "base64"));
+  }
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
 }

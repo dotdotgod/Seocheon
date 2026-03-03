@@ -38,6 +38,8 @@ export class SeocheonSDK {
       broadcast_mode: config.tx?.broadcast_mode ?? "sync",
       confirm_timeout_ms: config.tx?.confirm_timeout_ms ?? 30000,
       confirm_poll_interval_ms: config.tx?.confirm_poll_interval_ms ?? 1000,
+      chain_id: config.chain.chain_id,
+      gas_price: config.chain.gas_price ? parseInt(config.chain.gas_price, 10) : 250,
     };
 
     this.chainClient = new HttpChainClient();

@@ -34,4 +34,6 @@ export interface ResolvedTxConfig {
   broadcast_mode: BroadcastMode;
   confirm_timeout_ms: number;
   confirm_poll_interval_ms: number;
+  chain_id: string;
+  gas_price: number;
 }

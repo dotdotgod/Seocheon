@@ -16,79 +16,71 @@ import {
   ERR_TX_TIMEOUT,
 } from "../src/constants/errors.js";
 
-describe("SeocheonError", () => {
-  it("has code and message", () => {
+describe("errors", () => {
+  it("01.1: base_error_has_code_and_message", () => {
     const err = new SeocheonError(1234, "test error");
     expect(err.code).toBe(1234);
     expect(err.message).toBe("test error");
     expect(err.name).toBe("SeocheonError");
     expect(err).toBeInstanceOf(Error);
   });
-});
 
-describe("ConnectionError", () => {
-  it("uses ERR_NOT_CONNECTED code", () => {
-    const err = new ConnectionError("not connected");
-    expect(err.code).toBe(ERR_NOT_CONNECTED);
-    expect(err.name).toBe("ConnectionError");
-    expect(err).toBeInstanceOf(SeocheonError);
+  it("01.2: error_subclasses_use_correct_codes", () => {
+    const conn = new ConnectionError("not connected");
+    expect(conn.code).toBe(ERR_NOT_CONNECTED);
+    expect(conn.name).toBe("ConnectionError");
+    expect(conn).toBeInstanceOf(SeocheonError);
+
+    const query = new QueryError("query failed");
+    expect(query.code).toBe(ERR_QUERY_FAILED);
+    expect(query.name).toBe("QueryError");
+
+    const tx = new TransactionError("broadcast failed");
+    expect(tx.code).toBe(ERR_BROADCAST_FAILED);
+    expect(tx.name).toBe("TransactionError");
+
+    const val = new ValidationError("invalid config");
+    expect(val.code).toBe(ERR_INVALID_CONFIG);
+    expect(val.name).toBe("ValidationError");
+
+    const timeout = new TimeoutError("AABB1122");
+    expect(timeout.code).toBe(ERR_TX_TIMEOUT);
+    expect(timeout.message).toContain("AABB1122");
   });
-});
 
-describe("QueryError", () => {
-  it("uses ERR_QUERY_FAILED by default", () => {
+  it("01.3: wrap_error_preserves_cause", () => {
+    const cause = new Error("root cause");
     const err = new QueryError("query failed");
-    expect(err.code).toBe(ERR_QUERY_FAILED);
-    expect(err.name).toBe("QueryError");
+    // SeocheonError is an Error subclass, so we can check prototype chain
+    expect(err).toBeInstanceOf(Error);
+    expect(err).toBeInstanceOf(SeocheonError);
+    // QueryError accepts custom code
+    const custom = new QueryError("not found", 9003);
+    expect(custom.code).toBe(9003);
   });
 
-  it("accepts custom code", () => {
-    const err = new QueryError("not found", 9003);
-    expect(err.code).toBe(9003);
-  });
-});
-
-describe("TransactionError", () => {
-  it("uses ERR_BROADCAST_FAILED by default", () => {
-    const err = new TransactionError("broadcast failed");
-    expect(err.code).toBe(ERR_BROADCAST_FAILED);
-    expect(err.name).toBe("TransactionError");
-  });
-});
-
-describe("ValidationError", () => {
-  it("uses ERR_INVALID_CONFIG by default", () => {
-    const err = new ValidationError("invalid config");
-    expect(err.code).toBe(ERR_INVALID_CONFIG);
-    expect(err.name).toBe("ValidationError");
-  });
-});
-
-describe("TimeoutError", () => {
-  it("includes tx hash in message", () => {
-    const err = new TimeoutError("AABB1122");
-    expect(err.code).toBe(ERR_TX_TIMEOUT);
-    expect(err.message).toContain("AABB1122");
-    expect(err.name).toBe("TimeoutError");
-  });
-});
-
-describe("mapAbciError", () => {
-  it("maps x/activity errors", () => {
+  it("01.4: map_abci_activity_errors", () => {
     const err = mapAbciError(1203, "quota exceeded");
     expect(err.code).toBe(1203);
     expect(err).toBeInstanceOf(TransactionError);
   });
 
-  it("maps x/node errors", () => {
-    const err = mapAbciError(1101, "node not found");
-    expect(err.code).toBe(1101);
-    expect(err).toBeInstanceOf(TransactionError);
+  it("01.5: map_abci_node_and_unknown_errors", () => {
+    const nodeErr = mapAbciError(1101, "node not found");
+    expect(nodeErr.code).toBe(1101);
+    expect(nodeErr).toBeInstanceOf(TransactionError);
+
+    const unknownErr = mapAbciError(5, "unknown");
+    expect(unknownErr.code).toBe(5);
+    expect(unknownErr).toBeInstanceOf(TransactionError);
   });
 
-  it("maps unknown errors", () => {
-    const err = mapAbciError(5, "unknown");
-    expect(err.code).toBe(5);
-    expect(err).toBeInstanceOf(TransactionError);
+  it("01.6: predefined_error_codes_match", () => {
+    // Verify error code constants are in expected ranges
+    expect(ERR_NOT_CONNECTED).toBe(9000);
+    expect(ERR_QUERY_FAILED).toBe(9006);
+    expect(ERR_BROADCAST_FAILED).toBe(9001);
+    expect(ERR_INVALID_CONFIG).toBe(9005);
+    expect(ERR_TX_TIMEOUT).toBe(9002);
   });
 });

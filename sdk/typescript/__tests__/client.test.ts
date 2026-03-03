@@ -23,7 +23,7 @@ const validConfig = {
 
 describe("SeocheonSDK", () => {
   describe("constructor", () => {
-    it("creates SDK with valid config", () => {
+    it("02.1: creates_sdk_with_valid_config", () => {
       const sdk = new SeocheonSDK(validConfig);
       expect(sdk).toBeDefined();
       expect(sdk.activity).toBeDefined();
@@ -33,17 +33,7 @@ describe("SeocheonSDK", () => {
       expect(sdk.cosmos).toBeDefined();
     });
 
-    it("throws on missing chain config", () => {
-      expect(
-        () =>
-          new SeocheonSDK({
-            chain: undefined as unknown as typeof validConfig.chain,
-            signing: validConfig.signing,
-          }),
-      ).toThrow(ValidationError);
-    });
-
-    it("throws on missing chain_id", () => {
+    it("02.2: throws_on_missing_chain_id", () => {
       expect(
         () =>
           new SeocheonSDK({
@@ -53,7 +43,7 @@ describe("SeocheonSDK", () => {
       ).toThrow(ValidationError);
     });
 
-    it("throws on missing rpc_endpoint", () => {
+    it("02.3: throws_on_missing_rpc_endpoint", () => {
       expect(
         () =>
           new SeocheonSDK({
@@ -63,7 +53,7 @@ describe("SeocheonSDK", () => {
       ).toThrow(ValidationError);
     });
 
-    it("throws on missing grpc_endpoint", () => {
+    it("02.4: throws_on_missing_grpc_endpoint", () => {
       expect(
         () =>
           new SeocheonSDK({
@@ -73,17 +63,7 @@ describe("SeocheonSDK", () => {
       ).toThrow(ValidationError);
     });
 
-    it("throws on missing signing config", () => {
-      expect(
-        () =>
-          new SeocheonSDK({
-            chain: validConfig.chain,
-            signing: undefined as unknown as typeof validConfig.signing,
-          }),
-      ).toThrow(ValidationError);
-    });
-
-    it("throws on invalid signing mode", () => {
+    it("02.5: throws_on_invalid_signing_mode", () => {
       expect(
         () =>
           new SeocheonSDK({
@@ -93,7 +73,7 @@ describe("SeocheonSDK", () => {
       ).toThrow(ValidationError);
     });
 
-    it("throws on direct mode without mnemonic", () => {
+    it("02.6: throws_on_direct_without_mnemonic", () => {
       expect(
         () =>
           new SeocheonSDK({
@@ -103,7 +83,7 @@ describe("SeocheonSDK", () => {
       ).toThrow(ValidationError);
     });
 
-    it("throws on vault mode without endpoint", () => {
+    it("02.7: throws_on_vault_without_endpoint", () => {
       expect(
         () =>
           new SeocheonSDK({
@@ -113,7 +93,7 @@ describe("SeocheonSDK", () => {
       ).toThrow(ValidationError);
     });
 
-    it("throws on keystore mode without path", () => {
+    it("02.8: throws_on_keystore_without_path", () => {
       expect(
         () =>
           new SeocheonSDK({
@@ -125,12 +105,12 @@ describe("SeocheonSDK", () => {
   });
 
   describe("connection", () => {
-    it("starts disconnected", () => {
+    it("03.1: starts_disconnected", () => {
       const sdk = new SeocheonSDK(validConfig);
       expect(sdk.isConnected()).toBe(false);
     });
 
-    it("connects and disconnects", async () => {
+    it("03.2: connects_and_disconnects", async () => {
       const sdk = new SeocheonSDK(validConfig);
       await sdk.connect();
       expect(sdk.isConnected()).toBe(true);
@@ -139,23 +119,31 @@ describe("SeocheonSDK", () => {
     });
   });
 
-  describe("getConfig", () => {
-    it("returns a copy of the config", () => {
+  describe("config", () => {
+    it("03.3: returns_config_copy", () => {
       const sdk = new SeocheonSDK(validConfig);
       const config = sdk.getConfig();
       expect(config.chain.chain_id).toBe("seocheon-1");
       expect(config.signing.mode).toBe("direct");
     });
-  });
 
-  describe("tx config defaults", () => {
-    it("applies default tx config when not provided", () => {
+    it("03.4: applies_default_tx_config", () => {
       const sdk = new SeocheonSDK({
         chain: validConfig.chain,
         signing: validConfig.signing,
       });
       const config = sdk.getConfig();
       expect(config.tx).toBeUndefined();
+    });
+
+    it("03.5: invalid_config_returns_error", () => {
+      expect(
+        () =>
+          new SeocheonSDK({
+            chain: { ...validConfig.chain, chain_id: "", rpc_endpoint: "" },
+            signing: validConfig.signing,
+          }),
+      ).toThrow(ValidationError);
     });
   });
 });

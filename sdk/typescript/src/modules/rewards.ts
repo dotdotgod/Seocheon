@@ -5,6 +5,9 @@ import type {
   PendingRewardsResponse,
   WithdrawRewardsResponse,
 } from "../types/responses.js";
+import { MsgWithdrawNodeCommission } from "../infrastructure/messages.js";
+import { ChainClientAdapter, executeTx } from "../infrastructure/tx-pipeline.js";
+import type { PipelineConfig } from "../infrastructure/tx-pipeline.js";
 import { formatKkot } from "../utils/denom.js";
 import { TransactionError } from "../errors/errors.js";
 import { ERR_BROADCAST_FAILED } from "../constants/errors.js";
@@ -19,7 +22,6 @@ export class RewardsModule {
   async getPending(nodeId?: string): Promise<PendingRewardsResponse> {
     const effectiveNodeId = nodeId ?? (await this.resolveOwnNodeId());
 
-    // Get node info for validator_address and agent_share
     const nodeResponse = await this.chainClient.queryRest<{
       node: {
         validator_address: string;
@@ -30,7 +32,6 @@ export class RewardsModule {
     const validatorAddress = nodeResponse.node.validator_address;
     const agentSharePercent = parseFloat(nodeResponse.node.agent_share);
 
-    // Query outstanding rewards
     let delegationReward = "0";
     try {
       const outstanding = await this.chainClient.queryRest<{
@@ -48,7 +49,6 @@ export class RewardsModule {
       // Validator may not have rewards yet
     }
 
-    // Query commission
     let commissionTotal = "0";
     try {
       const commission = await this.chainClient.queryRest<{
@@ -66,7 +66,6 @@ export class RewardsModule {
       // No commission yet
     }
 
-    // Activity reward is estimated (would need activity pool calculation)
     const activityReward = "0";
 
     const totalReward = (
@@ -94,17 +93,54 @@ export class RewardsModule {
   }
 
   async withdraw(): Promise<WithdrawRewardsResponse> {
-    // Build MsgWithdrawNodeCommission
-    const _msg = {
-      typeUrl: "/seocheon.node.v1.MsgWithdrawNodeCommission",
-      value: { operator: await this.signingService.getAddress() },
+    const operator = await this.signingService.getAddress();
+    const msg = new MsgWithdrawNodeCommission(operator);
+
+    const querier = new ChainClientAdapter(this.chainClient);
+    const pipelineCfg: PipelineConfig = {
+      chainId: this.txConfig.chain_id,
+      gasPrice: this.txConfig.gas_price,
+      confirmTimeoutMs: this.txConfig.confirm_timeout_ms,
+      pollIntervalMs: this.txConfig.confirm_poll_interval_ms,
     };
 
-    // Placeholder: actual TX broadcast requires CosmJS integration
-    throw new TransactionError(
-      "rewards.withdraw() requires full CosmJS TX pipeline integration",
-      ERR_BROADCAST_FAILED,
-    );
+    const result = await executeTx(querier, this.signingService, pipelineCfg, {
+      message: msg,
+    });
+
+    if (result.code !== 0) {
+      throw new TransactionError(
+        `withdraw failed with code ${result.code}: ${result.rawLog}`,
+        ERR_BROADCAST_FAILED,
+      );
+    }
+
+    // Parse withdrawn amounts from events
+    let withdrawnTotal = "0";
+    let toOperator = "0";
+    let toAgent = "0";
+    for (const event of result.events) {
+      if (event.type === "withdraw_commission" || event.type === "transfer") {
+        for (const attr of event.attributes) {
+          if (attr.key === "amount" && attr.value.includes("uppyeo")) {
+            withdrawnTotal = attr.value.replace("uppyeo", "");
+          }
+          if (attr.key === "operator_amount" && attr.value.includes("uppyeo")) {
+            toOperator = attr.value.replace("uppyeo", "");
+          }
+          if (attr.key === "agent_amount" && attr.value.includes("uppyeo")) {
+            toAgent = attr.value.replace("uppyeo", "");
+          }
+        }
+      }
+    }
+
+    return {
+      tx_hash: result.txHash,
+      withdrawn_total: formatKkot(withdrawnTotal),
+      to_operator: formatKkot(toOperator),
+      to_agent: formatKkot(toAgent),
+    };
   }
 
   private async resolveOwnNodeId(): Promise<string> {

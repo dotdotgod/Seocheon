@@ -7,6 +7,9 @@ import type {
   ActivityItem,
   GetQuotaResponse,
 } from "../types/responses.js";
+import { MsgSubmitActivity } from "../infrastructure/messages.js";
+import { ChainClientAdapter, executeTx } from "../infrastructure/tx-pipeline.js";
+import type { PipelineConfig } from "../infrastructure/tx-pipeline.js";
 import { isValidActivityHash, isValidContentUri } from "../utils/hash.js";
 import { computeEpoch, computeWindow } from "../utils/epoch.js";
 import { ValidationError, TransactionError } from "../errors/errors.js";
@@ -41,19 +44,55 @@ export class ActivityModule {
     }
 
     const submitter = await this.signingService.getAddress();
+    const msg = new MsgSubmitActivity(submitter, activityHash, contentUri);
 
-    // Build MsgSubmitActivity
-    // In full integration, this would use protobuf encoding + CosmJS signing
-    const _msg = {
-      typeUrl: "/seocheon.activity.v1.MsgSubmitActivity",
-      value: { submitter, activity_hash: activityHash, content_uri: contentUri },
+    const querier = new ChainClientAdapter(this.chainClient);
+    const pipelineCfg: PipelineConfig = {
+      chainId: this.txConfig.chain_id,
+      gasPrice: this.txConfig.gas_price,
+      confirmTimeoutMs: this.txConfig.confirm_timeout_ms,
+      pollIntervalMs: this.txConfig.confirm_poll_interval_ms,
     };
 
-    // Placeholder: actual TX broadcast requires CosmJS integration
-    throw new TransactionError(
-      "activity.submit() requires full CosmJS TX pipeline integration",
-      ERR_BROADCAST_FAILED,
+    const result = await executeTx(querier, this.signingService, pipelineCfg, {
+      message: msg,
+    });
+
+    if (result.code !== 0) {
+      throw new TransactionError(
+        `activity submit failed with code ${result.code}: ${result.rawLog}`,
+        ERR_BROADCAST_FAILED,
+      );
+    }
+
+    // Compute epoch/window from block height
+    const params = await this.getActivityParams();
+    const epoch = computeEpoch(
+      result.height,
+      params.epoch_length,
     );
+    const window = computeWindow(
+      result.height,
+      params.epoch_length,
+      params.windows_per_epoch,
+    );
+
+    // Query remaining quota
+    let quotaRemaining = 0;
+    try {
+      const quota = await this.getQuota();
+      quotaRemaining = quota.quota_remaining;
+    } catch {
+      // Quota query failure is non-fatal
+    }
+
+    return {
+      tx_hash: result.txHash,
+      block_height: result.height,
+      epoch_number: epoch,
+      window_number: window,
+      quota_remaining: quotaRemaining,
+    };
   }
 
   async getActivities(
@@ -61,9 +100,8 @@ export class ActivityModule {
     epochNumber?: number,
   ): Promise<GetActivitiesResponse> {
     const effectiveNodeId = nodeId ?? (await this.resolveOwnNodeId());
-    const effectiveEpoch = epochNumber ?? this.computeCurrentEpoch();
+    const effectiveEpoch = epochNumber ?? await this.computeCurrentEpoch();
 
-    // Query ActivitiesByNode via REST
     const response = await this.chainClient.queryRest<{
       activities: Array<{
         activity_hash: string;
@@ -87,7 +125,7 @@ export class ActivityModule {
             params.epoch_length,
             params.windows_per_epoch,
           ),
-          tx_hash: "", // Would require TX index search
+          tx_hash: "",
         };
       },
     );
@@ -100,7 +138,7 @@ export class ActivityModule {
 
   async getQuota(): Promise<GetQuotaResponse> {
     const nodeId = await this.resolveOwnNodeId();
-    const epochNumber = this.computeCurrentEpoch();
+    const epochNumber = await this.computeCurrentEpoch();
 
     const response = await this.chainClient.queryRest<{
       summary: { active_windows: string; total_activities: string; eligible: boolean };
@@ -116,7 +154,7 @@ export class ActivityModule {
       quota_total: quotaLimit,
       quota_used: quotaUsed,
       quota_remaining: quotaLimit - quotaUsed,
-      is_feegrant: false, // Would require feegrant query
+      is_feegrant: false,
       feegrant_expiry: null,
     };
   }
@@ -129,9 +167,14 @@ export class ActivityModule {
     return response.node.id;
   }
 
-  private computeCurrentEpoch(): number {
-    // In practice, would query latest block height first
-    return 0;
+  private async computeCurrentEpoch(): Promise<number> {
+    try {
+      const block = await this.chainClient.getLatestBlock();
+      const params = await this.getActivityParams();
+      return computeEpoch(block.header.height, params.epoch_length);
+    } catch {
+      return 0;
+    }
   }
 
   private async getActivityParams(): Promise<{

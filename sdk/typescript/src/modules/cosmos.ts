@@ -7,6 +7,9 @@ import type {
   BlockInfoResponse,
   TxResultResponse,
 } from "../types/responses.js";
+import { MsgSend, Coin } from "../infrastructure/messages.js";
+import { ChainClientAdapter, executeTx } from "../infrastructure/tx-pipeline.js";
+import type { PipelineConfig } from "../infrastructure/tx-pipeline.js";
 import { formatKkot } from "../utils/denom.js";
 import { TransactionError, QueryError } from "../errors/errors.js";
 import { ERR_BROADCAST_FAILED, ERR_TX_NOT_FOUND } from "../constants/errors.js";
@@ -46,20 +49,33 @@ export class CosmosModule {
     const effectiveDenom = denom ?? "uppyeo";
     const fromAddress = await this.signingService.getAddress();
 
-    const _msg = {
-      typeUrl: "/cosmos.bank.v1beta1.MsgSend",
-      value: {
-        from_address: fromAddress,
-        to_address: toAddress,
-        amount: [{ denom: effectiveDenom, amount }],
-      },
+    const msg = new MsgSend(fromAddress, toAddress, [
+      new Coin(effectiveDenom, amount),
+    ]);
+
+    const querier = new ChainClientAdapter(this.chainClient);
+    const pipelineCfg: PipelineConfig = {
+      chainId: this.txConfig.chain_id,
+      gasPrice: this.txConfig.gas_price,
+      confirmTimeoutMs: this.txConfig.confirm_timeout_ms,
+      pollIntervalMs: this.txConfig.confirm_poll_interval_ms,
     };
 
-    // Placeholder: actual TX broadcast requires CosmJS integration
-    throw new TransactionError(
-      "cosmos.sendTokens() requires full CosmJS TX pipeline integration",
-      ERR_BROADCAST_FAILED,
-    );
+    const result = await executeTx(querier, this.signingService, pipelineCfg, {
+      message: msg,
+    });
+
+    if (result.code !== 0) {
+      throw new TransactionError(
+        `sendTokens failed with code ${result.code}: ${result.rawLog}`,
+        ERR_BROADCAST_FAILED,
+      );
+    }
+
+    return {
+      tx_hash: result.txHash,
+      block_height: result.height,
+    };
   }
 
   async getBlockInfo(): Promise<BlockInfoResponse> {

@@ -88,3 +88,55 @@ export {
 } from "./infrastructure/signing-service.js";
 export type { ChainClient } from "./infrastructure/chain-client.js";
 export { HttpChainClient } from "./infrastructure/chain-client.js";
+
+// Protobuf encoding (for advanced usage)
+export {
+  encodeVarint,
+  encodeFieldVarint,
+  encodeFieldBytes,
+  encodeFieldString,
+  concatBytes,
+} from "./infrastructure/protobuf.js";
+
+// Message encoders
+export type { MessageEncoder } from "./infrastructure/messages.js";
+export {
+  MsgSubmitActivity,
+  MsgWithdrawNodeCommission,
+  MsgSend,
+  Coin,
+} from "./infrastructure/messages.js";
+
+// TX envelope
+export {
+  encodeTxBody,
+  encodeAuthInfo,
+  encodeSignDoc,
+  encodeTxRaw,
+} from "./infrastructure/envelope.js";
+
+// Gas & fee
+export {
+  DEFAULT_GAS_SUBMIT_ACTIVITY,
+  DEFAULT_GAS_WITHDRAW_NODE_COMMISSION,
+  DEFAULT_GAS_SEND,
+  DEFAULT_GAS_FALLBACK,
+  DEFAULT_FEE_DENOM,
+  DEFAULT_GAS_PRICE,
+  defaultGasForMessage,
+  calculateFee,
+} from "./infrastructure/gas.js";
+
+// TX pipeline
+export type {
+  PipelineConfig,
+  TxRequest,
+  TxResult,
+  Signer,
+  ChainQuerier,
+} from "./infrastructure/tx-pipeline.js";
+export {
+  executeTx,
+  pollTxConfirmation,
+  ChainClientAdapter,
+} from "./infrastructure/tx-pipeline.js";
