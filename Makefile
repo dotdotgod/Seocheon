@@ -43,7 +43,11 @@ bench:
 
 test: govet govulncheck test-unit
 
-.PHONY: test test-unit test-race test-cover bench
+test-sdk-e2e:
+	@echo "=== SDK E2E 테스트 실행 (로컬 테스트넷 필요) ==="
+	@bash scripts/sdk_e2e.sh
+
+.PHONY: test test-unit test-race test-cover bench test-sdk-e2e
 
 #################
 ###  Install  ###

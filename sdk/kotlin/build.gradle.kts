@@ -33,4 +33,20 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    // 기본 테스트에서 e2e 태그 제외
+    useJUnitPlatform {
+        excludeTags("e2e")
+    }
+}
+
+// E2E 테스트 태스크 (실제 테스트넷 연결 필요)
+tasks.register<Test>("e2eTest") {
+    description = "실제 체인에 연결하는 E2E 통합 테스트 실행"
+    group = "verification"
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    useJUnitPlatform {
+        includeTags("e2e")
+    }
+    // 환경변수가 없으면 assumeTrue가 테스트를 스킵함
 }

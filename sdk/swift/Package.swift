@@ -26,5 +26,10 @@ let package = Package(
             dependencies: ["SeocheonSDK"],
             path: "Tests/SeocheonSDKTests"
         ),
+        .testTarget(
+            name: "SeocheonSDKE2ETests",
+            dependencies: ["SeocheonSDK"],
+            path: "Tests/SeocheonSDKE2ETests"
+        ),
     ]
 )
