@@ -28,28 +28,37 @@ internal final class PrivateKey {
     }
 
     /// Signs the given data with SHA-256 hashing + secp256k1.
-    /// Returns a 64-byte compact signature (R || S).
+    /// Returns a 64-byte compact signature (R || S) in big-endian format.
+    ///
+    /// secp256k1.swift uses a 4×64-bit scalar representation (scalar_4x64),
+    /// so ECDSASignature.dataRepresentation stores the raw little-endian limb format,
+    /// NOT the compact big-endian R||S that Cosmos SDK expects.
+    /// We must call compactRepresentation (serialize_compact) to get correct bytes.
+    ///
+    /// Signing uses the Digest overload to avoid double-hashing:
+    /// secp256k1.swift has two overloads — Digest (signs hash directly) and
+    /// DataProtocol (applies SHA256 then signs). Passing SHA256.Digest uses the
+    /// Digest overload, giving secp256k1_sign(SHA256(data)) — one hash, correct.
     func sign(_ data: Data) throws -> Data {
-        let hash = SHA256.hash(data: data)
-        let hashData = Data(hash)
-        let sig = try key.signature(for: hashData)
-        let compactSig = sig.dataRepresentation
-        // secp256k1.swift returns 64-byte compact R||S
+        let digest = SHA256.hash(data: data)
+        let sig = try key.signature(for: digest)
+        // Use compactRepresentation (serialize_compact) to get big-endian R||S bytes
+        let compactSig = try sig.compactRepresentation
         guard compactSig.count == 64 else {
             throw SDKError.signingFailed("unexpected signature length: \(compactSig.count)")
         }
         return compactSig
     }
 
-    /// Verifies a 64-byte compact signature against data using the public key.
+    /// Verifies a 64-byte compact big-endian signature against data using the public key.
     static func verify(pubKeyBytes: Data, data: Data, signature: Data) -> Bool {
         guard signature.count == 64 else { return false }
         do {
             let pubKey = try secp256k1.Signing.PublicKey(dataRepresentation: pubKeyBytes, format: .compressed)
-            let hash = SHA256.hash(data: data)
-            let hashData = Data(hash)
-            let ecdsaSig = try secp256k1.Signing.ECDSASignature(dataRepresentation: signature)
-            return pubKey.isValidSignature(ecdsaSig, for: hashData)
+            let digest = SHA256.hash(data: data)
+            // Parse compact (big-endian R||S) signature — not dataRepresentation (internal limb format)
+            let ecdsaSig = try secp256k1.Signing.ECDSASignature(compactRepresentation: signature)
+            return pubKey.isValidSignature(ecdsaSig, for: digest)
         } catch {
             return false
         }

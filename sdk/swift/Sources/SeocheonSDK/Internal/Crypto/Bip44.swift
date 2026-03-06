@@ -30,6 +30,28 @@ internal enum Bip44 {
 
     // MARK: - Private
 
+    internal static func _mnemonicToSeedForTesting(_ mnemonic: String) throws -> Data {
+        return try mnemonicToSeed(mnemonic, passphrase: "")
+    }
+
+    internal static func _deriveMasterKeyForTesting(seed: Data) throws -> (key: Data, chainCode: Data) {
+        return try hmacSHA512(key: Data("Bitcoin seed".utf8), data: seed)
+    }
+
+    internal static func _deriveChildForTesting(key: Data, chainCode: Data, index: UInt32) throws -> (key: Data, chainCode: Data) {
+        let result = try deriveChild(key: key, chainCode: chainCode, index: index)
+        return (result.key, result.chainCode)
+    }
+
+    internal static func _hmacSHA512ForTesting(key: Data, data: Data) -> Data {
+        let hmacKey = SymmetricKey(data: key)
+        return Data(HMAC<SHA512>.authenticationCode(for: data, using: hmacKey))
+    }
+
+    internal static func _addPrivKeyForTesting(_ a: Data, _ b: Data) throws -> Data {
+        return try addPrivateKeys(a, b)
+    }
+
     private static func mnemonicToSeed(_ mnemonic: String, passphrase: String) throws -> Data {
         let password = Data(mnemonic.decomposedStringWithCompatibilityMapping.utf8)
         let salt = Data(("mnemonic" + passphrase).decomposedStringWithCompatibilityMapping.utf8)
@@ -122,11 +144,15 @@ internal enum Bip44 {
             carry = sum >> 8
         }
 
-        // Reduce mod curve order if needed
-        var isGreaterOrEqual = false
-        for i in 0..<32 {
-            if result[i] > curveOrder[i] { isGreaterOrEqual = true; break }
-            if result[i] < curveOrder[i] { break }
+        // Reduce mod curve order if needed.
+        // If carry > 0, the 33-byte sum overflowed 32 bytes: true value = 2^256 + result,
+        // which is always > n (since n < 2^256), so we must subtract n.
+        var isGreaterOrEqual = carry > 0
+        if !isGreaterOrEqual {
+            for i in 0..<32 {
+                if result[i] > curveOrder[i] { isGreaterOrEqual = true; break }
+                if result[i] < curveOrder[i] { break }
+            }
         }
 
         if isGreaterOrEqual {
