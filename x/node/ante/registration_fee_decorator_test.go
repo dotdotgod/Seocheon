@@ -22,8 +22,8 @@ type mockTx struct {
 	msgs []sdk.Msg
 }
 
-func (m mockTx) GetMsgs() []sdk.Msg                       { return m.msgs }
-func (m mockTx) GetMsgsV2() ([]protov2.Message, error)     { return nil, nil }
+func (m mockTx) GetMsgs() []sdk.Msg                    { return m.msgs }
+func (m mockTx) GetMsgsV2() ([]protov2.Message, error) { return nil, nil }
 
 func TestRegistrationFeeDecorator(t *testing.T) {
 	decorator := ante.NewRegistrationFeeDecorator()

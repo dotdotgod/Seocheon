@@ -225,4 +225,3 @@ func (k Keeper) GetNodeAgentShare(ctx context.Context, nodeID string) (math.Lega
 	}
 	return node.AgentShare, nil
 }
-

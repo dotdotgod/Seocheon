@@ -13,9 +13,9 @@ func FastTestnetActivityParams() activitytypes.Params {
 	// Production: 17,280 blocks/epoch (~24h at 5s/block)
 	// Fast testnet: 120 blocks/epoch (~2min at 1s/block)
 	p.EpochLength = 120
-	p.WindowsPerEpoch = 12       // same ratio as production
-	p.MinActiveWindows = 8       // same threshold as production
-	p.SelfFundedQuota = 200      // relaxed for burst testing
+	p.WindowsPerEpoch = 12  // same ratio as production
+	p.MinActiveWindows = 8  // same threshold as production
+	p.SelfFundedQuota = 200 // relaxed for burst testing
 
 	return p
 }

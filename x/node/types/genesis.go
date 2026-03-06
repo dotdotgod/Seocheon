@@ -21,13 +21,13 @@ var (
 // DefaultGenesis returns the default genesis state.
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
-		Params:                    DefaultParams(),
-		Nodes:                     []Node{},
-		RegistrationPoolBalance:   DefaultRegistrationPoolBalance,
-		FeegrantPoolBalance:       DefaultFeegrantPoolBalance,
-		BoostPoolBalance:          DefaultBoostPoolBalance,
-		BoostTargetEpochs:         DefaultBoostTargetEpochs,
-		DelegationConfirmations:   []DelegationConfirmation{},
+		Params:                  DefaultParams(),
+		Nodes:                   []Node{},
+		RegistrationPoolBalance: DefaultRegistrationPoolBalance,
+		FeegrantPoolBalance:     DefaultFeegrantPoolBalance,
+		BoostPoolBalance:        DefaultBoostPoolBalance,
+		BoostTargetEpochs:       DefaultBoostTargetEpochs,
+		DelegationConfirmations: []DelegationConfirmation{},
 	}
 }
 

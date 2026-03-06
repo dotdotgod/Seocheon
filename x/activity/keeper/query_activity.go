@@ -156,10 +156,10 @@ func (qs queryServer) EpochInfo(ctx context.Context, _ *types.QueryEpochInfoRequ
 	blocksUntilNextEpoch := nextEpochStart - blockHeight
 
 	return &types.QueryEpochInfoResponse{
-		CurrentEpoch:          epoch,
-		CurrentWindow:         window,
-		EpochStartBlock:       epochStart,
-		BlocksUntilNextEpoch:  blocksUntilNextEpoch,
+		CurrentEpoch:         epoch,
+		CurrentWindow:        window,
+		EpochStartBlock:      epochStart,
+		BlocksUntilNextEpoch: blocksUntilNextEpoch,
 	}, nil
 }
 
@@ -189,4 +189,3 @@ func (qs queryServer) NodeEpochActivity(ctx context.Context, req *types.QueryNod
 		QuotaLimit: quotaLimit,
 	}, nil
 }
-

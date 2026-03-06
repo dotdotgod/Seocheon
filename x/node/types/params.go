@@ -8,38 +8,38 @@ import (
 
 // Default parameter values.
 var (
-	DefaultMaxRegistrationsPerBlock     = uint64(5)
-	DefaultRegistrationCooldownBlocks   = uint64(100)
-	DefaultRegistrationDeposit          = math.ZeroInt()
-	DefaultAgentAllowedMsgTypes         = []string{
+	DefaultMaxRegistrationsPerBlock   = uint64(5)
+	DefaultRegistrationCooldownBlocks = uint64(100)
+	DefaultRegistrationDeposit        = math.ZeroInt()
+	DefaultAgentAllowedMsgTypes       = []string{
 		"/seocheon.activity.v1.MsgSubmitActivity",
 		"/cosmos.bank.v1beta1.MsgSend",
 	}
 	DefaultAgentFeegrantAllowedMsgTypes = []string{
 		"/seocheon.activity.v1.MsgSubmitActivity",
 	}
-	DefaultAgentAddressChangeCooldown        = uint64(17280) // 1 epoch
-	DefaultMaxTags                           = uint32(10)
-	DefaultMaxTagLength                      = uint32(32)
-	DefaultDelegationConfirmationPeriod      = uint64(90)  // ~90 days
-	DefaultDelegationRenewalWindow           = uint64(7)   // ~7 days
-	DefaultParamEpochLength                  = DefaultEpochLength // 17280 blocks (~1 day)
+	DefaultAgentAddressChangeCooldown   = uint64(17280) // 1 epoch
+	DefaultMaxTags                      = uint32(10)
+	DefaultMaxTagLength                 = uint32(32)
+	DefaultDelegationConfirmationPeriod = uint64(90)         // ~90 days
+	DefaultDelegationRenewalWindow      = uint64(7)          // ~7 days
+	DefaultParamEpochLength             = DefaultEpochLength // 17280 blocks (~1 day)
 )
 
 // NewParams creates a new Params instance with the given values.
 func NewParams() Params {
 	return Params{
-		MaxRegistrationsPerBlock:         DefaultMaxRegistrationsPerBlock,
-		RegistrationCooldownBlocks:       DefaultRegistrationCooldownBlocks,
-		RegistrationDeposit:              DefaultRegistrationDeposit,
-		AgentAllowedMsgTypes:             DefaultAgentAllowedMsgTypes,
-		AgentFeegrantAllowedMsgTypes:     DefaultAgentFeegrantAllowedMsgTypes,
-		AgentAddressChangeCooldown:       DefaultAgentAddressChangeCooldown,
-		MaxTags:                          DefaultMaxTags,
-		MaxTagLength:                     DefaultMaxTagLength,
-		DelegationConfirmationPeriod:     DefaultDelegationConfirmationPeriod,
-		DelegationRenewalWindow:          DefaultDelegationRenewalWindow,
-		EpochLength:                      DefaultParamEpochLength,
+		MaxRegistrationsPerBlock:     DefaultMaxRegistrationsPerBlock,
+		RegistrationCooldownBlocks:   DefaultRegistrationCooldownBlocks,
+		RegistrationDeposit:          DefaultRegistrationDeposit,
+		AgentAllowedMsgTypes:         DefaultAgentAllowedMsgTypes,
+		AgentFeegrantAllowedMsgTypes: DefaultAgentFeegrantAllowedMsgTypes,
+		AgentAddressChangeCooldown:   DefaultAgentAddressChangeCooldown,
+		MaxTags:                      DefaultMaxTags,
+		MaxTagLength:                 DefaultMaxTagLength,
+		DelegationConfirmationPeriod: DefaultDelegationConfirmationPeriod,
+		DelegationRenewalWindow:      DefaultDelegationRenewalWindow,
+		EpochLength:                  DefaultParamEpochLength,
 	}
 }
 

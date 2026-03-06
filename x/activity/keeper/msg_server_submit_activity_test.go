@@ -324,11 +324,11 @@ func TestSubmitActivity_EpochSummaryEligibility(t *testing.T) {
 
 	// Set small params for easy testing.
 	params := types.Params{
-		EpochLength:              120,
-		WindowsPerEpoch:          12,
-		MinActiveWindows:         8,
-		SelfFundedQuota:          100,
-		FeegrantQuota:            10,
+		EpochLength:               120,
+		WindowsPerEpoch:           12,
+		MinActiveWindows:          8,
+		SelfFundedQuota:           100,
+		FeegrantQuota:             10,
 		ActivityPruningKeepBlocks: 1000,
 	}
 	if err := f.keeper.Params.Set(f.ctx, params); err != nil {

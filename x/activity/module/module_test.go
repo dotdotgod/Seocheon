@@ -32,7 +32,7 @@ import (
 
 // mockNodeKeeper implements types.NodeKeeper for testing.
 type mockNodeKeeper struct {
-	nodes map[string]int32 // agent_addr -> status
+	nodes map[string]int32  // agent_addr -> status
 	agent map[string]string // agent_addr -> node_id
 }
 

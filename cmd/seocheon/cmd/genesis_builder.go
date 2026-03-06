@@ -38,9 +38,9 @@ const (
 	communityPoolPercent = 40 // 20,000 KKOT — 거버넌스로 사용처 결정
 
 	// Builder vesting schedule.
-	builderCliffDuration  = 365 * 24 * time.Hour // 1년 클리프
-	builderVestingMonths  = 36                    // 클리프 후 36개월 균등 해제
-	builderVestingPeriod  = 30 * 24 * time.Hour   // ~1개월
+	builderCliffDuration = 365 * 24 * time.Hour // 1년 클리프
+	builderVestingMonths = 36                   // 클리프 후 36개월 균등 해제
+	builderVestingPeriod = 30 * 24 * time.Hour  // ~1개월
 )
 
 // GenesisAllocation holds the computed token allocations for the 3-pool model.
@@ -228,11 +228,11 @@ func applyMintParams(cdc codec.Codec, appState map[string]json.RawMessage) error
 	}
 
 	mintGenesis.Params.MintDenom = "uppyeo"
-	mintGenesis.Params.InflationMin = math.LegacyNewDecWithPrec(7, 2)          // 7%
-	mintGenesis.Params.InflationMax = math.LegacyNewDecWithPrec(15, 2)         // 15%
-	mintGenesis.Params.InflationRateChange = math.LegacyNewDecWithPrec(8, 2)   // 8%p/year
-	mintGenesis.Params.GoalBonded = math.LegacyNewDecWithPrec(67, 2)           // 67%
-	mintGenesis.Params.BlocksPerYear = 6_307_200                               // 5s blocks
+	mintGenesis.Params.InflationMin = math.LegacyNewDecWithPrec(7, 2)        // 7%
+	mintGenesis.Params.InflationMax = math.LegacyNewDecWithPrec(15, 2)       // 15%
+	mintGenesis.Params.InflationRateChange = math.LegacyNewDecWithPrec(8, 2) // 8%p/year
+	mintGenesis.Params.GoalBonded = math.LegacyNewDecWithPrec(67, 2)         // 67%
+	mintGenesis.Params.BlocksPerYear = 6_307_200                             // 5s blocks
 
 	bz, err := cdc.MarshalJSON(&mintGenesis)
 	if err != nil {
@@ -252,21 +252,21 @@ func applyActivityParams(cdc codec.Codec, appState map[string]json.RawMessage) e
 	}
 
 	activityGenesis.Params = activitytypes.Params{
-		EpochLength:              17280,
-		WindowsPerEpoch:          12,
-		MinActiveWindows:         8,
-		SelfFundedQuota:          100,
-		FeegrantQuota:            10,
+		EpochLength:               17280,
+		WindowsPerEpoch:           12,
+		MinActiveWindows:          8,
+		SelfFundedQuota:           100,
+		FeegrantQuota:             10,
 		ActivityPruningKeepBlocks: 1_555_200, // ~90 days
-		FeeThresholdMultiplier:   3,
-		BaseActivityFee:          10_000_000_000,     // 1 KKOT
-		FeeExponent:              5000,              // 0.5
-		MaxActivityFee:           1_000_000_000_000, // 100 KKOT
-		MinFeegrantQuota:         8,
-		QuotaReductionRate:       5000,        // 0.5
-		FeegrantFeeExempt:        true,
-		DMin:                     3000,        // 0.3
-		FeeToActivityPoolRatio:   8000,        // 80%
+		FeeThresholdMultiplier:    3,
+		BaseActivityFee:           10_000_000_000,    // 1 KKOT
+		FeeExponent:               5000,              // 0.5
+		MaxActivityFee:            1_000_000_000_000, // 100 KKOT
+		MinFeegrantQuota:          8,
+		QuotaReductionRate:        5000, // 0.5
+		FeegrantFeeExempt:         true,
+		DMin:                      3000, // 0.3
+		FeeToActivityPoolRatio:    8000, // 80%
 	}
 
 	bz, err := cdc.MarshalJSON(&activityGenesis)

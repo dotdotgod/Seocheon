@@ -132,12 +132,12 @@ func (k Keeper) ExportGenesis(ctx context.Context) (*types.GenesisState, error) 
 	}
 
 	return &types.GenesisState{
-		Params:                    params,
-		Nodes:                     nodes,
-		RegistrationPoolBalance:   regPoolBalance,
-		FeegrantPoolBalance:       fgPoolBalance,
-		BoostPoolBalance:          boostPoolBalance,
-		BoostTargetEpochs:         types.DefaultBoostTargetEpochs,
-		DelegationConfirmations:   delConfirmations,
+		Params:                  params,
+		Nodes:                   nodes,
+		RegistrationPoolBalance: regPoolBalance,
+		FeegrantPoolBalance:     fgPoolBalance,
+		BoostPoolBalance:        boostPoolBalance,
+		BoostTargetEpochs:       types.DefaultBoostTargetEpochs,
+		DelegationConfirmations: delConfirmations,
 	}, nil
 }

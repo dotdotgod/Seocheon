@@ -33,21 +33,21 @@ func (s *E2ESuite) TestGovernanceParamChange() {
 
 	// Construct params explicitly to avoid proto unknown field issues.
 	newParams := activitytypes.Params{
-		EpochLength:              params.EpochLength,
-		WindowsPerEpoch:          params.WindowsPerEpoch,
-		MinActiveWindows:         6, // changed from 8
-		SelfFundedQuota:          params.SelfFundedQuota,
-		FeegrantQuota:            params.FeegrantQuota,
+		EpochLength:               params.EpochLength,
+		WindowsPerEpoch:           params.WindowsPerEpoch,
+		MinActiveWindows:          6, // changed from 8
+		SelfFundedQuota:           params.SelfFundedQuota,
+		FeegrantQuota:             params.FeegrantQuota,
 		ActivityPruningKeepBlocks: params.ActivityPruningKeepBlocks,
-		FeeThresholdMultiplier:   params.FeeThresholdMultiplier,
-		BaseActivityFee:          params.BaseActivityFee,
-		FeeExponent:              params.FeeExponent,
-		MaxActivityFee:           params.MaxActivityFee,
-		MinFeegrantQuota:         params.MinFeegrantQuota,
-		QuotaReductionRate:       params.QuotaReductionRate,
-		FeegrantFeeExempt:        params.FeegrantFeeExempt,
-		DMin:                     params.DMin,
-		FeeToActivityPoolRatio:   params.FeeToActivityPoolRatio,
+		FeeThresholdMultiplier:    params.FeeThresholdMultiplier,
+		BaseActivityFee:           params.BaseActivityFee,
+		FeeExponent:               params.FeeExponent,
+		MaxActivityFee:            params.MaxActivityFee,
+		MinFeegrantQuota:          params.MinFeegrantQuota,
+		QuotaReductionRate:        params.QuotaReductionRate,
+		FeegrantFeeExempt:         params.FeegrantFeeExempt,
+		DMin:                      params.DMin,
+		FeeToActivityPoolRatio:    params.FeeToActivityPoolRatio,
 	}
 
 	updateMsg := &activitytypes.MsgUpdateParams{

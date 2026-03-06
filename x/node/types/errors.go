@@ -17,7 +17,7 @@ var (
 	ErrAgentAddressChangeCooldown = errors.Register(ModuleName, 1110, "agent address change cooldown not elapsed")
 	ErrNodeNotActive              = errors.Register(ModuleName, 1111, "node is not in an active state")
 	ErrInvalidConsensusPubkey     = errors.Register(ModuleName, 1112, "invalid consensus public key")
-	ErrNodeInactive = errors.Register(ModuleName, 1116, "node is inactive or jailed")
+	ErrNodeInactive               = errors.Register(ModuleName, 1116, "node is inactive or jailed")
 	ErrValidatorAlreadyExists     = errors.Register(ModuleName, 1117, "validator with this consensus pubkey already exists")
 	ErrAgentShareChangePending    = errors.Register(ModuleName, 1118, "a pending agent share change already exists")
 	ErrDelegationNotFound         = errors.Register(ModuleName, 1119, "delegation not found")

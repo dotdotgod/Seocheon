@@ -2,13 +2,13 @@ package types
 
 // Event types for the activity module.
 const (
-	EventTypeActivitySubmitted = "activity_submitted"
-	EventTypeActivityPruned    = "activity_pruned"
-	EventTypeWindowCompleted   = "window_completed"
-	EventTypeEpochCompleted    = "epoch_completed"
-	EventTypeEpochFeeState     = "epoch_fee_state"
-	EventTypeFeesCollected     = "fees_collected"
-	EventTypeActivityFeeCharged        = "activity_fee_charged"
+	EventTypeActivitySubmitted          = "activity_submitted"
+	EventTypeActivityPruned             = "activity_pruned"
+	EventTypeWindowCompleted            = "window_completed"
+	EventTypeEpochCompleted             = "epoch_completed"
+	EventTypeEpochFeeState              = "epoch_fee_state"
+	EventTypeFeesCollected              = "fees_collected"
+	EventTypeActivityFeeCharged         = "activity_fee_charged"
 	EventTypeActivityRewardsDistributed = "activity_rewards_distributed"
 )
 

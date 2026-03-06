@@ -4,25 +4,25 @@ import "fmt"
 
 // Default parameter values.
 var (
-	DefaultEpochLength              = int64(17280)   // ~1 day in blocks
-	DefaultWindowsPerEpoch          = int64(12)      // 12 windows per epoch
-	DefaultMinActiveWindows         = int64(8)       // 8 out of 12 windows required
-	DefaultSelfFundedQuota          = uint64(100)    // max 100 activities per epoch (self-funded)
-	DefaultFeegrantQuota            = uint64(10)     // max 10 activities per epoch (feegrant)
+	DefaultEpochLength               = int64(17280)   // ~1 day in blocks
+	DefaultWindowsPerEpoch           = int64(12)      // 12 windows per epoch
+	DefaultMinActiveWindows          = int64(8)       // 8 out of 12 windows required
+	DefaultSelfFundedQuota           = uint64(100)    // max 100 activities per epoch (self-funded)
+	DefaultFeegrantQuota             = uint64(10)     // max 10 activities per epoch (feegrant)
 	DefaultActivityPruningKeepBlocks = int64(6307200) // ~365 days (1 year) in blocks
 
 	// Activity Cost Model defaults.
-	DefaultFeeThresholdMultiplier = uint64(3)           // fee activates when N_a > N_d * 3
-	DefaultBaseActivityFee       = uint64(10_000_000_000)    // 1 KKOT in uppyeo
-	DefaultFeeExponent           = uint64(5000)              // 0.5 in basis points (sqrt curve)
-	DefaultMaxActivityFee        = uint64(1_000_000_000_000) // 100 KKOT in uppyeo
-	DefaultMinFeegrantQuota      = uint64(8)            // minimum feegrant quota (matches min_active_windows)
-	DefaultQuotaReductionRate    = uint64(5000)         // 0.5 in basis points
-	DefaultFeegrantFeeExempt     = true                 // feegrant nodes exempt from activity fees
+	DefaultFeeThresholdMultiplier = uint64(3)                 // fee activates when N_a > N_d * 3
+	DefaultBaseActivityFee        = uint64(10_000_000_000)    // 1 KKOT in uppyeo
+	DefaultFeeExponent            = uint64(5000)              // 0.5 in basis points (sqrt curve)
+	DefaultMaxActivityFee         = uint64(1_000_000_000_000) // 100 KKOT in uppyeo
+	DefaultMinFeegrantQuota       = uint64(8)                 // minimum feegrant quota (matches min_active_windows)
+	DefaultQuotaReductionRate     = uint64(5000)              // 0.5 in basis points
+	DefaultFeegrantFeeExempt      = true                      // feegrant nodes exempt from activity fees
 
 	// Dual Reward Pool defaults.
-	DefaultDMin                    = uint64(3000) // 0.3 in basis points — delegation pool minimum 30%
-	DefaultFeeToActivityPoolRatio  = uint64(8000) // 80% of collected activity fees → activity reward pool
+	DefaultDMin                   = uint64(3000) // 0.3 in basis points — delegation pool minimum 30%
+	DefaultFeeToActivityPoolRatio = uint64(8000) // 80% of collected activity fees → activity reward pool
 )
 
 // DefaultParams returns a default set of parameters.

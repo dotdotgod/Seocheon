@@ -29,10 +29,10 @@ import (
 
 // mockNodeKeeper implements types.NodeKeeper.
 type mockNodeKeeper struct {
-	agentToNode    map[string]string       // agent_addr -> node_id
-	nodeStatuses   map[string]int32        // node_id -> status
-	nodeOperators  map[string]string       // node_id -> operator_addr
-	nodeAgents     map[string]string       // node_id -> agent_wallet_addr
+	agentToNode    map[string]string         // agent_addr -> node_id
+	nodeStatuses   map[string]int32          // node_id -> status
+	nodeOperators  map[string]string         // node_id -> operator_addr
+	nodeAgents     map[string]string         // node_id -> agent_wallet_addr
 	nodeAgentShare map[string]math.LegacyDec // node_id -> agent_share (0-100)
 }
 
@@ -244,7 +244,7 @@ type mockFeeAllowance struct{}
 func (m *mockFeeAllowance) Accept(_ context.Context, _ sdk.Coins, _ []sdk.Msg) (bool, error) {
 	return false, nil
 }
-func (m *mockFeeAllowance) ValidateBasic() error { return nil }
+func (m *mockFeeAllowance) ValidateBasic() error           { return nil }
 func (m *mockFeeAllowance) ExpiresAt() (*time.Time, error) { return nil, nil }
 
 // ---------------------------------------------------------------------------

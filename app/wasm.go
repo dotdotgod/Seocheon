@@ -55,8 +55,8 @@ func (app *App) registerWasmModule(appOpts servertypes.AppOptions) error {
 		app.BankKeeper,
 		app.StakingKeeper,
 		distrkeeper.NewQuerier(app.DistrKeeper),
-		app.IBCKeeper.ChannelKeeper,  // ICS4Wrapper
-		app.IBCKeeper.ChannelKeeper,  // ChannelKeeper
+		app.IBCKeeper.ChannelKeeper, // ICS4Wrapper
+		app.IBCKeeper.ChannelKeeper, // ChannelKeeper
 		app.IBCKeeper.ChannelKeeperV2,
 		app.TransferKeeper,
 		app.MsgServiceRouter(),

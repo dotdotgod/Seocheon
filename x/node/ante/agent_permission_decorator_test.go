@@ -34,11 +34,11 @@ type mockFeeTx struct {
 }
 
 func (m mockFeeTx) GetMsgs() []sdk.Msg                    { return m.msgs }
-func (m mockFeeTx) GetMsgsV2() ([]protov2.Message, error)  { return nil, nil }
-func (m mockFeeTx) GetGas() uint64                         { return 200000 }
-func (m mockFeeTx) GetFee() sdk.Coins                      { return m.fee }
-func (m mockFeeTx) FeePayer() []byte                        { return m.feePayer }
-func (m mockFeeTx) FeeGranter() []byte                      { return nil }
+func (m mockFeeTx) GetMsgsV2() ([]protov2.Message, error) { return nil, nil }
+func (m mockFeeTx) GetGas() uint64                        { return 200000 }
+func (m mockFeeTx) GetFee() sdk.Coins                     { return m.fee }
+func (m mockFeeTx) FeePayer() []byte                      { return m.feePayer }
+func (m mockFeeTx) FeeGranter() []byte                    { return nil }
 
 func TestAgentPermissionDecorator(t *testing.T) {
 	agentAddr := sdk.AccAddress([]byte("agent_address_______"))
