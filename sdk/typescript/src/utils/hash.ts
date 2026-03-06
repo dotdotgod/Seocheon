@@ -6,10 +6,6 @@ export function isValidActivityHash(hash: string): boolean {
   return hash.length === ACTIVITY_HASH_LENGTH && HEX_REGEX.test(hash);
 }
 
-export function verifyActivityHash(hash: string): boolean {
-  return isValidActivityHash(hash);
-}
-
 export function isValidContentUri(uri: string): boolean {
   return uri.length > 0;
 }

@@ -9,6 +9,7 @@ public static class Messages
 
     public const string TypeMsgSubmitActivity = "/seocheon.activity.v1.MsgSubmitActivity";
     public const string TypeMsgWithdrawRewards = "/seocheon.node.v1.MsgWithdrawNodeCommission";
+    public const string TypeMsgConfirmDelegation = "/seocheon.node.v1.MsgConfirmDelegation";
     public const string TypeMsgSend = "/cosmos.bank.v1beta1.MsgSend";
 
     /// <summary>
@@ -31,6 +32,18 @@ public static class Messages
     public static byte[] EncodeMsgWithdrawRewards(string operatorAddress)
     {
         return Protobuf.EncodeString(1, operatorAddress);
+    }
+
+    /// <summary>
+    /// Encodes MsgConfirmDelegation.
+    /// Fields: 1=delegator_address, 2=validator_address
+    /// </summary>
+    public static byte[] EncodeMsgConfirmDelegation(string delegatorAddress, string validatorAddress)
+    {
+        return Protobuf.Concat(
+            Protobuf.EncodeString(1, delegatorAddress),
+            Protobuf.EncodeString(2, validatorAddress)
+        );
     }
 
     /// <summary>

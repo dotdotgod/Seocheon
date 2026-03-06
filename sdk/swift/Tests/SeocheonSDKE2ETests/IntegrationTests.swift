@@ -71,7 +71,7 @@ final class IntegrationTests: XCTestCase {
         defer { Task { await sdk.disconnect() } }
 
         let resp = try await sdk.node.search(tag: "", status: "", limit: 10, orderBy: "asc")
-        print("x/node 조회 성공: total=\(resp.total)")
+        print("x/node 조회 성공: total=\(resp.totalCount)")
         _ = resp // 결과 무시 없이 성공만 확인
     }
 
@@ -85,5 +85,30 @@ final class IntegrationTests: XCTestCase {
         let info = try await sdk.epoch.getInfo()
         XCTAssertGreaterThan(info.blockHeight, 0, "에포크 블록 높이가 양수여야 함")
         print("에포크: epoch=\(info.epochNumber) window=\(info.windowNumber) height=\(info.blockHeight)")
+    }
+
+    func testGetBalance() async throws {
+        try skipIfMissing()
+        let sdk = try buildSDK()
+
+        try await sdk.connect()
+        defer { Task { await sdk.disconnect() } }
+
+        let balance = try await sdk.cosmos.getBalance()
+        XCTAssertFalse(balance.address.isEmpty, "주소가 비어있지 않아야 함")
+        print("잔고: address=\(balance.address) balance=\(balance.balance)")
+    }
+
+    func testSubmitActivity() async throws {
+        try skipIfMissing()
+        let sdk = try buildSDK()
+
+        try await sdk.connect()
+        defer { Task { await sdk.disconnect() } }
+
+        let hash = String(repeating: "a", count: 64)
+        let resp = try await sdk.activity.submit(activityHash: hash, contentURI: "ipfs://QmTestSwiftE2E")
+        XCTAssertFalse(resp.txHash.isEmpty, "txHash가 비어있지 않아야 함")
+        print("활동 제출: txHash=\(resp.txHash) height=\(resp.blockHeight)")
     }
 }

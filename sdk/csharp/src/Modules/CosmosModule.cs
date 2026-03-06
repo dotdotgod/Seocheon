@@ -120,8 +120,8 @@ public sealed class CosmosModule
             TxHash: txResp.TxHash,
             Height: txResp.Height,
             Code: txResp.Code,
-            GasUsed: 0, // Not available from basic TX query
-            GasWanted: 0,
+            GasUsed: txResp.GasUsed,
+            GasWanted: txResp.GasWanted,
             RawLog: txResp.RawLog,
             Events: events
         );

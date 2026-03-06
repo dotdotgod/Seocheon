@@ -75,3 +75,18 @@ data class MsgSend(
         return Protobuf.concatBytes(*parts.toTypedArray())
     }
 }
+
+/**
+ * Encodes /seocheon.node.v1.MsgConfirmDelegation.
+ * Fields: delegator_address(1, string), validator_address(2, string)
+ */
+data class MsgConfirmDelegation(
+    val delegatorAddress: String,
+    val validatorAddress: String,
+) : MessageEncoder {
+    override fun typeUrl(): String = "/seocheon.node.v1.MsgConfirmDelegation"
+    override fun encode(): ByteArray = Protobuf.concatBytes(
+        Protobuf.encodeFieldString(1, delegatorAddress),
+        Protobuf.encodeFieldString(2, validatorAddress),
+    )
+}

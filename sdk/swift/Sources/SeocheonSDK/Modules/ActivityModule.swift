@@ -29,7 +29,7 @@ public final class ActivityModule: @unchecked Sendable {
         let result = try await TxPipeline.executeTx(querier: txQuerier, signer: txSigner, config: txConfig, request: TxRequest(message: msg))
 
         if result.code != 0 {
-            throw SDKError.fromABCICode(result.code)
+            throw SDKError.chainError(code: result.code, message: result.rawLog.isEmpty ? "chain error code \(result.code)" : result.rawLog)
         }
 
         let epochNumber = EpochUtils.computeEpoch(blockHeight: result.height)

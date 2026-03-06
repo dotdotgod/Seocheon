@@ -44,6 +44,24 @@ func (m *MsgWithdrawNodeCommission) Encode() []byte {
 	)
 }
 
+// MsgConfirmDelegation encodes /seocheon.node.v1.MsgConfirmDelegation.
+// Fields: delegator_address(1, string), validator_address(2, string)
+type MsgConfirmDelegation struct {
+	DelegatorAddress string
+	ValidatorAddress string
+}
+
+func (m *MsgConfirmDelegation) TypeURL() string {
+	return "/seocheon.node.v1.MsgConfirmDelegation"
+}
+
+func (m *MsgConfirmDelegation) Encode() []byte {
+	return ConcatBytes(
+		EncodeFieldString(1, m.DelegatorAddress),
+		EncodeFieldString(2, m.ValidatorAddress),
+	)
+}
+
 // Coin represents a cosmos.base.v1beta1.Coin.
 // Fields: denom(1, string), amount(2, string)
 type Coin struct {

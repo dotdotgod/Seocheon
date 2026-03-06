@@ -4,10 +4,16 @@ import Foundation
 public final class NodeModule: @unchecked Sendable {
     private let client: ChainClient
     private let signer: SigningService
+    private let txQuerier: ChainQuerier
+    private let txConfig: PipelineConfig
+    private let txSigner: TxSigner
 
-    internal init(client: ChainClient, signer: SigningService) {
+    internal init(client: ChainClient, signer: SigningService, chainID: String) {
         self.client = client
         self.signer = signer
+        self.txQuerier = ChainClientAdapter(client: client)
+        self.txConfig = PipelineConfig.defaultConfig(chainID: chainID)
+        self.txSigner = SigningServiceAdapter(service: signer)
     }
 
     /// Returns detailed information about a node.
@@ -19,7 +25,7 @@ public final class NodeModule: @unchecked Sendable {
 
         struct NodeProto: Codable {
             let id: String?; let `operator`: String?; let agent_address: String?
-            let status: Int?; let description: String?; let website: String?
+            let status: String?; let description: String?; let website: String?
             let tags: [String]?; let agent_share: String?
             let validator_address: String?; let registered_at: String?
         }
@@ -38,7 +44,7 @@ public final class NodeModule: @unchecked Sendable {
             nodeId: n.id ?? "",
             operator: n.operator ?? "",
             agentAddress: n.agent_address ?? "",
-            status: NodeStatus.fromInt(n.status ?? 0).rawValue,
+            status: NodeStatus.fromString(n.status ?? "").rawValue,
             description: n.description ?? "",
             website: n.website ?? "",
             tags: n.tags ?? [],
@@ -57,7 +63,7 @@ public final class NodeModule: @unchecked Sendable {
         let data = try await client.queryREST(path: path)
 
         struct NodeProto: Codable {
-            let id: String?; let status: Int?; let tags: [String]?
+            let id: String?; let status: String?; let tags: [String]?
             let description: String?; let validator_address: String?
         }
         struct NodesResult: Codable { let nodes: [NodeProto]? }
@@ -66,13 +72,13 @@ public final class NodeModule: @unchecked Sendable {
         var filtered = result.nodes ?? []
 
         if !status.isEmpty {
-            filtered = filtered.filter { NodeStatus.fromInt($0.status ?? 0).rawValue == status }
+            filtered = filtered.filter { NodeStatus.fromString($0.status ?? "").rawValue == status }
         }
 
         let summaries: [NodeSummary] = filtered.prefix(Int(limit)).map { n in
             NodeSummary(
                 nodeId: n.id ?? "",
-                status: NodeStatus.fromInt(n.status ?? 0).rawValue,
+                status: NodeStatus.fromString(n.status ?? "").rawValue,
                 tags: n.tags ?? [],
                 totalDelegation: "0",
                 description: n.description ?? ""
@@ -80,6 +86,61 @@ public final class NodeModule: @unchecked Sendable {
         }
 
         return NodeSearchResponse(nodes: summaries, totalCount: UInt64(filtered.count))
+    }
+
+    /// Queries delegation confirmation status.
+    public func getDelegationStatus(
+        delegatorAddress: String,
+        validatorAddress: String
+    ) async throws -> DelegationStatusResponse {
+        let path = "/seocheon/node/v1/delegation-confirmation/\(delegatorAddress)/\(validatorAddress)"
+        let data = try await client.queryREST(path: path)
+
+        struct Response: Codable {
+            let expiry_epoch: String?
+            let current_epoch: String?
+            let in_renewal_window: Bool?
+            let renewal_window_start: String?
+        }
+
+        let result = try JSONDecoder().decode(Response.self, from: data)
+        return DelegationStatusResponse(
+            expiryEpoch: Int64(result.expiry_epoch ?? "0") ?? 0,
+            currentEpoch: Int64(result.current_epoch ?? "0") ?? 0,
+            inRenewalWindow: result.in_renewal_window ?? false,
+            renewalWindowStart: Int64(result.renewal_window_start ?? "0") ?? 0
+        )
+    }
+
+    /// Confirms delegation for a validator.
+    public func confirmDelegation(validatorAddress: String) async throws -> TxResultResponse {
+        let msg = MsgConfirmDelegation(
+            delegatorAddress: signer.getAddress(),
+            validatorAddress: validatorAddress
+        )
+        let result = try await TxPipeline.executeTx(
+            querier: txQuerier,
+            signer: txSigner,
+            config: txConfig,
+            request: TxRequest(message: msg)
+        )
+
+        if result.code != 0 {
+            throw SDKError.fromABCICode(result.code)
+        }
+
+        let events = result.events.map { e in
+            TxEvent(type: e.type, attributes: e.attributes.map { EventAttribute(key: $0.key, value: $0.value) })
+        }
+        return TxResultResponse(
+            txHash: result.txHash,
+            height: result.height,
+            code: result.code,
+            gasUsed: result.gasUsed,
+            gasWanted: result.gasWanted,
+            rawLog: result.rawLog,
+            events: events
+        )
     }
 
     // MARK: - Private

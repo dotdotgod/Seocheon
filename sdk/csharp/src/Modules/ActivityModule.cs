@@ -76,7 +76,7 @@ public sealed class ActivityModule
             epochNumber = await ComputeCurrentEpoch(ct);
 
         var result = await _client.QueryRest(
-            $"/seocheon/activity/v1/activities/{nodeId}?epoch={epochNumber}",
+            $"/seocheon/activity/v1/nodes/{nodeId}/activities?epoch={epochNumber}",
             ct
         );
 
@@ -108,36 +108,34 @@ public sealed class ActivityModule
     /// </summary>
     public async Task<GetQuotaResponse> GetQuota(CancellationToken ct = default)
     {
-        var address = _signer.GetAddress();
+        var nodeId = await ResolveOwnNodeId(ct);
+        var epochBlock = await _client.GetLatestBlock(ct);
+        var height = long.Parse(
+            epochBlock.GetProperty("block").GetProperty("header").GetProperty("height").GetString() ?? "1"
+        );
+        var epoch = EpochUtils.ComputeEpoch(height);
+
         var result = await _client.QueryRest(
-            $"/seocheon/activity/v1/quota/{address}",
+            $"/seocheon/activity/v1/nodes/{nodeId}/epochs/{epoch}",
             ct
         );
 
-        var epoch = result.TryGetProperty("epoch_number", out var en)
-            ? long.Parse(en.GetString() ?? "0") : 0;
-
-        ulong total = 0, used = 0, remaining = 0;
-        if (result.TryGetProperty("quota_total", out var qt)) ulong.TryParse(qt.GetString(), out total);
+        ulong limit = 0, used = 0;
+        if (result.TryGetProperty("quota_limit", out var ql)) ulong.TryParse(ql.GetString(), out limit);
         if (result.TryGetProperty("quota_used", out var qu)) ulong.TryParse(qu.GetString(), out used);
-        if (result.TryGetProperty("quota_remaining", out var qr)) ulong.TryParse(qr.GetString(), out remaining);
+        var remaining = limit >= used ? limit - used : 0UL;
 
-        var isFeegrant = result.TryGetProperty("is_feegrant", out var fg) && fg.GetBoolean();
-        long? feegrantExpiry = null;
-        if (result.TryGetProperty("feegrant_expiry", out var fe) && fe.ValueKind != System.Text.Json.JsonValueKind.Null)
-            feegrantExpiry = long.Parse(fe.GetString() ?? "0");
-
-        return new GetQuotaResponse(epoch, total, used, remaining, isFeegrant, feegrantExpiry);
+        return new GetQuotaResponse(epoch, limit, used, remaining, false, null);
     }
 
     private async Task<string> ResolveOwnNodeId(CancellationToken ct)
     {
         var address = _signer.GetAddress();
         var result = await _client.QueryRest(
-            $"/seocheon/node/v1/node_by_agent/{address}",
+            $"/seocheon/node/v1/nodes/by-agent/{address}",
             ct
         );
-        return result.GetProperty("node").GetProperty("node_id").GetString()
+        return result.GetProperty("node").GetProperty("id").GetString()
                ?? throw SdkErrors.QueryFailed("Could not resolve node ID");
     }
 

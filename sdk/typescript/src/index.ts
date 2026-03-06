@@ -58,7 +58,6 @@ export {
   type Denom,
 } from "./utils/denom.js";
 export {
-  verifyActivityHash,
   isValidActivityHash,
   isValidContentUri,
 } from "./utils/hash.js";

@@ -110,4 +110,31 @@ public sealed class E2EIntegrationTests : IAsyncLifetime
         Assert.True(info.BlockHeight > 0, $"에포크 블록 높이가 양수여야 함: {info.BlockHeight}");
         _output.WriteLine($"에포크: epoch={info.EpochNumber} window={info.WindowNumber} height={info.BlockHeight}");
     }
+
+    [Fact]
+    public async Task GetBalance_ReturnsNonNegative()
+    {
+        if (ShouldSkip)
+        {
+            _output.WriteLine("E2E 스킵: SEOCHEON_GRPC 또는 SEOCHEON_MNEMONIC 미설정");
+            return;
+        }
+        var result = await _sdk!.Cosmos.GetBalance(_sdk.GetAddress());
+        Assert.NotNull(result.Balance);
+        _output.WriteLine($"잔액: {result.Balance} uppyeo ({result.BalanceKkot} KKOT)");
+    }
+
+    [Fact]
+    public async Task SubmitActivity_ReturnsValidTxHash()
+    {
+        if (ShouldSkip)
+        {
+            _output.WriteLine("E2E 스킵: SEOCHEON_GRPC 또는 SEOCHEON_MNEMONIC 미설정");
+            return;
+        }
+        var hash = new string('a', 64);
+        var result = await _sdk!.Activity.Submit(hash, "ipfs://QmTestCSharpE2E");
+        Assert.NotEmpty(result.TxHash);
+        _output.WriteLine($"활동 제출 성공: txHash={result.TxHash} height={result.BlockHeight}");
+    }
 }

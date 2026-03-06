@@ -59,6 +59,26 @@ class MsgWithdrawNodeCommission:
         )
 
 
+class MsgConfirmDelegation:
+    """Encodes /seocheon.node.v1.MsgConfirmDelegation.
+
+    Fields: delegator_address(1, string), validator_address(2, string)
+    """
+
+    def __init__(self, delegator_address: str, validator_address: str) -> None:
+        self.delegator_address = delegator_address
+        self.validator_address = validator_address
+
+    def type_url(self) -> str:
+        return "/seocheon.node.v1.MsgConfirmDelegation"
+
+    def encode(self) -> bytes:
+        return concat_bytes(
+            encode_field_string(1, self.delegator_address),
+            encode_field_string(2, self.validator_address),
+        )
+
+
 class Coin:
     """Represents a cosmos.base.v1beta1.Coin.
 

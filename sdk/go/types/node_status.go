@@ -1,6 +1,8 @@
 // Package types defines data types for the Seocheon SDK.
 package types
 
+import "strings"
+
 // NodeStatus represents the status of a registered node.
 type NodeStatus string
 
@@ -22,6 +24,24 @@ func NodeStatusFromInt(status int) NodeStatus {
 	case 3:
 		return NodeStatusInactive
 	case 4:
+		return NodeStatusJailed
+	default:
+		return NodeStatusUnspecified
+	}
+}
+
+// NodeStatusFromString converts a protobuf JSON status string to NodeStatus.
+// Accepts both "NODE_STATUS_REGISTERED" and "REGISTERED" formats.
+func NodeStatusFromString(status string) NodeStatus {
+	s := strings.TrimPrefix(status, "NODE_STATUS_")
+	switch s {
+	case "REGISTERED":
+		return NodeStatusRegistered
+	case "ACTIVE":
+		return NodeStatusActive
+	case "INACTIVE":
+		return NodeStatusInactive
+	case "JAILED":
 		return NodeStatusJailed
 	default:
 		return NodeStatusUnspecified

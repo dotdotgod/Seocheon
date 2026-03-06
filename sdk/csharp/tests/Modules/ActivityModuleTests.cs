@@ -60,20 +60,22 @@ public class ActivityModuleTests
     public async Task GetQuota_ReturnsResponse()
     {
         var module = CreateModule();
-        _client.SetQueryResponse("/seocheon/activity/v1/quota/", new
+        _client.SetQueryResponse("/seocheon/node/v1/nodes/by-agent/", new
         {
-            epoch_number = "1",
-            quota_total = "10",
-            quota_used = "3",
-            quota_remaining = "7",
-            is_feegrant = true
+            node = new { id = "node-1" }
+        });
+        _client.SetQueryResponse("/seocheon/activity/v1/nodes/", new
+        {
+            quota_limit = "10",
+            quota_used = "3"
         });
 
         var result = await module.GetQuota();
         Assert.Equal(1, result.EpochNumber);
         Assert.Equal(10UL, result.QuotaTotal);
         Assert.Equal(3UL, result.QuotaUsed);
-        Assert.True(result.IsFeegrant);
+        Assert.Equal(7UL, result.QuotaRemaining);
+        Assert.False(result.IsFeegrant);
     }
 
     [Fact]

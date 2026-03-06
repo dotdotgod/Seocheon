@@ -60,7 +60,7 @@ class ActivityModuleTest {
     @Test
     fun `getQuota returns response`() = runTest {
         val module = createModule()
-        val result = module.getQuota("node1")
+        val result = module.getQuota()
         assertNotNull(result)
     }
 }

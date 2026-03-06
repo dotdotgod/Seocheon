@@ -12,21 +12,26 @@ import (
 	sdkerrors "github.com/seocheon/sdk-go/errors"
 	"github.com/seocheon/sdk-go/internal/chain"
 	"github.com/seocheon/sdk-go/internal/signing"
+	"github.com/seocheon/sdk-go/internal/tx"
 	"github.com/seocheon/sdk-go/types"
 	"github.com/seocheon/sdk-go/utility"
 )
 
 // Module provides node-related operations.
 type Module struct {
-	client chain.Client
-	signer signing.Service
+	client    chain.Client
+	signer    signing.Service
+	txQuerier tx.ChainQuerier
+	txConfig  tx.PipelineConfig
 }
 
 // NewModule creates a new Node module.
 func NewModule(client chain.Client, signer signing.Service) *Module {
 	return &Module{
-		client: client,
-		signer: signer,
+		client:    client,
+		signer:    signer,
+		txQuerier: tx.NewChainClientAdapter(client),
+		txConfig:  tx.DefaultPipelineConfig("seocheon-1"),
 	}
 }
 
@@ -74,7 +79,7 @@ func (m *Module) GetInfo(ctx context.Context, nodeID string) (*types.NodeInfoRes
 		NodeID:           n.ID,
 		Operator:         n.Operator,
 		AgentAddress:     n.AgentAddress,
-		Status:           string(types.NodeStatusFromInt(n.Status)),
+		Status:           string(types.NodeStatusFromString(n.Status)),
 		Description:      n.Description,
 		Website:          n.Website,
 		Tags:             n.Tags,
@@ -124,7 +129,7 @@ func (m *Module) Search(ctx context.Context, tag, status string, limit uint32, o
 	if status != "" {
 		var statusFiltered []nodeProto
 		for _, n := range filtered {
-			if string(types.NodeStatusFromInt(n.Status)) == status {
+			if string(types.NodeStatusFromString(n.Status)) == status {
 				statusFiltered = append(statusFiltered, n)
 			}
 		}
@@ -148,7 +153,7 @@ func (m *Module) Search(ctx context.Context, tag, status string, limit uint32, o
 		enriched = append(enriched, enrichedNode{
 			summary: types.NodeSummary{
 				NodeID:          n.ID,
-				Status:          string(types.NodeStatusFromInt(n.Status)),
+				Status:          string(types.NodeStatusFromString(n.Status)),
 				Tags:            n.Tags,
 				TotalDelegation: utility.FormatKkot(delegation),
 				Description:     n.Description,
@@ -253,11 +258,65 @@ type nodeProto struct {
 	ID               string   `json:"id"`
 	Operator         string   `json:"operator"`
 	AgentAddress     string   `json:"agent_address"`
-	Status           int      `json:"status"`
+	Status           string   `json:"status"`
 	Description      string   `json:"description"`
 	Website          string   `json:"website"`
 	Tags             []string `json:"tags"`
 	AgentShare       string   `json:"agent_share"`
 	ValidatorAddress string   `json:"validator_address"`
 	RegisteredAt     string   `json:"registered_at"`
+}
+
+// GetDelegationStatus queries the delegation confirmation status.
+func (m *Module) GetDelegationStatus(ctx context.Context, delegatorAddress, validatorAddress string) (*types.DelegationStatusResponse, error) {
+	path := fmt.Sprintf("/seocheon/node/v1/delegation-confirmation/%s/%s", delegatorAddress, validatorAddress)
+	data, err := m.client.QueryREST(ctx, path)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", sdkerrors.ErrQueryFailed, err)
+	}
+
+	var result struct {
+		ExpiryEpoch        string `json:"expiry_epoch"`
+		CurrentEpoch       string `json:"current_epoch"`
+		InRenewalWindow    bool   `json:"in_renewal_window"`
+		RenewalWindowStart string `json:"renewal_window_start"`
+	}
+	if err := json.Unmarshal(data, &result); err != nil {
+		return nil, fmt.Errorf("parsing delegation status: %w", err)
+	}
+
+	expiryEpoch, _ := strconv.ParseInt(result.ExpiryEpoch, 10, 64)
+	currentEpoch, _ := strconv.ParseInt(result.CurrentEpoch, 10, 64)
+	renewalWindowStart, _ := strconv.ParseInt(result.RenewalWindowStart, 10, 64)
+
+	return &types.DelegationStatusResponse{
+		ExpiryEpoch:        expiryEpoch,
+		CurrentEpoch:       currentEpoch,
+		InRenewalWindow:    result.InRenewalWindow,
+		RenewalWindowStart: renewalWindowStart,
+	}, nil
+}
+
+// ConfirmDelegation sends MsgConfirmDelegation for a validator.
+func (m *Module) ConfirmDelegation(ctx context.Context, validatorAddress string) (*types.TxResultResponse, error) {
+	msg := &tx.MsgConfirmDelegation{
+		DelegatorAddress: m.signer.GetAddress(),
+		ValidatorAddress: validatorAddress,
+	}
+
+	result, err := tx.ExecuteTx(ctx, m.txQuerier, m.signer, m.txConfig, tx.TxRequest{
+		Message: msg,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("confirming delegation: %w", err)
+	}
+
+	return &types.TxResultResponse{
+		TxHash:    result.TxHash,
+		Height:    result.Height,
+		Code:      result.Code,
+		GasUsed:   result.GasUsed,
+		GasWanted: result.GasWanted,
+		RawLog:    result.RawLog,
+	}, nil
 }

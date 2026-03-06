@@ -18,4 +18,19 @@ public enum NodeStatus: String, Codable, Sendable {
         default: return .unspecified
         }
     }
+
+    /// Converts a protobuf JSON status string to NodeStatus.
+    /// Accepts both "NODE_STATUS_REGISTERED" and "REGISTERED" formats.
+    public static func fromString(_ value: String) -> NodeStatus {
+        let s = value.hasPrefix("NODE_STATUS_")
+            ? String(value.dropFirst("NODE_STATUS_".count))
+            : value
+        switch s {
+        case "REGISTERED": return .registered
+        case "ACTIVE":     return .active
+        case "INACTIVE":   return .inactive
+        case "JAILED":     return .jailed
+        default:           return .unspecified
+        }
+    }
 }

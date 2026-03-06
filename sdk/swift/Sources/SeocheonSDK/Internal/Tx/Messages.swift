@@ -36,6 +36,21 @@ internal struct MsgWithdrawNodeCommission: MessageEncoder {
     }
 }
 
+/// Encodes /seocheon.node.v1.MsgConfirmDelegation.
+internal struct MsgConfirmDelegation: MessageEncoder {
+    let delegatorAddress: String
+    let validatorAddress: String
+
+    var typeURL: String { "/seocheon.node.v1.MsgConfirmDelegation" }
+
+    func encode() -> Data {
+        Protobuf.concatBytes(
+            Protobuf.encodeFieldString(1, value: delegatorAddress),
+            Protobuf.encodeFieldString(2, value: validatorAddress)
+        )
+    }
+}
+
 /// Represents a cosmos.base.v1beta1.Coin.
 internal struct Coin {
     let denom: String

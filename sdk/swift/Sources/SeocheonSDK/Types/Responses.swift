@@ -140,6 +140,14 @@ public struct BlockInfoResponse: Codable, Sendable {
     public let numTxs: UInt64
 }
 
+/// Delegation confirmation status.
+public struct DelegationStatusResponse: Codable, Sendable {
+    public let expiryEpoch: Int64
+    public let currentEpoch: Int64
+    public let inRenewalWindow: Bool
+    public let renewalWindowStart: Int64
+}
+
 /// An event emitted by a transaction.
 public struct TxEvent: Codable, Sendable {
     public let type: String

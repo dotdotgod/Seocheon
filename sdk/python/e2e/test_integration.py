@@ -56,7 +56,7 @@ def _build_config() -> SDKConfig:
 # ---------------------------------------------------------------------------
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 async def sdk() -> SeocheonSDK:  # type: ignore[misc]
     _skip_if_missing()
     s = SeocheonSDK(_build_config())

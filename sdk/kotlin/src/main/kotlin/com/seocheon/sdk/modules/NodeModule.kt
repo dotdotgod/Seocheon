@@ -2,9 +2,15 @@ package com.seocheon.sdk.modules
 
 import com.seocheon.sdk.infrastructure.ChainClient
 import com.seocheon.sdk.infrastructure.signing.SigningService
+import com.seocheon.sdk.internal.tx.MsgConfirmDelegation
+import com.seocheon.sdk.internal.tx.Pipeline
+import com.seocheon.sdk.internal.tx.PipelineConfig
+import com.seocheon.sdk.internal.tx.TxRequest
+import com.seocheon.sdk.types.DelegationStatusResponse
 import com.seocheon.sdk.types.NodeInfoResponse
 import com.seocheon.sdk.types.NodeSearchResponse
 import com.seocheon.sdk.types.NodeSummary
+import com.seocheon.sdk.types.TxResultResponse
 import kotlinx.serialization.json.*
 
 /**
@@ -13,6 +19,7 @@ import kotlinx.serialization.json.*
 class NodeModule(
     private val client: ChainClient,
     private val signer: SigningService,
+    private val pipelineConfig: PipelineConfig? = null,
 ) {
 
     /**
@@ -24,7 +31,7 @@ class NodeModule(
         val node = resp.jsonObject["node"]?.jsonObject ?: resp.jsonObject
 
         return NodeInfoResponse(
-            nodeId = node["node_id"]?.jsonPrimitive?.content ?: id,
+            nodeId = node["id"]?.jsonPrimitive?.content ?: id,
             operator = node["operator"]?.jsonPrimitive?.content ?: "",
             agentAddress = node["agent_address"]?.jsonPrimitive?.content ?: "",
             status = node["status"]?.jsonPrimitive?.content ?: "UNSPECIFIED",
@@ -46,16 +53,14 @@ class NodeModule(
     suspend fun search(
         tag: String? = null,
         status: String? = null,
-        sortBy: String = "delegation",
         limit: Int = 20,
-        offset: Int = 0,
+        orderBy: String = "delegation",
     ): NodeSearchResponse {
         val params = mutableListOf<String>()
         tag?.let { params.add("tag=$it") }
         status?.let { params.add("status=$it") }
-        params.add("sort_by=$sortBy")
         params.add("limit=$limit")
-        params.add("offset=$offset")
+        params.add("order_by=$orderBy")
 
         val query = if (params.isNotEmpty()) "?${params.joinToString("&")}" else ""
         val resp = client.queryRest("/seocheon/node/v1/nodes$query")
@@ -63,7 +68,7 @@ class NodeModule(
         val nodes = resp.jsonObject["nodes"]?.jsonArray?.map { item ->
             val obj = item.jsonObject
             NodeSummary(
-                nodeId = obj["node_id"]?.jsonPrimitive?.content ?: "",
+                nodeId = obj["id"]?.jsonPrimitive?.content ?: "",
                 status = obj["status"]?.jsonPrimitive?.content ?: "UNSPECIFIED",
                 tags = obj["tags"]?.jsonArray?.map { it.jsonPrimitive.content } ?: emptyList(),
                 totalDelegation = obj["total_delegation"]?.jsonPrimitive?.content ?: "0",
@@ -75,10 +80,51 @@ class NodeModule(
         return NodeSearchResponse(nodes = nodes, totalCount = totalCount)
     }
 
+    /**
+     * Queries the delegation confirmation status.
+     */
+    suspend fun getDelegationStatus(delegatorAddress: String, validatorAddress: String): DelegationStatusResponse {
+        val resp = client.queryRest("/seocheon/node/v1/delegation-confirmation/$delegatorAddress/$validatorAddress")
+        val obj = resp.jsonObject
+        return DelegationStatusResponse(
+            expiryEpoch = obj["expiry_epoch"]?.jsonPrimitive?.longOrNull ?: 0L,
+            currentEpoch = obj["current_epoch"]?.jsonPrimitive?.longOrNull ?: 0L,
+            inRenewalWindow = obj["in_renewal_window"]?.jsonPrimitive?.booleanOrNull ?: false,
+            renewalWindowStart = obj["renewal_window_start"]?.jsonPrimitive?.longOrNull ?: 0L,
+        )
+    }
+
+    /**
+     * Confirms delegation to a validator.
+     */
+    suspend fun confirmDelegation(validatorAddress: String): TxResultResponse {
+        val cfg = pipelineConfig ?: throw com.seocheon.sdk.errors.SdkError.InvalidConfig("PipelineConfig required for TX operations")
+        val msg = MsgConfirmDelegation(
+            delegatorAddress = signer.getAddress(),
+            validatorAddress = validatorAddress,
+        )
+        val result = Pipeline.executeTx(client, signerAdapter(), cfg, TxRequest(message = msg))
+        return TxResultResponse(
+            txHash = result.txHash,
+            height = result.height,
+            code = result.code,
+            gasUsed = result.gasUsed,
+            gasWanted = result.gasWanted,
+            rawLog = result.rawLog,
+            events = emptyList(),
+        )
+    }
+
+    private fun signerAdapter(): com.seocheon.sdk.internal.tx.Signer = object : com.seocheon.sdk.internal.tx.Signer {
+        override suspend fun sign(data: ByteArray): ByteArray = signer.sign(data)
+        override fun getAddress(): String = signer.getAddress()
+        override fun getPubKey(): ByteArray = signer.getPubKey()
+    }
+
     private suspend fun resolveOwnNodeId(): String {
         val address = signer.getAddress()
         val resp = client.queryRest("/seocheon/node/v1/nodes/by-agent/$address")
-        return resp.jsonObject["node_id"]?.jsonPrimitive?.content
+        return resp.jsonObject["node"]?.jsonObject?.get("id")?.jsonPrimitive?.content
             ?: throw com.seocheon.sdk.errors.SdkError.NodeNotFound()
     }
 }

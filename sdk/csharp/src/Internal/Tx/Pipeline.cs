@@ -96,6 +96,8 @@ public static class Pipeline
                         TxHash = txHash,
                         Height = txResponse.Height,
                         Code = txResponse.Code,
+                        GasUsed = txResponse.GasUsed,
+                        GasWanted = txResponse.GasWanted,
                         RawLog = txResponse.RawLog,
                         Events = txResponse.Events
                     };
@@ -142,6 +144,8 @@ public sealed record TxResponse
     public string TxHash { get; init; } = "";
     public long Height { get; init; }
     public uint Code { get; init; }
+    public ulong GasUsed { get; init; }
+    public ulong GasWanted { get; init; }
     public string RawLog { get; init; } = "";
     public IReadOnlyList<TxEventData> Events { get; init; } = [];
 }

@@ -130,6 +130,13 @@ export interface BlockInfoResponse {
   num_txs: number;
 }
 
+export interface DelegationStatusResponse {
+  expiry_epoch: number;
+  current_epoch: number;
+  in_renewal_window: boolean;
+  renewal_window_start: number;
+}
+
 export interface TxEvent {
   type: string;
   attributes: EventAttribute[];

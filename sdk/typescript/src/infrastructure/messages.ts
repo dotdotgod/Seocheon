@@ -56,6 +56,28 @@ export class MsgWithdrawNodeCommission implements MessageEncoder {
 }
 
 /**
+ * MsgConfirmDelegation encodes /seocheon.node.v1.MsgConfirmDelegation.
+ * Fields: delegator_address(1, string), validator_address(2, string)
+ */
+export class MsgConfirmDelegation implements MessageEncoder {
+  constructor(
+    public readonly delegatorAddress: string,
+    public readonly validatorAddress: string,
+  ) {}
+
+  typeUrl(): string {
+    return "/seocheon.node.v1.MsgConfirmDelegation";
+  }
+
+  encode(): Uint8Array {
+    return concatBytes(
+      encodeFieldString(1, this.delegatorAddress),
+      encodeFieldString(2, this.validatorAddress),
+    );
+  }
+}
+
+/**
  * Coin represents cosmos.base.v1beta1.Coin.
  * Fields: denom(1, string), amount(2, string)
  */

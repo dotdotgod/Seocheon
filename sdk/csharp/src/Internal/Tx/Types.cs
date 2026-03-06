@@ -41,6 +41,12 @@ public sealed record TxResult
     /// <summary>ABCI response code (0 = success).</summary>
     public uint Code { get; init; }
 
+    /// <summary>Gas actually consumed.</summary>
+    public ulong GasUsed { get; init; }
+
+    /// <summary>Gas limit requested.</summary>
+    public ulong GasWanted { get; init; }
+
     /// <summary>Raw log from the chain.</summary>
     public string RawLog { get; init; } = "";
 

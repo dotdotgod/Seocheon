@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/seocheon/sdk-go/internal/chain"
 	"github.com/seocheon/sdk-go/testutil"
 )
 
@@ -33,7 +34,7 @@ func TestGetInfoById(t *testing.T) {
 			"id":                "node-42",
 			"operator":          "seocheon1operator",
 			"agent_address":     "seocheon1agent",
-			"status":            1,
+			"status":            "NODE_STATUS_REGISTERED",
 			"description":       "Test node",
 			"website":           "https://example.com",
 			"tags":              []string{"ai", "defi"},
@@ -70,7 +71,7 @@ func TestGetInfoOwnNode(t *testing.T) {
 			"id":                "node-1",
 			"operator":          "seocheon1me",
 			"agent_address":     "seocheon1agent",
-			"status":            2,
+			"status":            "NODE_STATUS_ACTIVE",
 			"description":       "My node",
 			"validator_address": "",
 			"registered_at":     "50",
@@ -95,7 +96,7 @@ func TestSearchNodes(t *testing.T) {
 		"nodes": []map[string]interface{}{
 			{
 				"id":                "node-1",
-				"status":            2,
+				"status":            "NODE_STATUS_ACTIVE",
 				"description":       "Node A",
 				"tags":              []string{"ai"},
 				"validator_address": "",
@@ -103,7 +104,7 @@ func TestSearchNodes(t *testing.T) {
 			},
 			{
 				"id":                "node-2",
-				"status":            1,
+				"status":            "NODE_STATUS_REGISTERED",
 				"description":       "Node B",
 				"tags":              []string{"data"},
 				"validator_address": "",
@@ -133,5 +134,63 @@ func TestNotFoundFails(t *testing.T) {
 	_, err := m.GetInfo(ctx, "nonexistent")
 	if err == nil {
 		t.Fatal("expected error for non-existent node")
+	}
+}
+
+func TestGetDelegationStatus(t *testing.T) {
+	m, client := newTestModule()
+	ctx := context.Background()
+
+	client.SetRESTResponse("/seocheon/node/v1/delegation-confirmation/seocheon1del/seocheonvaloper1val", map[string]interface{}{
+		"expiry_epoch":         "90",
+		"current_epoch":        "5",
+		"in_renewal_window":    false,
+		"renewal_window_start": "83",
+	})
+
+	resp, err := m.GetDelegationStatus(ctx, "seocheon1del", "seocheonvaloper1val")
+	if err != nil {
+		t.Fatalf("GetDelegationStatus() error = %v", err)
+	}
+	if resp.ExpiryEpoch != 90 {
+		t.Errorf("ExpiryEpoch = %d, want 90", resp.ExpiryEpoch)
+	}
+	if resp.CurrentEpoch != 5 {
+		t.Errorf("CurrentEpoch = %d, want 5", resp.CurrentEpoch)
+	}
+	if resp.InRenewalWindow {
+		t.Error("InRenewalWindow should be false")
+	}
+	if resp.RenewalWindowStart != 83 {
+		t.Errorf("RenewalWindowStart = %d, want 83", resp.RenewalWindowStart)
+	}
+}
+
+func TestConfirmDelegation(t *testing.T) {
+	m, client := newTestModule()
+	ctx := context.Background()
+
+	// Set up TxResult for the broadcast tx hash so confirmation polling succeeds
+	client.TxResults["ABCDEF1234567890"] = &chain.TxResponse{
+		TxHash:    "ABCDEF1234567890",
+		Height:    100,
+		Code:      0,
+		GasUsed:   50000,
+		GasWanted: 200000,
+		RawLog:    "",
+	}
+
+	resp, err := m.ConfirmDelegation(ctx, "seocheonvaloper1val")
+	if err != nil {
+		t.Fatalf("ConfirmDelegation() error = %v", err)
+	}
+	if resp == nil {
+		t.Fatal("expected non-nil response")
+	}
+	if resp.TxHash != "ABCDEF1234567890" {
+		t.Errorf("TxHash = %s, want ABCDEF1234567890", resp.TxHash)
+	}
+	if resp.Code != 0 {
+		t.Errorf("Code = %d, want 0", resp.Code)
 	}
 }

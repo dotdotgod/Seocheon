@@ -99,6 +99,8 @@ public class MockChainClient : IChainClient
             TxHash = txHash,
             Height = CurrentBlockHeight,
             Code = 0,
+            GasUsed = 150000,
+            GasWanted = 200000,
             RawLog = "",
             Events = []
         });

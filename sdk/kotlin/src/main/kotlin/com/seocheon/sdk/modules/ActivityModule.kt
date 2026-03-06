@@ -60,7 +60,7 @@ class ActivityModule(
      * Queries activities for a node in a given epoch.
      */
     suspend fun getActivities(nodeId: String, epochNumber: Long? = null): GetActivitiesResponse {
-        var path = "/seocheon/activity/v1/activities/$nodeId"
+        var path = "/seocheon/activity/v1/nodes/$nodeId/activities"
         if (epochNumber != null) {
             path += "?epoch_number=$epochNumber"
         }
@@ -85,17 +85,24 @@ class ActivityModule(
     /**
      * Queries the activity quota for a node.
      */
-    suspend fun getQuota(nodeId: String): GetQuotaResponse {
-        val resp = client.queryRest("/seocheon/activity/v1/quota/$nodeId")
+    suspend fun getQuota(): GetQuotaResponse {
+        val nodeId = resolveOwnNodeId()
+        val epochResp = client.queryRest("/seocheon/activity/v1/epoch-info")
+        val currentEpoch = epochResp.jsonObject["epoch_number"]?.jsonPrimitive?.longOrNull ?: 0L
+
+        val resp = client.queryRest("/seocheon/activity/v1/nodes/$nodeId/epochs/$currentEpoch")
         val obj = resp.jsonObject
 
+        val quotaLimit = obj["quota_limit"]?.jsonPrimitive?.longOrNull ?: 0L
+        val quotaUsed = obj["quota_used"]?.jsonPrimitive?.longOrNull ?: 0L
+
         return GetQuotaResponse(
-            epochNumber = obj["epoch_number"]?.jsonPrimitive?.longOrNull ?: 0L,
-            quotaTotal = obj["quota_total"]?.jsonPrimitive?.longOrNull ?: 0L,
-            quotaUsed = obj["quota_used"]?.jsonPrimitive?.longOrNull ?: 0L,
-            quotaRemaining = obj["quota_remaining"]?.jsonPrimitive?.longOrNull ?: 0L,
-            isFeegrant = obj["is_feegrant"]?.jsonPrimitive?.booleanOrNull ?: false,
-            feegrantExpiry = obj["feegrant_expiry"]?.jsonPrimitive?.longOrNull,
+            epochNumber = currentEpoch,
+            quotaTotal = quotaLimit,
+            quotaUsed = quotaUsed,
+            quotaRemaining = maxOf(0L, quotaLimit - quotaUsed),
+            isFeegrant = false,
+            feegrantExpiry = null,
         )
     }
 
@@ -103,5 +110,12 @@ class ActivityModule(
         override suspend fun sign(data: ByteArray): ByteArray = signer.sign(data)
         override fun getAddress(): String = signer.getAddress()
         override fun getPubKey(): ByteArray = signer.getPubKey()
+    }
+
+    private suspend fun resolveOwnNodeId(): String {
+        val address = signer.getAddress()
+        val resp = client.queryRest("/seocheon/node/v1/nodes/by-agent/$address")
+        return resp.jsonObject["node"]?.jsonObject?.get("id")?.jsonPrimitive?.content
+            ?: throw SdkError.NodeNotFound()
     }
 }

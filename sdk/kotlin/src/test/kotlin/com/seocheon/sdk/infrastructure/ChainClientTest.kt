@@ -56,7 +56,14 @@ class MockChainClient : ChainClient {
     override fun isConnected(): Boolean = connected
 
     override suspend fun queryRest(path: String): JsonElement = buildJsonObject {
-        put("result", "mock")
+        if (path.contains("/by-agent/")) {
+            put("node", buildJsonObject {
+                put("id", "mock-node-1")
+                put("operator", "seocheon1mockaddress")
+            })
+        } else {
+            put("result", "mock")
+        }
     }
 
     override suspend fun getLatestBlock(): JsonElement = buildJsonObject {

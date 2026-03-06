@@ -190,6 +190,8 @@ public sealed class HttpChainClient : IChainClient, IDisposable
                 TxHash = txResp.GetProperty("txhash").GetString() ?? "",
                 Height = long.Parse(txResp.GetProperty("height").GetString() ?? "0"),
                 Code = txResp.GetProperty("code").GetUInt32(),
+                GasUsed = txResp.TryGetProperty("gas_used", out var gu) ? ulong.Parse(gu.GetString() ?? "0") : 0,
+                GasWanted = txResp.TryGetProperty("gas_wanted", out var gw) ? ulong.Parse(gw.GetString() ?? "0") : 0,
                 RawLog = txResp.TryGetProperty("raw_log", out var rl) ? rl.GetString() ?? "" : "",
                 Events = events
             };

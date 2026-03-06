@@ -36,7 +36,7 @@ class SeocheonSdk private constructor(
         )
 
         activity = ActivityModule(chainClient, signer, pipelineConfig)
-        node = NodeModule(chainClient, signer)
+        node = NodeModule(chainClient, signer, pipelineConfig)
         epoch = EpochModule(chainClient)
         rewards = RewardsModule(chainClient, signer, pipelineConfig)
         cosmos = CosmosModule(chainClient, signer, pipelineConfig)

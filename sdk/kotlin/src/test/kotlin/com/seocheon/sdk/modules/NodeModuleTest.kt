@@ -2,6 +2,7 @@ package com.seocheon.sdk.modules
 
 import com.seocheon.sdk.infrastructure.MockChainClient
 import com.seocheon.sdk.infrastructure.signing.SigningService
+import com.seocheon.sdk.internal.tx.PipelineConfig
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -17,6 +18,7 @@ class NodeModuleTest {
     private fun createModule() = NodeModule(
         MockChainClient().also { kotlinx.coroutines.test.runTest { it.connect() } },
         mockSigner,
+        PipelineConfig(chainId = "test-chain"),
     )
 
     @Test
@@ -44,6 +46,20 @@ class NodeModuleTest {
     fun `search with status filter`() = runTest {
         val module = createModule()
         val result = module.search(status = "ACTIVE")
+        assertNotNull(result)
+    }
+
+    @Test
+    fun `getDelegationStatus returns response`() = runTest {
+        val module = createModule()
+        val result = module.getDelegationStatus("seocheon1delegator", "seocheonvaloper1val")
+        assertNotNull(result)
+    }
+
+    @Test
+    fun `confirmDelegation returns tx result`() = runTest {
+        val module = createModule()
+        val result = module.confirmDelegation("seocheonvaloper1val")
         assertNotNull(result)
     }
 }

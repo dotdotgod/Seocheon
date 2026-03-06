@@ -28,7 +28,7 @@ public final class SeocheonSDK: @unchecked Sendable {
 
         self.activity = ActivityModule(client: client, signer: signer, chainID: config.chain.chainId)
         self.epoch = EpochModule(client: client)
-        self.node = NodeModule(client: client, signer: signer)
+        self.node = NodeModule(client: client, signer: signer, chainID: config.chain.chainId)
         self.rewards = RewardsModule(client: client, signer: signer, chainID: config.chain.chainId)
         self.cosmos = CosmosModule(client: client, signer: signer, chainID: config.chain.chainId)
     }
@@ -41,7 +41,7 @@ public final class SeocheonSDK: @unchecked Sendable {
 
         self.activity = ActivityModule(client: client, signer: signer, chainID: config.chain.chainId)
         self.epoch = EpochModule(client: client)
-        self.node = NodeModule(client: client, signer: signer)
+        self.node = NodeModule(client: client, signer: signer, chainID: config.chain.chainId)
         self.rewards = RewardsModule(client: client, signer: signer, chainID: config.chain.chainId)
         self.cosmos = CosmosModule(client: client, signer: signer, chainID: config.chain.chainId)
     }

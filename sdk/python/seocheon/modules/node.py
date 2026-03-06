@@ -5,17 +5,31 @@ from __future__ import annotations
 from seocheon.errors.errors import ErrNodeNotFound, ErrQueryFailed
 from seocheon.infrastructure.chain_client import ChainClient
 from seocheon.infrastructure.signing.service import SigningService
+from seocheon.internal.tx.chain_adapter import ChainClientAdapter
+from seocheon.internal.tx.messages import MsgConfirmDelegation
+from seocheon.internal.tx.pipeline import PipelineConfig, default_pipeline_config, execute_tx
+from seocheon.internal.tx.types import TxRequest
 from seocheon.types.enums import NodeStatus
-from seocheon.types.responses import NodeInfoResponse, NodeSearchResponse, NodeSummary
+from seocheon.types.responses import (
+    DelegationStatusResponse,
+    NodeInfoResponse,
+    NodeSearchResponse,
+    NodeSummary,
+    TxResultResponse,
+    EventAttribute,
+    TxEvent,
+)
 from seocheon.utils.convert import format_kkot
 
 
 class NodeModule:
     """Provides node-related operations."""
 
-    def __init__(self, client: ChainClient, signer: SigningService) -> None:
+    def __init__(self, client: ChainClient, signer: SigningService, chain_id: str = "seocheon-1") -> None:
         self._client = client
         self._signer = signer
+        self._tx_querier = ChainClientAdapter(client)
+        self._tx_config: PipelineConfig = default_pipeline_config(chain_id)
 
     async def get_info(self, node_id: str = "") -> NodeInfoResponse:
         """Return detailed information about a node."""
@@ -110,6 +124,48 @@ class NodeModule:
         return NodeSearchResponse(
             nodes=[e["summary"] for e in enriched],
             total_count=total_count,
+        )
+
+    async def get_delegation_status(
+        self, delegator_address: str, validator_address: str,
+    ) -> DelegationStatusResponse:
+        """Query delegation confirmation status."""
+        path = f"/seocheon/node/v1/delegation-confirmation/{delegator_address}/{validator_address}"
+        try:
+            data = await self._client.query_rest(path)
+        except Exception as e:
+            raise ErrQueryFailed from e
+
+        return DelegationStatusResponse(
+            expiry_epoch=int(data.get("expiry_epoch", 0)),
+            current_epoch=int(data.get("current_epoch", 0)),
+            in_renewal_window=bool(data.get("in_renewal_window", False)),
+            renewal_window_start=int(data.get("renewal_window_start", 0)),
+        )
+
+    async def confirm_delegation(self, validator_address: str) -> TxResultResponse:
+        """Confirm delegation for a validator."""
+        msg = MsgConfirmDelegation(
+            delegator_address=self._signer.get_address(),
+            validator_address=validator_address,
+        )
+
+        result = await execute_tx(self._tx_querier, self._signer, self._tx_config, TxRequest(message=msg))
+
+        return TxResultResponse(
+            tx_hash=result.tx_hash,
+            height=result.height,
+            code=result.code,
+            gas_used=result.gas_used,
+            gas_wanted=result.gas_wanted,
+            raw_log=result.raw_log,
+            events=[
+                TxEvent(
+                    type=e.type,
+                    attributes=[EventAttribute(key=a.key, value=a.value) for a in e.attributes],
+                )
+                for e in result.events
+            ],
         )
 
     async def _resolve_own_node_id(self) -> str:

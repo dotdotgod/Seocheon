@@ -184,6 +184,16 @@ class EventAttribute:
 
 
 @dataclass
+class DelegationStatusResponse:
+    """Returned when querying delegation confirmation status."""
+
+    expiry_epoch: int
+    current_epoch: int
+    in_renewal_window: bool
+    renewal_window_start: int
+
+
+@dataclass
 class TxEvent:
     """Represents an event emitted by a transaction."""
 

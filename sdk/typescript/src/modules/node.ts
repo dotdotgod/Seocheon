@@ -5,7 +5,13 @@ import type {
   NodeSearchResponse,
   NodeSummary,
   NodeStatus,
+  DelegationStatusResponse,
+  TxResultResponse,
 } from "../types/responses.js";
+import type { ResolvedTxConfig } from "../types/config.js";
+import { MsgConfirmDelegation } from "../infrastructure/messages.js";
+import { ChainClientAdapter, executeTx } from "../infrastructure/tx-pipeline.js";
+import type { PipelineConfig } from "../infrastructure/tx-pipeline.js";
 import { formatKkot } from "../utils/denom.js";
 
 const STATUS_MAP: Record<number, NodeStatus> = {
@@ -38,10 +44,15 @@ function toNodeStatus(status: number | string): NodeStatus {
 }
 
 export class NodeModule {
+  private readonly txConfig?: ResolvedTxConfig;
+
   constructor(
     private readonly chainClient: ChainClient,
     private readonly signingService: SigningService,
-  ) {}
+    txConfig?: ResolvedTxConfig,
+  ) {
+    this.txConfig = txConfig;
+  }
 
   async getInfo(nodeId?: string): Promise<NodeInfoResponse> {
     const effectiveNodeId = nodeId ?? (await this.resolveOwnNodeId());
@@ -191,6 +202,58 @@ export class NodeModule {
     }));
 
     return { nodes, total_count: totalCount };
+  }
+
+  async getDelegationStatus(
+    delegatorAddress: string,
+    validatorAddress: string,
+  ): Promise<DelegationStatusResponse> {
+    const response = await this.chainClient.queryRest<{
+      expiry_epoch: string;
+      current_epoch: string;
+      in_renewal_window: boolean;
+      renewal_window_start: string;
+    }>(`/seocheon/node/v1/delegation-confirmation/${delegatorAddress}/${validatorAddress}`);
+
+    return {
+      expiry_epoch: parseInt(response.expiry_epoch ?? "0", 10),
+      current_epoch: parseInt(response.current_epoch ?? "0", 10),
+      in_renewal_window: response.in_renewal_window ?? false,
+      renewal_window_start: parseInt(response.renewal_window_start ?? "0", 10),
+    };
+  }
+
+  async confirmDelegation(validatorAddress: string): Promise<TxResultResponse> {
+    if (!this.txConfig) {
+      throw new Error("txConfig is required for confirmDelegation");
+    }
+    const address = await this.signingService.getAddress();
+    const msg = new MsgConfirmDelegation(address, validatorAddress);
+
+    const querier = new ChainClientAdapter(this.chainClient);
+    const pipelineCfg: PipelineConfig = {
+      chainId: this.txConfig.chain_id,
+      gasPrice: this.txConfig.gas_price,
+      confirmTimeoutMs: this.txConfig.confirm_timeout_ms,
+      pollIntervalMs: this.txConfig.confirm_poll_interval_ms,
+    };
+
+    const result = await executeTx(querier, this.signingService, pipelineCfg, {
+      message: msg,
+    });
+
+    return {
+      tx_hash: result.txHash,
+      height: result.height,
+      code: result.code,
+      gas_used: result.gasUsed,
+      gas_wanted: result.gasWanted,
+      raw_log: result.rawLog,
+      events: result.events.map((e) => ({
+        type: e.type,
+        attributes: e.attributes.map((a) => ({ key: a.key, value: a.value })),
+      })),
+    };
   }
 
   private async resolveOwnNodeId(): Promise<string> {

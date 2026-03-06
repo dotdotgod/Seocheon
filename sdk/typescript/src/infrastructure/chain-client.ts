@@ -73,7 +73,7 @@ export class HttpChainClient implements ChainClient {
 
   async queryRest<T>(path: string): Promise<T> {
     this.ensureConnected();
-    const url = `${this.rpcEndpoint}${path}`;
+    const url = `${this.grpcEndpoint}${path}`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -90,7 +90,7 @@ export class HttpChainClient implements ChainClient {
     const broadcastMode =
       mode === "async" ? "BROADCAST_MODE_ASYNC" : "BROADCAST_MODE_SYNC";
 
-    const url = `${this.rpcEndpoint}/cosmos/tx/v1beta1/txs`;
+    const url = `${this.grpcEndpoint}/cosmos/tx/v1beta1/txs`;
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -122,7 +122,7 @@ export class HttpChainClient implements ChainClient {
 
   async getAccountInfo(address: string): Promise<AccountInfo> {
     this.ensureConnected();
-    const url = `${this.rpcEndpoint}/cosmos/auth/v1beta1/accounts/${address}`;
+    const url = `${this.grpcEndpoint}/cosmos/auth/v1beta1/accounts/${address}`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(
@@ -151,7 +151,7 @@ export class HttpChainClient implements ChainClient {
 
   async getLatestBlock(): Promise<BlockResponse> {
     this.ensureConnected();
-    const url = `${this.rpcEndpoint}/cosmos/base/tendermint/v1beta1/blocks/latest`;
+    const url = `${this.grpcEndpoint}/cosmos/base/tendermint/v1beta1/blocks/latest`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(
@@ -180,7 +180,7 @@ export class HttpChainClient implements ChainClient {
 
   async getBlockByHeight(height: number): Promise<BlockResponse> {
     this.ensureConnected();
-    const url = `${this.rpcEndpoint}/cosmos/base/tendermint/v1beta1/blocks/${height}`;
+    const url = `${this.grpcEndpoint}/cosmos/base/tendermint/v1beta1/blocks/${height}`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(
@@ -209,7 +209,7 @@ export class HttpChainClient implements ChainClient {
 
   async getTx(txHash: string): Promise<TxResponse | null> {
     this.ensureConnected();
-    const url = `${this.rpcEndpoint}/cosmos/tx/v1beta1/txs/${txHash}`;
+    const url = `${this.grpcEndpoint}/cosmos/tx/v1beta1/txs/${txHash}`;
     const response = await fetch(url);
 
     if (!response.ok) {

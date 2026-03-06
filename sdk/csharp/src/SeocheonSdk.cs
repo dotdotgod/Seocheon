@@ -56,7 +56,7 @@ public sealed class SeocheonSdk : IDisposable
 
         Activity = new ActivityModule(_client, _signer, pipelineConfig);
         Epoch = new EpochModule(_client, _signer);
-        Node = new NodeModule(_client, _signer);
+        Node = new NodeModule(_client, _signer, pipelineConfig);
         Rewards = new RewardsModule(_client, _signer, pipelineConfig);
         Cosmos = new CosmosModule(_client, _signer, pipelineConfig);
     }

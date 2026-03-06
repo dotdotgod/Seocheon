@@ -156,6 +156,14 @@ public sealed record TxEvent(
     IReadOnlyDictionary<string, string> Attributes
 );
 
+/// <summary>Delegation confirmation status.</summary>
+public sealed record DelegationStatusResponse(
+    long ExpiryEpoch,
+    long CurrentEpoch,
+    bool InRenewalWindow,
+    long RenewalWindowStart
+);
+
 /// <summary>Transaction result.</summary>
 public sealed record TxResultResponse(
     string TxHash,

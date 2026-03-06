@@ -152,6 +152,14 @@ type EventAttribute struct {
 	Value string `json:"value"`
 }
 
+// DelegationStatusResponse is returned when querying delegation confirmation status.
+type DelegationStatusResponse struct {
+	ExpiryEpoch        int64 `json:"expiry_epoch"`
+	CurrentEpoch       int64 `json:"current_epoch"`
+	InRenewalWindow    bool  `json:"in_renewal_window"`
+	RenewalWindowStart int64 `json:"renewal_window_start"`
+}
+
 // TxResultResponse is returned when querying a transaction result.
 type TxResultResponse struct {
 	TxHash    string    `json:"tx_hash"`

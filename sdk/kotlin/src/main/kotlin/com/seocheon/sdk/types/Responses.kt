@@ -165,3 +165,11 @@ data class TxResultResponse(
     @SerialName("raw_log") val rawLog: String,
     val events: List<TxEvent>,
 )
+
+@Serializable
+data class DelegationStatusResponse(
+    @SerialName("expiry_epoch") val expiryEpoch: Long,
+    @SerialName("current_epoch") val currentEpoch: Long,
+    @SerialName("in_renewal_window") val inRenewalWindow: Boolean,
+    @SerialName("renewal_window_start") val renewalWindowStart: Long,
+)

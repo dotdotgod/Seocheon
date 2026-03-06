@@ -1,6 +1,7 @@
 using Seocheon.Sdk.Errors;
 using Seocheon.Sdk.Infrastructure;
 using Seocheon.Sdk.Infrastructure.Signing;
+using Seocheon.Sdk.Internal.Tx;
 using Seocheon.Sdk.Types;
 
 namespace Seocheon.Sdk.Modules;
@@ -12,11 +13,13 @@ public sealed class NodeModule
 {
     private readonly IChainClient _client;
     private readonly ISigningService _signer;
+    private readonly PipelineConfig _pipelineConfig;
 
-    internal NodeModule(IChainClient client, ISigningService signer)
+    internal NodeModule(IChainClient client, ISigningService signer, PipelineConfig? pipelineConfig = null)
     {
         _client = client;
         _signer = signer;
+        _pipelineConfig = pipelineConfig ?? new PipelineConfig { ChainId = "seocheon-1" };
     }
 
     /// <summary>
@@ -29,7 +32,7 @@ public sealed class NodeModule
         if (string.IsNullOrEmpty(nodeId))
             nodeId = await ResolveOwnNodeId(ct);
 
-        var result = await _client.QueryRest($"/seocheon/node/v1/node/{nodeId}", ct);
+        var result = await _client.QueryRest($"/seocheon/node/v1/nodes/{nodeId}", ct);
         var node = result.GetProperty("node");
 
         var tags = new List<string>();
@@ -40,7 +43,7 @@ public sealed class NodeModule
         }
 
         return new NodeInfoResponse(
-            NodeId: node.GetProperty("node_id").GetString() ?? "",
+            NodeId: node.GetProperty("id").GetString() ?? "",
             Operator: node.TryGetProperty("operator", out var op) ? op.GetString() ?? "" : "",
             AgentAddress: node.TryGetProperty("agent_address", out var aa) ? aa.GetString() ?? "" : "",
             Status: node.TryGetProperty("status", out var st) ? st.GetString() ?? "REGISTERED" : "REGISTERED",
@@ -93,7 +96,7 @@ public sealed class NodeModule
                 }
 
                 nodes.Add(new NodeSummary(
-                    NodeId: n.GetProperty("node_id").GetString() ?? "",
+                    NodeId: n.GetProperty("id").GetString() ?? "",
                     Status: n.TryGetProperty("status", out var st) ? st.GetString() ?? "" : "",
                     Tags: tags,
                     TotalDelegation: n.TryGetProperty("total_delegation", out var td) ? td.GetString() ?? "0" : "0",
@@ -109,11 +112,55 @@ public sealed class NodeModule
         return new NodeSearchResponse(nodes, total);
     }
 
+    /// <summary>
+    /// Queries delegation confirmation status.
+    /// </summary>
+    public async Task<DelegationStatusResponse> GetDelegationStatus(
+        string delegatorAddress, string validatorAddress, CancellationToken ct = default)
+    {
+        var result = await _client.QueryRest(
+            $"/seocheon/node/v1/delegation-confirmation/{delegatorAddress}/{validatorAddress}", ct);
+
+        return new DelegationStatusResponse(
+            ExpiryEpoch: result.TryGetProperty("expiry_epoch", out var ee) ? long.Parse(ee.GetString() ?? "0") : 0,
+            CurrentEpoch: result.TryGetProperty("current_epoch", out var ce) ? long.Parse(ce.GetString() ?? "0") : 0,
+            InRenewalWindow: result.TryGetProperty("in_renewal_window", out var rw) && rw.GetBoolean(),
+            RenewalWindowStart: result.TryGetProperty("renewal_window_start", out var rws) ? long.Parse(rws.GetString() ?? "0") : 0
+        );
+    }
+
+    /// <summary>
+    /// Confirms delegation for a validator.
+    /// </summary>
+    public async Task<TxResultResponse> ConfirmDelegation(string validatorAddress, CancellationToken ct = default)
+    {
+        var msgBytes = Messages.EncodeMsgConfirmDelegation(
+            _signer.GetAddress(),
+            validatorAddress
+        );
+
+        var result = await Pipeline.ExecuteTx(_client, _signer, _pipelineConfig, new TxRequest
+        {
+            Message = msgBytes,
+            MessageTypeUrl = Messages.TypeMsgConfirmDelegation
+        }, ct);
+
+        return new TxResultResponse(
+            TxHash: result.TxHash,
+            Height: result.Height,
+            Code: result.Code,
+            GasUsed: result.GasUsed,
+            GasWanted: result.GasWanted,
+            RawLog: result.RawLog,
+            Events: Array.Empty<TxEvent>()
+        );
+    }
+
     private async Task<string> ResolveOwnNodeId(CancellationToken ct)
     {
         var address = _signer.GetAddress();
-        var result = await _client.QueryRest($"/seocheon/node/v1/node_by_agent/{address}", ct);
-        return result.GetProperty("node").GetProperty("node_id").GetString()
+        var result = await _client.QueryRest($"/seocheon/node/v1/nodes/by-agent/{address}", ct);
+        return result.GetProperty("node").GetProperty("id").GetString()
                ?? throw SdkErrors.QueryFailed("Could not resolve node ID");
     }
 }
