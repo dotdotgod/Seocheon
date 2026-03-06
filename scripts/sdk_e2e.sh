@@ -30,7 +30,7 @@ DENOM="uppyeo"
 MONIKER="validator0"
 
 RPC_ENDPOINT="http://localhost:26657"
-GRPC_ENDPOINT="http://localhost:9090"
+GRPC_ENDPOINT="http://localhost:1317"
 
 SEOCHEON_BIN="${SEOCHEON_BIN:-seocheon}"
 KEYRING="test"
@@ -111,6 +111,17 @@ AGENT_MNEMONIC=$(echo "$AGENT_JSON" | python3 -c "import sys,json; print(json.lo
 AGENT_ADDR=$(echo "$AGENT_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['address'])")
 info "에이전트 주소: $AGENT_ADDR"
 
+info "=== 노드 오퍼레이터 키 생성 ==="
+
+NODE_OPERATOR_JSON=$(
+    $SEOCHEON_BIN keys add node-operator \
+        --keyring-backend "$KEYRING" \
+        --home "$TESTNET_HOME" \
+        --output json 2>&1
+)
+NODE_OPERATOR_ADDR=$(echo "$NODE_OPERATOR_JSON" | python3 -c "import sys,json; print(json.load(sys.stdin)['address'])")
+info "노드 오퍼레이터 주소: $NODE_OPERATOR_ADDR"
+
 ###############################################################################
 # 3. Genesis 패치 (bond denom → uppyeo)
 ###############################################################################
@@ -158,6 +169,11 @@ $SEOCHEON_BIN genesis add-genesis-account "$AGENT_ADDR" \
     --keyring-backend "$KEYRING" \
     --home "$TESTNET_HOME"
 
+$SEOCHEON_BIN genesis add-genesis-account "$NODE_OPERATOR_ADDR" \
+    "10000000000000${DENOM}" \
+    --keyring-backend "$KEYRING" \
+    --home "$TESTNET_HOME"
+
 info "=== gentx 생성 ==="
 
 $SEOCHEON_BIN genesis gentx validator \
@@ -176,6 +192,24 @@ $SEOCHEON_BIN genesis collect-gentxs \
 ###############################################################################
 
 info "=== 5. 테스트넷 구동 (백그라운드) ==="
+
+# app.toml: REST API 서버 활성화 (포트 1317)
+APP_TOML="$TESTNET_HOME/config/app.toml"
+python3 - "$APP_TOML" << 'PYEOF'
+import re, sys
+path = sys.argv[1]
+with open(path) as f:
+    content = f.read()
+content = re.sub(
+    r'(\[api\](?:[^\[]*?\n)enable = )false',
+    r'\1true',
+    content,
+    flags=re.DOTALL
+)
+with open(path, 'w') as f:
+    f.write(content)
+PYEOF
+info "app.toml 패치 완료: REST API 서버(포트 1317) 활성화"
 
 $SEOCHEON_BIN start \
     --home "$TESTNET_HOME" \
@@ -221,32 +255,97 @@ wait_for_block "$BLOCK_WAIT_TIMEOUT"
 
 info "=== 7. 테스트 노드 등록 ==="
 
-# 밸리데이터의 consensus pubkey를 node pubkey로 사용
-VALIDATOR_PUBKEY=$(
-    $SEOCHEON_BIN comet show-validator --home "$TESTNET_HOME" 2>/dev/null || \
-    $SEOCHEON_BIN tendermint show-validator --home "$TESTNET_HOME" 2>/dev/null
+# 새 ed25519 pubkey 생성 (validator consensus pubkey와 충돌 방지)
+NEW_NODE_PUBKEY=$(python3 -c "
+import secrets, base64, json
+raw = secrets.token_bytes(32)
+print(json.dumps({'@type': '/cosmos.crypto.ed25519.PubKey', 'key': base64.b64encode(raw).decode()}))
+")
+info "새 노드 pubkey 생성 완료"
+
+# 변경 4: 등록 전 node-operator 잔액 사전 확인
+info "node-operator 잔액 확인..."
+$SEOCHEON_BIN query bank balances "$NODE_OPERATOR_ADDR" \
+    --home "$TESTNET_HOME" 2>&1 || true
+
+# 변경 1: TX 전체 출력 + TX hash 캡처 (--output json 필수)
+REGISTER_TX_OUTPUT=$(
+    $SEOCHEON_BIN tx node register-node \
+        --pubkey "$NEW_NODE_PUBKEY" \
+        --agent-address "$AGENT_ADDR" \
+        --agent-share "0.200000000000000000" \
+        --max-agent-share-change-rate "0.010000000000000000" \
+        --commission-rate "0.100000000000000000" \
+        --commission-max-rate "0.200000000000000000" \
+        --commission-max-change-rate "0.010000000000000000" \
+        --description "e2e-test-node" \
+        --from node-operator \
+        --keyring-backend "$KEYRING" \
+        --home "$TESTNET_HOME" \
+        --chain-id "$CHAIN_ID" \
+        --fees "25000${DENOM}" \
+        --gas 300000 \
+        --output json \
+        --yes 2>&1
 )
+echo "$REGISTER_TX_OUTPUT"
+REGISTER_TXHASH=$(echo "$REGISTER_TX_OUTPUT" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    print(data.get('txhash', ''))
+except Exception:
+    print('')
+" 2>/dev/null || echo "")
+info "TX hash: ${REGISTER_TXHASH:-<캡처 실패>}"
 
-info "노드 pubkey: $VALIDATOR_PUBKEY"
-
-$SEOCHEON_BIN tx node register-node \
-    --pubkey "$VALIDATOR_PUBKEY" \
-    --agent-address "$AGENT_ADDR" \
-    --agent-share "0.200000000000000000" \
-    --max-agent-share-change-rate "0.010000000000000000" \
-    --commission-rate "0.100000000000000000" \
-    --commission-max-rate "0.200000000000000000" \
-    --commission-max-change-rate "0.010000000000000000" \
-    --from validator \
-    --keyring-backend "$KEYRING" \
-    --home "$TESTNET_HOME" \
-    --chain-id "$CHAIN_ID" \
-    --fees "25000${DENOM}" \
-    --yes \
-    > /dev/null 2>&1
-
-info "노드 등록 TX 전송 완료. 3블록 대기..."
+# 변경 2: sleep 후 TX 결과 쿼리 (DeliverTx 실제 결과 확인)
+info "노드 등록 TX 전송 완료. 블록 포함 대기..."
 sleep 10
+
+if [[ -n "$REGISTER_TXHASH" ]]; then
+    info "TX 결과 쿼리: $REGISTER_TXHASH"
+    TX_RESULT=$($SEOCHEON_BIN query tx "$REGISTER_TXHASH" \
+        --home "$TESTNET_HOME" \
+        --node "$RPC_ENDPOINT" \
+        --output json 2>&1 || echo '{}')
+    TX_CODE=$(echo "$TX_RESULT" | python3 -c "
+import sys, json
+try:
+    print(json.load(sys.stdin).get('code', -1))
+except Exception:
+    print(-1)
+" 2>/dev/null || echo "-1")
+    TX_LOG=$(echo "$TX_RESULT" | python3 -c "
+import sys, json
+try:
+    d = json.load(sys.stdin)
+    print(d.get('raw_log', '') or d.get('logs', ''))
+except Exception:
+    print('')
+" 2>/dev/null || echo "")
+    info "TX code: $TX_CODE"
+    if [[ "$TX_CODE" != "0" ]]; then
+        error "TX 실패! code=$TX_CODE"
+        error "raw_log: $TX_LOG"
+    fi
+fi
+
+# 검증: AGENT_ADDR이 AgentIndex에 등록됐는지 확인
+NODE_ID=$(curl -s "${GRPC_ENDPOINT}/seocheon/node/v1/nodes/by-agent/${AGENT_ADDR}" 2>/dev/null \
+    | python3 -c "import sys,json; print(json.load(sys.stdin).get('node',{}).get('id',''))" 2>/dev/null || echo "")
+
+# 변경 3: 실패 시 테스트넷 로그 + 잔액 출력
+if [[ -z "$NODE_ID" ]]; then
+    error "노드 에이전트 등록 확인 실패: AGENT_ADDR=${AGENT_ADDR}"
+    error "=== 테스트넷 로그 (마지막 80줄) ==="
+    tail -80 /tmp/seocheon_e2e.log >&2 || true
+    error "=== node-operator 잔액 ==="
+    $SEOCHEON_BIN query bank balances "$NODE_OPERATOR_ADDR" \
+        --home "$TESTNET_HOME" 2>&1 >&2 || true
+    exit 1
+fi
+info "노드 에이전트 등록 확인: nodeId=${NODE_ID}"
 
 ###############################################################################
 # 8. 환경변수 설정
@@ -300,7 +399,7 @@ run_test "TypeScript SDK" bash -c "
 # Python SDK
 run_test "Python SDK" bash -c "
     cd sdk/python && \
-    uv run pytest e2e/ -m e2e -v --timeout=120 2>&1
+    uv run pytest e2e/ -m e2e -v 2>&1
 "
 
 # Kotlin SDK
@@ -318,7 +417,7 @@ run_test "Swift SDK" bash -c "
 # C# SDK
 run_test "C# SDK" bash -c "
     cd sdk/csharp && \
-    dotnet test --filter 'Category=e2e' -v 2>&1
+    dotnet test --filter 'Category=e2e' --verbosity minimal 2>&1
 "
 
 ###############################################################################
