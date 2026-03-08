@@ -35,7 +35,7 @@ func TestDistributeActivityRewards_EmptyPool(t *testing.T) {
 	ctx := f.freshCtx(1)
 
 	// Set up eligible node but empty pool.
-	f.keeper.EpochSummary.Set(ctx, collections.Join("node1", int64(0)), types.EpochActivitySummary{
+	f.keeper.EpochSummary.Set(ctx, collections.Join(int64(0), "node1"), types.EpochActivitySummary{
 		TotalActivities: 10,
 		ActiveWindows:   8,
 		Eligible:        true,
@@ -58,7 +58,7 @@ func TestDistributeActivityRewards_SingleNode_NoAgentShare(t *testing.T) {
 	f.nodeKeeper.registerFullNode("node1", "agent1_submitter", operatorAddr, agentWalletAddr, 2, math.LegacyZeroDec())
 
 	// Make node eligible.
-	f.keeper.EpochSummary.Set(ctx, collections.Join("node1", int64(0)), types.EpochActivitySummary{
+	f.keeper.EpochSummary.Set(ctx, collections.Join(int64(0), "node1"), types.EpochActivitySummary{
 		TotalActivities: 10,
 		ActiveWindows:   8,
 		Eligible:        true,
@@ -89,7 +89,7 @@ func TestDistributeActivityRewards_SingleNode_WithAgentShare(t *testing.T) {
 	// agent_share = 30%
 	f.nodeKeeper.registerFullNode("node1", "agent1_submitter", operatorAddr, agentWalletAddr, 2, math.LegacyNewDec(30))
 
-	f.keeper.EpochSummary.Set(ctx, collections.Join("node1", int64(0)), types.EpochActivitySummary{
+	f.keeper.EpochSummary.Set(ctx, collections.Join(int64(0), "node1"), types.EpochActivitySummary{
 		TotalActivities: 10,
 		ActiveWindows:   8,
 		Eligible:        true,
@@ -126,7 +126,7 @@ func TestDistributeActivityRewards_MultipleNodes_EqualSplit(t *testing.T) {
 		opAddr := makeAddr("op" + string(rune('0'+i)))
 		agAddr := makeAddr("ag" + string(rune('0'+i)))
 		f.nodeKeeper.registerFullNode(nodeID, "submitter"+string(rune('0'+i)), opAddr, agAddr, 2, math.LegacyZeroDec())
-		f.keeper.EpochSummary.Set(ctx, collections.Join(nodeID, int64(0)), types.EpochActivitySummary{
+		f.keeper.EpochSummary.Set(ctx, collections.Join(int64(0), nodeID), types.EpochActivitySummary{
 			TotalActivities: 10,
 			ActiveWindows:   8,
 			Eligible:        true,
@@ -157,7 +157,7 @@ func TestDistributeActivityRewards_Dust(t *testing.T) {
 		opAddr := makeAddr("op" + string(rune('0'+i)))
 		agAddr := makeAddr("ag" + string(rune('0'+i)))
 		f.nodeKeeper.registerFullNode(nodeID, "sub"+string(rune('0'+i)), opAddr, agAddr, 2, math.LegacyZeroDec())
-		f.keeper.EpochSummary.Set(ctx, collections.Join(nodeID, int64(0)), types.EpochActivitySummary{
+		f.keeper.EpochSummary.Set(ctx, collections.Join(int64(0), nodeID), types.EpochActivitySummary{
 			TotalActivities: 10,
 			ActiveWindows:   8,
 			Eligible:        true,
@@ -189,12 +189,12 @@ func TestDistributeActivityRewards_IneligibleNodesExcluded(t *testing.T) {
 	f.nodeKeeper.registerFullNode("node1", "sub1", makeAddr("op1"), makeAddr("ag1"), 2, math.LegacyZeroDec())
 	f.nodeKeeper.registerFullNode("node2", "sub2", makeAddr("op2"), makeAddr("ag2"), 2, math.LegacyZeroDec())
 
-	f.keeper.EpochSummary.Set(ctx, collections.Join("node1", int64(0)), types.EpochActivitySummary{
+	f.keeper.EpochSummary.Set(ctx, collections.Join(int64(0), "node1"), types.EpochActivitySummary{
 		TotalActivities: 10,
 		ActiveWindows:   8,
 		Eligible:        true,
 	})
-	f.keeper.EpochSummary.Set(ctx, collections.Join("node2", int64(0)), types.EpochActivitySummary{
+	f.keeper.EpochSummary.Set(ctx, collections.Join(int64(0), "node2"), types.EpochActivitySummary{
 		TotalActivities: 5,
 		ActiveWindows:   5,
 		Eligible:        false,
@@ -215,7 +215,7 @@ func TestDistributeActivityRewards_Event(t *testing.T) {
 	ctx := f.freshCtx(1)
 
 	f.nodeKeeper.registerFullNode("node1", "sub1", makeAddr("op1"), makeAddr("ag1"), 2, math.LegacyNewDec(20))
-	f.keeper.EpochSummary.Set(ctx, collections.Join("node1", int64(0)), types.EpochActivitySummary{
+	f.keeper.EpochSummary.Set(ctx, collections.Join(int64(0), "node1"), types.EpochActivitySummary{
 		TotalActivities: 10,
 		ActiveWindows:   8,
 		Eligible:        true,

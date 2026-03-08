@@ -174,7 +174,7 @@ func (ms msgServer) SubmitActivity(ctx context.Context, msg *types.MsgSubmitActi
 	}
 
 	// 11. Update EpochSummary.
-	summary, err := ms.EpochSummary.Get(ctx, collections.Join(nodeID, epoch))
+	summary, err := ms.EpochSummary.Get(ctx, collections.Join(epoch, nodeID))
 	if err != nil {
 		summary = types.EpochActivitySummary{}
 	}
@@ -188,7 +188,7 @@ func (ms msgServer) SubmitActivity(ctx context.Context, msg *types.MsgSubmitActi
 	// Check eligibility.
 	summary.Eligible = int64(summary.ActiveWindows) >= params.MinActiveWindows
 
-	if err := ms.EpochSummary.Set(ctx, collections.Join(nodeID, epoch), summary); err != nil {
+	if err := ms.EpochSummary.Set(ctx, collections.Join(epoch, nodeID), summary); err != nil {
 		return nil, err
 	}
 

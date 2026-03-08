@@ -304,7 +304,7 @@ func TestSubmitActivity_WindowTracking(t *testing.T) {
 	}
 
 	// Check epoch summary.
-	summary, err := f.keeper.EpochSummary.Get(f.ctx, collections.Join("nodeE", int64(0)))
+	summary, err := f.keeper.EpochSummary.Get(f.ctx, collections.Join(int64(0), "nodeE"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -347,7 +347,7 @@ func TestSubmitActivity_EpochSummaryEligibility(t *testing.T) {
 		}
 	}
 
-	summary, err := f.keeper.EpochSummary.Get(f.ctx, collections.Join("nodeF", int64(0)))
+	summary, err := f.keeper.EpochSummary.Get(f.ctx, collections.Join(int64(0), "nodeF"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -362,7 +362,7 @@ func TestSubmitActivity_EpochSummaryEligibility(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	summary, err = f.keeper.EpochSummary.Get(f.ctx, collections.Join("nodeF", int64(0)))
+	summary, err = f.keeper.EpochSummary.Get(f.ctx, collections.Join(int64(0), "nodeF"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -387,7 +387,7 @@ func TestSubmitActivity_MultipleInSameWindow(t *testing.T) {
 	}
 
 	// Active windows should still be 1.
-	summary, err := f.keeper.EpochSummary.Get(f.ctx, collections.Join("nodeG", int64(0)))
+	summary, err := f.keeper.EpochSummary.Get(f.ctx, collections.Join(int64(0), "nodeG"))
 	if err != nil {
 		t.Fatal(err)
 	}

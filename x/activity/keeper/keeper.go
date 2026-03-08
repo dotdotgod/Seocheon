@@ -35,8 +35,8 @@ type Keeper struct {
 	// WindowActivity tracks per-window activity counts: (node_id, epoch, window) -> count
 	WindowActivity collections.Map[collections.Triple[string, int64, int64], uint64]
 
-	// EpochSummary stores epoch activity summaries: (node_id, epoch) -> EpochActivitySummary
-	EpochSummary collections.Map[collections.Pair[string, int64], types.EpochActivitySummary]
+	// EpochSummary stores epoch activity summaries: (epoch, node_id) -> EpochActivitySummary
+	EpochSummary collections.Map[collections.Pair[int64, string], types.EpochActivitySummary]
 
 	// BlockActivities for pruning: (block_height, seq) -> node_id
 	BlockActivities collections.Map[collections.Pair[int64, uint64], string]
@@ -105,7 +105,7 @@ func NewKeeper(
 		),
 
 		EpochSummary: collections.NewMap(sb, types.EpochSummaryKey, "epoch_summary",
-			collections.PairKeyCodec(collections.StringKey, collections.Int64Key),
+			collections.PairKeyCodec(collections.Int64Key, collections.StringKey),
 			codec.CollValue[types.EpochActivitySummary](cdc),
 		),
 
@@ -195,7 +195,7 @@ func (k Keeper) GetEpochLength(ctx context.Context) (int64, error) {
 
 // IsNodeEligibleForEpoch checks if a node met the activity threshold for a given epoch.
 func (k Keeper) IsNodeEligibleForEpoch(ctx context.Context, nodeID string, epoch int64) (bool, error) {
-	summary, err := k.EpochSummary.Get(ctx, collections.Join(nodeID, epoch))
+	summary, err := k.EpochSummary.Get(ctx, collections.Join(epoch, nodeID))
 	if err != nil {
 		// No summary means no activity = not eligible.
 		return false, nil

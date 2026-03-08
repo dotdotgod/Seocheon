@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"cosmossdk.io/collections"
 	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -120,10 +121,12 @@ func (k Keeper) DistributeActivityRewards(ctx context.Context, epoch int64) erro
 }
 
 // getEligibleNodeIDs returns all node IDs that met the activity threshold for the given epoch.
+// Uses epoch-prefix range scan (K1=epoch) for O(N_eligible) instead of full-table scan.
 func (k Keeper) getEligibleNodeIDs(ctx context.Context, epoch int64) []string {
 	var eligible []string
 
-	iter, err := k.EpochSummary.Iterate(ctx, nil)
+	rng := collections.NewPrefixedPairRange[int64, string](epoch)
+	iter, err := k.EpochSummary.Iterate(ctx, rng)
 	if err != nil {
 		return nil
 	}
@@ -134,11 +137,8 @@ func (k Keeper) getEligibleNodeIDs(ctx context.Context, epoch int64) []string {
 		if err != nil {
 			continue
 		}
-		if kv.Key.K2() != epoch {
-			continue
-		}
 		if kv.Value.Eligible {
-			eligible = append(eligible, kv.Key.K1())
+			eligible = append(eligible, kv.Key.K2())
 		}
 	}
 

@@ -123,7 +123,7 @@ func TestGenesis_IndexRebuild(t *testing.T) {
 	require.Equal(t, uint64(1), windowCount)
 
 	// Verify EpochSummary is rebuilt.
-	summary, err := f2.keeper.EpochSummary.Get(ctx2, collections.Join("node1", int64(0)))
+	summary, err := f2.keeper.EpochSummary.Get(ctx2, collections.Join(int64(0), "node1"))
 	require.NoError(t, err)
 	require.Equal(t, uint64(1), summary.TotalActivities)
 	require.Equal(t, uint64(1), summary.ActiveWindows)

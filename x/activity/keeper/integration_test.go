@@ -45,13 +45,13 @@ func TestIntegration_FullLifecycle(t *testing.T) {
 	ctxCheck := f.freshCtx(1)
 
 	// node1: 10 active windows → eligible.
-	summary1, err := f.keeper.EpochSummary.Get(ctxCheck, collections.Join("node1", int64(0)))
+	summary1, err := f.keeper.EpochSummary.Get(ctxCheck, collections.Join(int64(0), "node1"))
 	require.NoError(t, err)
 	require.Equal(t, uint64(10), summary1.ActiveWindows)
 	require.True(t, summary1.Eligible)
 
 	// node2: 5 active windows → NOT eligible (min 8).
-	summary2, err := f.keeper.EpochSummary.Get(ctxCheck, collections.Join("node2", int64(0)))
+	summary2, err := f.keeper.EpochSummary.Get(ctxCheck, collections.Join(int64(0), "node2"))
 	require.NoError(t, err)
 	require.Equal(t, uint64(5), summary2.ActiveWindows)
 	require.False(t, summary2.Eligible)

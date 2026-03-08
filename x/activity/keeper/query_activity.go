@@ -165,7 +165,7 @@ func (qs queryServer) EpochInfo(ctx context.Context, _ *types.QueryEpochInfoRequ
 
 // NodeEpochActivity queries a node's activity summary for a given epoch.
 func (qs queryServer) NodeEpochActivity(ctx context.Context, req *types.QueryNodeEpochActivityRequest) (*types.QueryNodeEpochActivityResponse, error) {
-	summary, err := qs.k.EpochSummary.Get(ctx, collections.Join(req.NodeId, req.Epoch))
+	summary, err := qs.k.EpochSummary.Get(ctx, collections.Join(req.Epoch, req.NodeId))
 	if err != nil {
 		summary = types.EpochActivitySummary{}
 	}

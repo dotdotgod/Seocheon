@@ -67,7 +67,7 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) er
 		}
 
 		// Update EpochSummary.
-		summary, err := k.EpochSummary.Get(ctx, collections.Join(activity.NodeId, activity.Epoch))
+		summary, err := k.EpochSummary.Get(ctx, collections.Join(activity.Epoch, activity.NodeId))
 		if err != nil {
 			summary = types.EpochActivitySummary{}
 		}
@@ -76,7 +76,7 @@ func (k Keeper) InitGenesis(ctx context.Context, genState types.GenesisState) er
 			summary.ActiveWindows++
 		}
 		summary.Eligible = int64(summary.ActiveWindows) >= params.MinActiveWindows
-		if err := k.EpochSummary.Set(ctx, collections.Join(activity.NodeId, activity.Epoch), summary); err != nil {
+		if err := k.EpochSummary.Set(ctx, collections.Join(activity.Epoch, activity.NodeId), summary); err != nil {
 			return err
 		}
 	}
