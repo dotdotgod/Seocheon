@@ -22,6 +22,7 @@
 | 11 | [인덱서 아키텍처](11_indexer_architecture.md) | 인프라 / 백엔드 | 이벤트 인덱싱, content_uri 가용성, API/대시보드 |
 | 12 | [Randomness 모듈](12_randomness_module.md) | 체인 코어 / 인프라 | x/randomness, drand BLS 검증, Commit-Reveal, EndBlocker 자동 이행 |
 | 13 | [CosmWasm 통합](13_cosmwasm_integration.md) | 체인 코어 / 인프라 | x/wasm, wasmd, IBC 통합 |
+| 14 | [스케일링 전략](14_scaling_strategy.md) | 체인 코어 / 아키텍트 | 병목 분석, N_a 규모별 지원 범위, Phase별 대응 방안 |
 
 ---
 
@@ -46,6 +47,9 @@
 ### 체인 코어 / 인프라
 - [12_randomness_module.md](12_randomness_module.md) — x/randomness, drand BLS 검증, Commit-Reveal
 - [13_cosmwasm_integration.md](13_cosmwasm_integration.md) — CosmWasm (x/wasm) 통합
+
+### 체인 코어 / 아키텍트
+- [14_scaling_strategy.md](14_scaling_strategy.md) — 스케일링 전략, 병목 분석, Phase별 대응
 
 ### 인프라 / 네트워크 / 백엔드
 - [10_ibc_strategy.md](10_ibc_strategy.md) — IBC 전략
